@@ -92,7 +92,7 @@ def crear_operador(request):
             )
 
             # Asignar el grupo "Operador" al usuario
-            operador_group = Group.objects.get(name='Operadores')
+            operador_group = Group.objects.get(name='Operador')
             user.groups.add(operador_group)
 
             # Autenticar y redirigir
@@ -148,7 +148,7 @@ def detalle_operador(request, id):
 # Pagina principal 
 @login_required
 def index(request):
-    return render(request, 'operaciones_app/index.html')
+    return render(request, 'index.html')
 
 # pagina 403
 @login_required
@@ -156,8 +156,8 @@ def custom_permission_denied_view(request, exception=None):
     context = {'mensaje': 'No tienes permisos para ver esta página.'}
     return render(request, '403.html', context, status=403)
 
-# Modulo Operaciones
-@login_required
+# Modulo Operaciones 
+@login_required 
 def operaciones(request):
     return render(request, 'operaciones_app/operaciones.html')
 
