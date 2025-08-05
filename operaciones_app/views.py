@@ -11,6 +11,7 @@ from .reports import ReporterExcelRutas
 from .forms import CustomUserCreationForm
 from django.core.exceptions import PermissionDenied
 from django.utils.timezone import now
+from django.utils.dateparse import parse_date
 
 
 # Vista para login de usuario
@@ -134,8 +135,9 @@ def detalle_operador(request, id):
         operador.first_name = request.POST.get("first_name", operador.first_name)
         operador.last_name = request.POST.get("last_name", operador.last_name)
         operador.email = request.POST.get("email", operador.email)
-        operador.profile.telefono = request.POST.get("telefono", operador.profile.telefono)
-        operador.profile.direccion = request.POST.get("direccion", operador.profile.direccion)
+
+        operador.profile.telefono = request.POST.get("phone", operador.profile.telefono)
+        operador.profile.direccion = request.POST.get("address", operador.profile.direccion)
 
         operador.save()
         operador.profile.save()
@@ -270,7 +272,7 @@ def generate_report_rutas(request):
     # Consulta para filtrar los registros
     queryset = SolicitudRuta.objects.all()
     if start_date and end_date:
-        queryset = queryset.filter(registration_date__gte = start_date, registration_date__lte = end_date)
+        queryset = queryset.filter(fecha_solicitud__gte = start_date, fecha_solicitud__lte = end_date)
         
     # Generar el reporte solo con los registros filtrados
     report = ReporterExcelRutas(queryset)

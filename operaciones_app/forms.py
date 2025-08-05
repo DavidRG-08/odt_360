@@ -51,21 +51,27 @@ class CustomUserCreationForm(UserCreationForm):
     last_name = forms.CharField(max_length=40, required=True)
 
     # Campos modelo profile
-    telefono = forms.CharField(max_length=10)
+    telefono = forms.CharField(max_length=10, required=True, widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}))
     direccion = forms.CharField(max_length=50, required=True)
 
     class Meta:
         model = User
-        fields = {
+        fields = [
             'username', 
             'email', 
             'first_name', 
             'last_name', 
             'password1', 
-            'password2',
-            'telefono',
-            'direccion'
-        }
+            'password2'
+        ]
 
-        widgets = {'username': forms.TextInput(attrs={'placeholder': 'Ingrese su codigo de operador'})}
+
+        def save(self, commit=True):
+            user = super().save(commit)
+            Profile.objects.create(
+                user=user,
+                telefono=self.cleaned_data['telefono'],
+                direccion=self.cleaned_data['direccion']
+            )
+            return user
 

@@ -1,4 +1,4 @@
-// Carga tabla Localidades 
+-- Carga tabla Localidades 
 INSERT INTO public.operaciones_app_localidades (id, nombre_localidad) VALUES (1, 'Antonio Nariño');
 INSERT INTO public.operaciones_app_localidades (id, nombre_localidad) VALUES (2, 'Barrios Unidos');
 INSERT INTO public.operaciones_app_localidades (id, nombre_localidad) VALUES (3, 'Bosa');
@@ -20,18 +20,18 @@ INSERT INTO public.operaciones_app_localidades (id, nombre_localidad) VALUES (18
 INSERT INTO public.operaciones_app_localidades (id, nombre_localidad) VALUES (19, 'Usaquén');
 INSERT INTO public.operaciones_app_localidades (id, nombre_localidad) VALUES (20, 'Usme');
 
-// Carga tabla Rutas
+-- Carga tabla Rutas
 INSERT INTO public.operaciones_app_ruta (id, ubicacion) VALUES (1, 'Norte');
 INSERT INTO public.operaciones_app_ruta (id, ubicacion) VALUES (2, 'Sur');
 INSERT INTO public.operaciones_app_ruta (id, ubicacion) VALUES (3, 'Soacha');
 
-// Carga tabla turno
+-- Carga tabla turno
 INSERT INTO public.operaciones_app_turno (id, name) VALUES (1, 'Entrada');
 INSERT INTO public.operaciones_app_turno (id, name) VALUES (2, 'Salida');
 
-// Carga tabla grupos
+-- Carga tabla grupos
 INSERT INTO public.auth_group (id, name) VALUES (1, 'Operador');
 INSERT INTO public.auth_group (id, name) VALUES (2, 'Operaciones');
 
-// Cargar superUsuario
+-- Cargar superUsuario
 INSERT INTO public.auth_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined) VALUES (1, 'pbkdf2_sha256$1000000$vqZrlyVHaEVP903NrddYsC$wf37/tevy411j/EfSQRiyH7ZTu2oWgqfbru/6LDeAIQ=', '2025-08-05 14:25:09.846292 +00:00', true, 'orfeo', '', '', '', true, true, '2025-07-20 16:07:45.280063 +00:00');
