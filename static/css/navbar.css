@@ -1,0 +1,74 @@
+/* Estilo del navbar */
+.navbar {
+    height: 60px;
+}
+
+/* Botones de navbar solo con iconos */
+.nav-icon {
+    font-size: 20px;
+    border: none;
+}
+
+/* Menús ocultos inicialmente */
+.menu-container {
+    display: none;
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1000;
+}
+
+/* Contenido del menú */
+.menu-content {
+    text-align: center;
+}
+
+/* Botones del menú con iconos */
+.menu-grid {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    text-align: center;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.menu-btn i {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.close-menu {
+    margin-top: 15px;
+}
+
+/* Ventana flotante */
+.popup-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    text-align: center;
+}

@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"> <!-- Enlaza tu archivo CSS -->
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <!-- Imagen de la empresa -->
+            <div class="logo">
+                <img src="{% static 'img/Logo la Rolita.jpg' %}" alt="Logo de la empresa">
+            </div>
+
+            <!-- Título del formulario -->
+            <h2>Iniciar Sesión</h2>
+
+            <!-- Formulario de login -->
+            <form method="post" action="{% url 'login' %}" class="login-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    {{ form.username }}
+                </div>
+
+                <div class="input-group">
+                    {{ form.password }}
+                </div>
+
+                <!-- Botón de login con degradado -->
+                <button type="submit" class="gradient-btn">Ingresar</button>
+            </form>
+
+            <!-- Enlace para recuperar contraseña -->
+            <div class="forgot-password">
+                <a href="{% url 'reset_password' %}">¿Olvidaste tu contraseña?</a>
+            </div>
+            <div class="text-center">
+                <p>¿No tienes cuenta? <a href="{% url 'registro' %}" class="text-decoration-none">Regístrate aquí</a></p>
+            </div>
+    </div>
+</body>
+</html>

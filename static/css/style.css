@@ -1,0 +1,362 @@
+
+
+/* Estilos generales */
+body {
+    /* background: linear-gradient(135deg, #593954, #013440, #026873, #038C8C, #038C7F); Verde */
+    background: linear-gradient(135deg, #8FB6BF, #0A3140,  #111826, #224F59, #4D818C);
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar horizontal */
+.navbar {
+    background: linear-gradient(90deg, #012E40, #9FB6BF, #025E73, #037F8C, #021F59 );
+    /* background: linear-gradient(90deg,  #593954, #013440, #026873, #038C8C, #038C7F);Verde */
+    color: white;
+    padding: 15px 30px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.navbar-nav {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-nav a {
+    color: whitesmoke;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.navbar-nav a:hover {
+    color: #6D758C; /* Verde claro */
+}
+
+/* Contenedor principal */
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: block;
+}
+
+/* Contenedor del formulario */
+.form-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Tarjeta del formulario */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    width: 100%;
+    margin-bottom: 0;
+    box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.10);
+    max-width: none;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0;
+    padding: 20px 20px;
+}
+
+.card-body {
+    padding: 20px 24px 24px 24px;
+}
+
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Encabezado */
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: #8FB6BF;
+    margin-bottom: 20px;
+}
+
+/* Campos del formulario */
+.form-label {
+    font-weight: 600;
+    color: #333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    transition: 0.3s;
+    font-size: 16px;
+}
+
+input[type="date"] {
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+input[type="date"]:focus {
+    border-color: #8FB6BF;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+input:focus {
+    border-color: #8FB6BF; /* Verde */
+    box-shadow: 0px 0px 8px rgba(76, 175, 80, 0.5); /* Verde */
+    outline: none;
+}
+
+/* Botón de registro */
+.btn-primary {
+    background: linear-gradient(90deg, #274B59, #6D758C); /* Verde */
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: 0.3s;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #012E40, #6D758C); /* Verde */
+    transform: scale(1.05);
+}
+
+/* Mensajes de error */
+.text-danger {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Enlace de inicio de sesión */
+.text-center a {
+    font-weight: bold;
+    color: #012E40; /* Verde */
+}
+
+.text-center a:hover {
+    text-decoration: underline;
+    color: #4D818C; /* Verde oscuro */
+}
+
+/* Tabla de resultados */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 0 0 10px 10px;
+}
+
+.table thead {
+    background: linear-gradient(90deg, #012E40, #4CAF50);
+    color: white;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(90deg, #E8F5E9, #C8E6C9);
+}
+
+/* Mensaje sin registros */
+.table tbody tr td {
+    text-align: center;
+    font-style: italic;
+}
+
+.filters-table-toolbar {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 32px;
+}
+
+.filters-form {
+    flex: 1;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    width: 50%;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Inputs de los filtros */
+.filters input,
+.filters select {
+    padding: 8px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Paginación */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-link {
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: 0.3s;
+    color: #012E40; /* Verde */
+}
+
+.page-link:hover {
+    background: linear-gradient(90deg, #012E40, #4CAF50); /* Verde */
+    color: white;
+}
+
+.page-item.active .page-link {
+    background: #2E7D32; /* Verde oscuro */
+    color: white;
+}
+
+/* Botones adicionales */
+.btn-primary, .btn-grad {
+    background: linear-gradient(to right,#593954, #013440, #026873, #038C8C, #038C7F);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover, .btn-grad:hover {
+    box-shadow: 0px 4px 10px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+
+.btn-grad {
+    background: linear-gradient(to right, #011526, #012E40, #025959);
+}
+
+.btn-grad:hover, .btn-primary:hover {
+    box-shadow: 0px 4px 10px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+
+/* Estilos del Modal */
+.modal {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+}
+
+.modal.show {
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: red;
+    transform: scale(1.1);
+}
+
+/* Efecto de entrada del modal */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 991px) {
+    .container {
+        padding: 20px 8px;
+    }
+    .filters-table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .card-body {
+        padding: 15px 6px 18px 6px;
+    }
+    .table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 600px) {
+    .table { min-width: 350px; }
+}

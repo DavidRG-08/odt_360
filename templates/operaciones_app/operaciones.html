@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Operaciones{% endblock %}
+
+{% block content %}
+
+<section class="text-center mt-5" aria-labelledby="operaciones-heading">
+    <div class="card-title bg-white text-white text-center">
+        <h2 id="operaciones-heading">Operaciones</h2>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 g-2 row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'crear_operador' %}" class="option-btn" aria-label="Crear Operador">
+                    <i class="fa fa-user-plus fa-4x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Crear Operador</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_operadores' %}" class="option-btn" aria-label="Lista de operadores">
+                    <i class="fa fa-users fa-4x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Lista operadores</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_solicitudes' %}" class="option-btn" aria-label="Lista de operadores">
+                    <i class="fa fa-road fa-4x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Consultar rutas</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'crear_solicitud' %}" class="option-btn" aria-label="Lista de operadores">
+                    <i class="fa fa-taxi fa-4x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Solicitar Ruta</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

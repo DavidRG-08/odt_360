@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Detalles del Operador{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center fw-bold">👤 Detalles del Operador</h2>
+    
+    <form method="post" class="bg-light shadow-sm p-4 rounded-3">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+            <div class="col-md-6">
+
+                <i class="fas fa-id-card"></i> <strong>Nombre</strong>
+                <input type="text" name="first_name" class="form-control" value="{{ operador.first_name }}" required>
+            </div>
+
+            <div class="col-md-6">
+                <li class="list-group-item"><i class="fas fa-id-card"></i> <strong>Apellido</strong>
+                <input type="text" name="last_name" class="form-control" value="{{ operador.last_name }}" required>
+            </div>
+
+            <div class="col-md-6">
+                <li class="list-group-item"><i class="fas fa-envelope"></i> <strong>Correo</strong>
+                <input type="email" name="email" class="form-control" value="{{ operador.email }}" required>
+            </div>
+
+            <div class="col-md-6">
+                <li class="list-group-item"><i class="fas fa-phone"></i> <strong>Teléfono:</strong>
+                <input type="text" name="phone" class="form-control" value="{{ operador.profile.telefono }}">
+            </div>
+
+            <div class="col-md-12">
+                <li class="list-group-item"><i class="fas fa-map-marker-alt"></i> <strong>Dirección</strong>
+                <input type="text" name="address" class="form-control" value="{{ operador.profile.direccion }}">
+            </div>
+        </div>
+    
+
+        <div class="text-end mt-4">
+            <a href="{% url 'lista_operadores' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Actualizar
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

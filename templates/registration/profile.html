@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle usuario{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded">
+        <div class="card-body">
+            <h2 class="text-center mb-4"><i class="fas fa-user-circle"></i> Cuenta {{ user.username }}</h2>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-user"></i> Usuario:</div>
+                        <div class="col-md-8 text-muted">{{ perfil.user }}</div>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-id-card"></i> Nombre:</div>
+                        <div class="col-md-8 text-muted">{{ user.first_name }} {{ user.last_name }}</div>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-phone-alt"></i> Teléfono:</div>
+                        <div class="col-md-8 text-muted">{{ perfil.telefono }}</div>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-map-marker-alt"></i> Dirección:</div>
+                        <div class="col-md-8 text-muted">{{ perfil.direccion }}</div>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-envelope"></i> Correo Electrónico:</div>
+                        <div class="col-md-8 text-muted">{{ user.email }}</div>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-users"></i> Perfil:</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-primary">
+                                {% for group in user.groups.all %}
+                                    {{ group.name }}
+                                {% empty %}
+                                    Sin perfil asignado
+                                {% endfor %}
+                            </span>
+                        </div>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-4 fw-bold"><i class="fas fa-user-check"></i> Estado:</div>
+                        <div class="col-md-8">
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="btn btn-outline-dark">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrar operador{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="card">
+        <h2>Crear operador</h2>
+
+        <!-- Mensajes de éxito o error -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Nombre de usuario -->
+            <div class="mb-3">
+                <label class="form-label">Codigo de operador</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <small class="text-danger">{{ form.username.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Nombre y Apellido -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <small class="text-danger">{{ form.first_name.errors.0 }}</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Apellido</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <small class="text-danger">{{ form.last_name.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Correo electrónico -->
+            <div class="mb-3">
+                <label class="form-label">Correo electrónico</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <small class="text-danger">{{ form.email.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Contraseña y Confirmación -->
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                {{ form.password1 }}
+                <small class="form-text text-muted">Mínimo 8 caracteres.</small>
+                {% if form.password1.errors %}
+                <small class="text-danger">{{ form.password1.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Confirmar contraseña</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                <small class="text-danger">{{ form.password2.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-3">
+                <label class="form-label">Teléfono</label>
+                {{ form.telefono }}
+                {% if form.telefono.errors %}
+                <small class="text-danger">{{ form.telefono.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Dirección -->
+            <div class="mb-3">
+                <label class="form-label">Dirección</label>
+                {{ form.direccion }}
+                {% if form.direccion.errors %}
+                <small class="text-danger">{{ form.direccion.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Botón de Registro -->
+            <button type="submit" class="btn btn-primary w-100">Registrar</button>
+
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
