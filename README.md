@@ -30,14 +30,15 @@ cuentan con la vista para ver todas las solicitudes y filtrarlas por un rango de
 ## Pasos a tener en cuenta para el despliegue
 
 1. Montar un servidor web (Apache, NGNIX, IIS)
-2. clonar el repositorio de GitHub
-3. instalar las liberias del proyecto (requierements.txt)
-4. Configuracion del proyecto en el servidor web 
-5. Instalacion de la base de datos (PostgreSQL) 
-6. Creacion de la base de datos 
-7. crear el archivo con las variables de entorno 
-8. crear la conexion entre el proyecto y la BD
-9. Realizar la migracion de las tablas 
-10. Ejecucion del script SQL con los datos a cargar para el funcionamiento de la app
-11. Correr el proyecto
-12. Pruebas de conexion
+2. Python version 3.13 o superior
+3. clonar el repositorio de GitHub
+4. instalar las liberias del proyecto (requierements.txt)
+5. Configuracion del proyecto en el servidor web 
+6. Instalacion de la base de datos (PostgreSQL) 
+7. Creacion de la base de datos 
+8. crear el archivo con las variables de entorno 
+9. crear la conexion entre el proyecto y la BD
+10. Realizar la migracion de las tablas 
+11. Ejecucion del script SQL con los datos a cargar para el funcionamiento de la app
+12. Correr el proyecto
+13. Pruebas de conexion
