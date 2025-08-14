@@ -1,9 +1,48 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Consultar Solicitudes{% endblock %}
+{% block title %}Home{% endblock %}
 {% block content %}
 
-    <h1>Pagina principal</h1>   
+
+    <section class="text-center mt-5" aria-labelledby="operaciones-heading">
+    <div class="card-title bg-white text-dark text-center">
+        <h2 id="operaciones-heading">ODT 360</h2>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'operaciones' %}" class="option-btn" aria-label="Operaciones">
+                    <i class="fa fa-bus fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Operaciones</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'mantenimiento' %}" class="option-btn" aria-label="Mantenimiento">
+                    <i class="fa fa-wrench fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Mantenimiento</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="#" class="option-btn" aria-label="Planeacion">
+                    <i class="fa fa-clipboard fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Planeacion</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+    </div>
+</section>
 
 
 {% endblock %}

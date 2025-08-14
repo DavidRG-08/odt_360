@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear vehiculo{% endblock %}
+
+{% block extra %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        
+        <!-- Encabezado -->
+        <div class="card-header bg-dark text-white text-center">
+            <h2 class="mb-0">Creación de Vehiculos</h2>
+        </div>
+
+        <div class="card-body">
+            <div class="row align-items-center">
+                
+                <!-- Columna izquierda: Consultar vehiculos -->
+                <div class="col-md-5 text-center border-end">
+                    <p class="fw-bold mb-3">Consultar vehiculos</p>
+                    <p class="small text-muted">Si deseas ver los vehiculos registrados, puedes hacerlo aquí.</p>
+                    <a href="{% url 'consultar_vehiculos' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-search"></i> Consultar Vehiculos
+                    </a>
+                </div>
+
+                <!-- Columna derecha: Formulario manual -->
+                <div class="col-md-7">
+                    <p class="fw-bold mb-3 text-center">Creación de vehiculos</p>
+                    <p class="small text-muted text-center">
+                        Complete el siguiente formulario para registrar una nuevo vehiculo.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Campos del formulario -->
+                        <div class="mb-3">
+                            {{ form.as_p }}
+                        </div>
+
+                        <!-- Botón guardar -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success px-4 btn-lg">
+                                <i class="fas fa-save"></i> Guardar Registro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}

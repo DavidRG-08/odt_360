@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear orden de alistamiento{% endblock %}
+
+{% block extra %}
+{% endblock %}
+
+
+{% block content %}
+
+
+
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        
+        <!-- Encabezado -->
+        <div class="card-header bg-dark text-white text-center">
+            <h2 class="mb-0">Carga Masiva de Órdenes</h2>
+        </div>
+
+        <div class="card-body">
+            <p class="text-center text-muted">
+                Seleccione un archivo en formato válido (CSV) para cargar múltiples órdenes al sistema.
+            </p>
+
+            <!-- Formulario -->
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Campo de archivo -->
+                <div class="mb-4 text-center">
+                    <label for="file-input" class="form-label fw-bold">Seleccione el archivo</label>
+                    {{ form.as_p }}
+                </div>
+
+
+                <!-- Botón de carga -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="fas fa-save"></i> Cargar Órdenes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

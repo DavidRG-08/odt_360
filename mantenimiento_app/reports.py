@@ -1,22 +1,22 @@
 from django.views.generic import TemplateView
 from django.http.response import HttpResponse
-from .models import SolicitudRuta
+from .models import OrdenAlistamiento
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
-class ReporterExcelRutas(TemplateView):
+class ReporterExcelOrdenesAlistamiento(TemplateView):
     def __init__(self, queryset = None):
         # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or SolicitudRuta.objects.all()
+        self.queryset = queryset or OrdenAlistamiento.objects.all()
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros
-        rutas_reg = self.queryset        
+        ordenes = self.queryset        
         
         # Crea el archivo excel
         wb = Workbook()
         ws = wb.active
-        ws.title = "Rutas Solicitadas"
+        ws.title = "Ordenes Alistamiento"
         
         # Estilos
         title_font = Font(bold=True, size=14)
@@ -24,13 +24,13 @@ class ReporterExcelRutas(TemplateView):
         header_fill = PatternFill(start_color="C4D01C", end_color="C4D01C", fill_type="solid")
         center_alignment = Alignment(horizontal="center")
         
-        ws["B1"] = "REPORTE RUTAS SOLICITADAS"
+        ws["B1"] = "REPORTE ORDENES ALISTAMIENTO"
         ws.merge_cells("B1:L1")
         ws["B1"].font = title_font
         ws["B1"].alignment = center_alignment
         
-        headers = ["FECHA", "OPERADOR", "TELEFONO", "TURNO", "FECHA DE RECOGIDA",
-                "LOCALIDAD", "BARRIO", "UBICACION", "RUTA", "DIRECCION", "ESTADO"]
+        headers = ["FECHA CREACION", "No ORDEN", "ESTADO", "TECNICO MTTO", "VEHICULO", "FECHA INICIO ORDEN",
+                "FECHA FIN ORDEN", "TIEMPO ALISTAMIENTO", "NOVEDADES"]
         
         for col_num, header in enumerate(headers, 2):
             cell = ws.cell(row=3, column=col_num)
@@ -41,23 +41,20 @@ class ReporterExcelRutas(TemplateView):
         
         cont = 4
 
-        # Modificacion para el event stop code
-
-        for ruta in rutas_reg:
+        for orden in ordenes:
             
 
             # Agregar datos al Excel
-            ws.cell(row=cont, column=2).value = str(ruta.fecha_solicitud)
-            ws.cell(row=cont, column=3).value = str(ruta.operador)
-            ws.cell(row=cont, column=4).value = str(ruta.telefono)
-            ws.cell(row=cont, column=5).value = str(ruta.turno)
-            ws.cell(row=cont, column=6).value = str(ruta.fecha_recogida)
-            ws.cell(row=cont, column=7).value = str(ruta.localidad)
-            ws.cell(row=cont, column=8).value = str(ruta.barrio)
-            ws.cell(row=cont, column=9).value = str(ruta.ubicacion)
-            ws.cell(row=cont, column=10).value = str(ruta.ruta)
-            ws.cell(row=cont, column=11).value = str(ruta.direccion)
-            ws.cell(row=cont, column=12).value = str("Activa" if ruta.estado else "Cancelada")
+            ws.cell(row=cont, column=2).value = str(orden.fecha_creacion_orden)
+            ws.cell(row=cont, column=3).value = str(orden.id)
+            ws.cell(row=cont, column=4).value = str(orden.estado)
+            ws.cell(row=cont, column=5).value = str(orden.user)
+            ws.cell(row=cont, column=6).value = str(orden.vehiculo)
+            ws.cell(row=cont, column=7).value = str(orden.fecha_inicio)
+            ws.cell(row=cont, column=8).value = str(orden.fecha_fin)
+            ws.cell(row=cont, column=9).value = str(orden.tiempo_alistamiento)
+            ws.cell(row=cont, column=10).value = str(orden.novedades)
+            # ws.cell(row=cont, column=12).value = str("Activa" if orden.estado else "Cancelada")
 
             cont += 1
 
@@ -73,7 +70,7 @@ class ReporterExcelRutas(TemplateView):
             ws.column_dimensions[column_letter].width = adjusted_width
                     
 
-        file_name = "Reporte_rutas_solicitadas.xlsx"
+        file_name = "Reporte_ordenes_de_alistamiento.xlsx"
         response = HttpResponse(content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         content = "attachment; filename = {0}".format(file_name)
         response["Content-Disposition"] = content

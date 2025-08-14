@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Lista de vehiculos {% endblock %}
+
+{% block content %}
+
+
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        
+        <!-- Encabezado -->
+        <div class="card-header bg-dark text-white text-center">
+            <h2 class="mb-0">Listado de Vehiculos</h2>
+        </div>
+
+        <div class="card-body">
+            {% if vehiculos %}
+                <ol class="list-group list-group-numbered">
+                    {% for vehiculo in vehiculos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <strong>Código:</strong> {{ vehiculo.vehiculo_id }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p class="text-center text-muted">No hay vehículos registrados.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

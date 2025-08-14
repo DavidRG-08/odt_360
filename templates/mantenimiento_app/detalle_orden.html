@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Detalle orden{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded">
+        <div class="card-body">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-file-alt"></i> Orden #{{ orden.id }}
+            </h2>
+            
+            <!-- Botón para iniciar orden -->
+            <div class="text-center my-3">
+                <button id="btnIniciarOrden" class="btn btn-success" {% if orden.fecha_inicio %}disabled{% endif %}>
+                    🚀 Iniciar Orden
+                </button>
+                <p id="fechaInicio" class="mt-2">{{ orden.fecha_inicio|default:"No iniciada" }}</p>
+            </div>
+            
+            <ul class="list-group">
+                {% for etapa in etapas %}
+                <li class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 fw-bold">
+                            <i class="fas fa-ticket"></i> {{ etapa.etapa.nombre }}
+                        </div>
+                        <div class="col-md-4">
+                            {% if etapa.estado.id == 3 %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> {{ etapa.estado.nombre }}
+                                </span>
+                            {% elif etapa.estado.id == 2 %}
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-spinner"></i> {{ etapa.estado.nombre }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times-circle"></i> {{ etapa.estado.nombre }}
+                                </span>
+                            {% endif %}
+                            {% if etapa.tiempo_inspeccion %}
+                                <span class="badge bg-secondary text-light ms-2">
+                                    <i class="fas fa-clock"></i> {{ etapa.tiempo_inspeccion }} min
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if etapa.etapa.nombre == 'Mecanica' %}
+                                <form action="{% url 'trabaja_orden_mec' orden.id %}" method="get">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
+                                        <i class="fas fa-lock"></i> Iniciar inspección
+                                    </button>
+                                </form>
+
+                            {% elif etapa.etapa.nombre == 'Carroceria Externa' %}
+                                <form action="{% url 'trabaja_orden_ext' orden.id %}" method="get">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
+                                        <i class="fas fa-lock"></i> Iniciar inspección
+                                    </button>
+                                </form>
+
+                            {% elif etapa.etapa.nombre == 'Carroceria Interna' %}
+                                <form action="{% url 'trabaja_orden_int' orden.id %}" method="get">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
+                                        <i class="fas fa-lock"></i> Iniciar inspección
+                                    </button>
+                                </form>
+
+                            {% else %}
+                                <form action="{% url 'trabaja_orden_ele' orden.id %}" method="get">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
+                                        <i class="fas fa-lock"></i> Iniciar inspección
+                                    </button>
+                                </form>
+
+                            {% endif %}
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Botón de cierre -->
+            <div class="text-center mt-4">
+                <a href="{% url 'ver_orden' orden.id %}" class="btn btn-outline-dark">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <a href="{% url 'consultar_ordenes' %}" class="btn btn-outline-dark">
+                    <i class="fas fa-window-close-o"></i> Cerrar
+                </a>
+            </div>
+
+                
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+
+
+
+    // Iniciar orden
+    $("#btnIniciarOrden").click(function () {
+        $.post("{% url 'iniciar_orden' orden.id %}", function (data) {
+            $("#fechaInicio").text(data.fecha_inicio);
+            $("#btnIniciarOrden").prop("disabled", true);
+            location.reload();
+        });
+    });
+
+    $(".iniciar-inspeccion").click(function () {
+        var etapa = $(this).data("etapa");
+        $.post("/iniciar_inspeccion/{{ orden.id }}/" + etapa + "/", function (data) {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    });
+
+
+});
+</script>
+
+{% endblock %}

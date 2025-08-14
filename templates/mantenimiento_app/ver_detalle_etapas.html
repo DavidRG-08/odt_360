@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Etapas{% endblock %}
+
+{% block content %}
+
+{% load custom_tags %}
+
+<div class="card-header bg-dark text-white text-center">
+    <h3>🚍 Etapas Orden de alistamiento</h3>
+</div>
+
+<ul class="list-group">
+    {% for etapa in etapas %}
+        <li class="list-group-item">
+            <strong>{{ etapa.nombre }}</strong>
+            <ul>
+                {% for item in items_por_etapa|get_item:etapa.id %}
+                    <li>{{ item.nombre }}</li>
+                {% empty %}
+                    <li class="text-muted">No hay items para esta etapa.</li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+</ul>
+
+
+ <!-- Botón de cierre -->
+<div class="text-center mt-4">
+    <a href="{% url 'consultar_ordenes' %}" class="btn btn-primary w-20 text-white">
+        <i class="fas fa-list"></i> ordenes
+    </a>
+    <a href="{% url 'mantenimiento' %}" class="btn btn-primary w-20 text-white">
+        <i class="fas fa-window"></i> Volver
+    </a>
+</div>
+
+{% endblock %}

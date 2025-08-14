@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}trabaja orden{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="show-lg">
+        <div class="card-header bg-dark text-white text-center">
+            <h3>📋 Orden #{{ orden.id }} -- {{ orden.vehiculo }}</h3>
+        </div>
+
+
+
+<div class="table-responsive" style="max-height: 680px; overflow-y: auto;">
+    {% if inspecciones %}
+        <table class="table table-hover table-bordered align-middle">
+            <thead style="position: sticky; top: 0; background-color: #0d6efd; color: white; z-index: 2;">
+                <tr>
+                    <th scope="col" class="text-center">Etapa</th>
+                    <th scope="col" class="text-center">Ítem</th>
+                    <th scope="col" class="text-center">Estado</th>
+                    <th scope="col" class="text-center" style="min-width: 200px;">Observaciones</th>
+                    <th scope="col" class="text-center">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inspeccion in inspecciones %}
+                    <tr class="text-center {% if inspeccion.estado.nombre == 'Finalizada' %}table-success{% endif %}">
+                        <td class="fw-bold">{{ inspeccion.etapa.nombre }}</td>
+                        <td>{{ inspeccion.item }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if inspeccion.estado.nombre == 'Finalizada' %}bg-success
+                                {% elif inspeccion.estado.nombre == 'En Proceso' %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+                                {{ inspeccion.estado.nombre }}
+                            </span>
+                        </td>
+                        <td>
+                            <textarea 
+                                class="form-control observaciones" 
+                                rows="2"
+                                data-id="{{ inspeccion.id }}"
+                                {% if inspeccion.estado.nombre == "Finalizada" or es_admin_mtto %}readonly disabled{% endif %}>
+                                {{ inspeccion.observaciones|default_if_none:"" }}
+                            </textarea>
+                        </td>
+                        <td>
+                            {% if not es_admin_mtto %}
+                                <button 
+                                    class="btn btn-sm btn-warning finalizarItem d-flex align-items-center gap-1 mx-auto"
+                                    data-id="{{ inspeccion.id }}"
+                                    {% if inspeccion.estado.nombre == "Finalizada" %}disabled{% endif %}>
+                                    ✅ Finalizar
+                                </button>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-center text-muted py-3 mb-0">No hay inspecciones registradas.</p>
+    {% endif %}
+</div>
+
+
+        <!-- Botón de cierre -->
+        <div class="text-center mt-4">
+            <a href="{% url 'detalle_orden' orden.id %}" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <a href="{% url 'consultar_ordenes' %}" class="btn btn-light">
+                <i class="fas fa-window-close-o"></i> Cerrar
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+
+    
+    $(".observaciones").on("blur", function () {
+        let inspeccion_id = $(this).data("id");
+        let observaciones = $(this).val();
+
+        $.ajax({
+            url: "{% url 'actualizar_observaciones' %}",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ inspeccion_id: inspeccion_id, observaciones: observaciones }),
+            success: function (response) {
+                console.log("Observaciones guardadas");
+            }
+        });
+    });
+
+    // Finalizar item
+    $(".finalizarItem").click(function () {
+        let item_id = $(this).data("id");
+        let boton = $(this);
+
+        $.post(`/finalizar_item/${item_id}/`, function (data) {
+            $("#fechaFin_" + item_id).text(data.fecha_fin);
+            boton.prop("disabled", true);
+        });
+    });
+
+});
+</script>
+
+{% endblock %}
