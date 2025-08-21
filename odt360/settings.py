@@ -47,7 +47,7 @@ LOGIN_URL = 'login'
 
 # time session
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 3600
+SESSION_COOKIE_AGE = 1200
 SESSION_SAVE_EVERY_REQUEST = True
 
 
@@ -142,5 +142,5 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Agrega esta configuración al final del archivo
+# Acceso denegado
 handler403 = 'tu_app.views.custom_permission_denied_view'
