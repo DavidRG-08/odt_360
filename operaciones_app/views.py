@@ -70,9 +70,12 @@ def register(request):
 @login_required
 @permission_required('operaciones_app.view_profile', raise_exception=True)
 def profile(request, user_id):
-    perfil = get_object_or_404(Profile, user_id= user_id)
-    user = perfil.user
-    return render(request, "registration/profile.html", {"perfil": perfil, "user": user})
+    try:
+        perfil = Profile.objects.get(user_id=user_id)
+        user = perfil.user
+        return render(request, "registration/profile.html", {"perfil": perfil, "user": user})
+    except Profile.DoesNotExist:
+        return render(request, "registration/no_profile.html", {"user_id": user_id})
 
 
 # vista para crear operadores

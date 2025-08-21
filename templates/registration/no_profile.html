@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-warning text-center">
+        <h4>Perfil no encontrado</h4>
+        <p>No existe un perfil asociado para este usuario.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-3">Volver al inicio</a>
+    </div>
+</div>
+{% endblock %}
+

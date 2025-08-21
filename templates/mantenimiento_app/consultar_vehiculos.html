@@ -10,8 +10,36 @@
         
         <!-- Encabezado -->
         <div class="card-header bg-dark text-white text-center">
-            <h2 class="mb-0">Listado de Vehiculos</h2>
+            <h2 class="mb-0">Listado de Vehiculos 🚍</h2>
         </div>
+
+        <!-- Filtros y exportar alineados en fila -->
+        <div class="filters-table-toolbar mb-3">
+            <form method="get" action="{% url 'consultar_vehiculos' %}" class="filters-form flex-grow-1">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-8 col-md-6">
+                        <label for="vehiculo" class="form-label text-dark"></label>
+                        <input type="text" id="vehiculo" name="vehiculo" class="form-control"
+                            value="{{ request.GET.vehiculo }}">
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="col-lg-4 d-flex">
+                        <button type="submit" class="btn btn-primary w-100 ms-2 mt-2">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <button type="button" id="limpiarFiltros" class="btn btn-primary w-100 ms-2 mt-2">
+                            <i class="fa-solid fa-filter-circle-xmark"></i>
+                        </button>
+                        <a href="{% url 'mantenimiento' %}" class="btn btn-primary w-100 ms-2 mt-2">
+                            <i class="fas fa-arrow-left"> </i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+
 
         <div class="card-body">
             {% if vehiculos %}
@@ -30,5 +58,13 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('limpiarFiltros').onclick = function() {
+    document.getElementById('vehiculo').value = '';
+    this.form.submit(); // Si el botón está dentro del formulario
+};
+</script>
+
 
 {% endblock %}

@@ -11,6 +11,7 @@
         <!-- Encabezado -->
         <div class="card-header bg-dark text-white text-center">
             <h3>📋 Consultar Órdenes de Alistamiento</h3>
+            
         </div>
 
         <!-- Filtros -->
@@ -26,7 +27,7 @@
                     <input type="date" id="end_date" name="end_date" class="form-control"
                         value="{{ request.GET.end_date }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="estado" class="form-label fw-bold">✅ Estado</label>
                     <select name="estado" id="estado" class="form-control">
                         <option value="">Todos</option>
@@ -37,13 +38,21 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-4 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Filtrar
+                        <i class="fas fa-filter"></i>
                     </button>
+                    <button type="button" id="limpiarFiltros" class="btn btn-primary w-100 ms-2">
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+                    </button>
+                    <a href="{% url 'mantenimiento' %}" class="btn btn-primary w-100 ms-2">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
                 </div>
             </div>
         </form>
+        
+
 
         <!-- Exportar -->
         <div class="text-end mt-3 pe-3">
@@ -167,4 +176,15 @@
 
 </div>
 
+<script>
+document.getElementById('limpiarFiltros').onclick = function() {
+    document.getElementById('start_date').value = '';
+    document.getElementById('end_date').value = '';
+    document.getElementById('estado').selectedIndex = 0;
+    this.form.submit(); // Si el botón está dentro del formulario
+};
+</script>
+
 {% endblock %}
+
+

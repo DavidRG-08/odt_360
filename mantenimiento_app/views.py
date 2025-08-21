@@ -150,7 +150,8 @@ def detalle_orden(request, orden_id):
 
 
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
-    return render(request, "mantenimiento_app/detalle_orden.html", {"etapas": etapas, "orden": orden })
+    es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
+    return render(request, "mantenimiento_app/detalle_orden.html", {"etapas": etapas, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
 
 def generar_reporte_ordenes(request):
@@ -266,6 +267,7 @@ def trabajar_orden_mecanica(request, orden_id):
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
 
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
+    
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
 
@@ -294,7 +296,7 @@ def trabajar_orden_electrica(request, orden_id):
 
 
 @login_required
-@permission_required('mantenimiento_app.view_etapas', raise_exception=True)
+@permission_required('mantenimiento_app.view_etapa', raise_exception=True)
 def ver_detalle_etapas(request):
     etapas = Etapa.objects.all()
     items_por_etapa = {}
@@ -321,7 +323,7 @@ def vehiculos(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Vehículo creado con éxito!")
-            return redirect('mantenimiento')
+            return redirect('consultar_vehiculos')
     else:
         form = CrearVehiculoForm()
     return render(request, 'mantenimiento_app/crear_vehiculos.html', {'form': form})
@@ -332,6 +334,11 @@ def vehiculos(request):
 @permission_required('mantenimiento_app.view_vehiculo', raise_exception=True)
 def consultar_vehiculos(request):
     vehiculos = Vehiculo.objects.all()
+
+    vehiculo = request.GET.get('vehiculo')
+    if vehiculo:
+        vehiculos = vehiculos.filter(vehiculo_id__icontains=vehiculo)
+
     return render(request, 'mantenimiento_app/consultar_vehiculos.html', {'vehiculos': vehiculos})
 
 

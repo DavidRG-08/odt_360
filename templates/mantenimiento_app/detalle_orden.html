@@ -13,7 +13,7 @@
             
             <!-- Botón para iniciar orden -->
             <div class="text-center my-3">
-                <button id="btnIniciarOrden" class="btn btn-success" {% if orden.fecha_inicio %}disabled{% endif %}>
+                <button id="btnIniciarOrden" class="btn btn-success" {% if orden.fecha_inicio or es_admin_mtto %}disabled{% endif %}>
                     🚀 Iniciar Orden
                 </button>
                 <p id="fechaInicio" class="mt-2">{{ orden.fecha_inicio|default:"No iniciada" }}</p>
@@ -41,44 +41,37 @@
                                 </span>
                             {% endif %}
                             {% if etapa.tiempo_inspeccion %}
-                                <span class="badge bg-secondary text-light ms-2">
+                                <span class="badge bg-info text-dark ms-2">
                                     <i class="fas fa-clock"></i> {{ etapa.tiempo_inspeccion }} min
                                 </span>
                             {% endif %}
                         </div>
                         <div class="col-md-4 text-end">
                             {% if etapa.etapa.nombre == 'Mecanica' %}
-                                <form action="{% url 'trabaja_orden_mec' orden.id %}" method="get">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
-                                        <i class="fas fa-lock"></i> Iniciar inspección
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                        {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                    <i class="fas fa-lock"></i> Iniciar inspección
+                                </button>
 
                             {% elif etapa.etapa.nombre == 'Carroceria Externa' %}
-                                <form action="{% url 'trabaja_orden_ext' orden.id %}" method="get">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
-                                        <i class="fas fa-lock"></i> Iniciar inspección
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                    {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                    <i class="fas fa-lock"></i> Iniciar inspección
+                                </button>
+                                
 
                             {% elif etapa.etapa.nombre == 'Carroceria Interna' %}
-                                <form action="{% url 'trabaja_orden_int' orden.id %}" method="get">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
-                                        <i class="fas fa-lock"></i> Iniciar inspección
-                                    </button>
-                                </form>
-
+                                <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                    {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                    <i class="fas fa-lock"></i> Iniciar inspección
+                                </button>
+                                
                             {% else %}
-                                <form action="{% url 'trabaja_orden_ele' orden.id %}" method="get">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio or etapa.etapa.fecha_inicio %}disabled{% endif %}>
+                                <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
+                                        {% if not orden.fecha_inicio %}disabled{% endif %}>
                                         <i class="fas fa-lock"></i> Iniciar inspección
-                                    </button>
-                                </form>
-
+                                </button>
+                                
                             {% endif %}
                         </div>
                     </div>
@@ -116,15 +109,50 @@ $(document).ready(function () {
         });
     });
 
-    $(".iniciar-inspeccion").click(function () {
-        var etapa = $(this).data("etapa");
-        $.post("/iniciar_inspeccion/{{ orden.id }}/" + etapa + "/", function (data) {
-            if (data.success) {
-                location.reload();
+    // Guardar observaciones al perder el foco
+    $(".observaciones").on("blur", function () {
+        let inspeccion_id = $(this).data("id");
+        let observaciones = $(this).val();
+
+        $.ajax({
+            url: "{% url 'actualizar_observaciones' %}",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ inspeccion_id: inspeccion_id, observaciones: observaciones }),
+            success: function (response) {
+                console.log("Observaciones guardadas");
             }
         });
     });
 
+    // Finalizar item
+    $(".finalizarItem").click(function () {
+        let item_id = $(this).data("id");
+        let boton = $(this);
+
+        $.post(`/finalizar_item/${item_id}/`, function (data) {
+            $("#fechaFin_" + item_id).text(data.fecha_fin);
+            boton.prop("disabled", true);
+        });
+    });
+
+    $(".iniciar-inspeccion").click(function () {
+    var etapa = $(this).data("etapa");
+    $.post("/iniciar_inspeccion/{{ orden.id }}/" + etapa + "/", function (data) {
+        if (data.success) {
+            // Redirige al detalle de la etapa correspondiente
+            if (etapa === "Mecanica") {
+                window.location.href = "{% url 'trabaja_orden_mec' orden.id %}";
+            } else if (etapa === "Carroceria Externa") {
+                window.location.href = "{% url 'trabaja_orden_ext' orden.id %}";
+            } else if (etapa === "Carroceria Interna") {
+                window.location.href = "{% url 'trabaja_orden_int' orden.id %}";
+            } else {
+                window.location.href = "{% url 'trabaja_orden_ele' orden.id %}";
+            }
+        }
+    });
+});
 
 });
 </script>
