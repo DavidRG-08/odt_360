@@ -110,6 +110,8 @@ $(document).ready(function () {
         $.post(`/finalizar_item/${item_id}/`, function (data) {
             $("#fechaFin_" + item_id).text(data.fecha_fin);
             boton.prop("disabled", true);
+            // deshabilitar el textarea correspondiente
+            $(`textarea.observaciones[data-id='${item_id}']`).prop("readonly", true).prop("disabled", true);
         });
     });
 

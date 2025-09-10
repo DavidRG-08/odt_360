@@ -12,9 +12,8 @@ class LoginViewForm(forms.Form):
 class CrearSolicitudForm(forms.ModelForm):
     class Meta:
         model = SolicitudRuta
-        exclude = ['operador']
+        exclude = ['operador', 'fecha_solicitud']
         fields = [
-            'fecha_solicitud', 
             'telefono', 
             'turno', 
             'fecha_recogida', 
@@ -26,12 +25,10 @@ class CrearSolicitudForm(forms.ModelForm):
         ] 
 
         labels = {
-            'fecha_solicitud': 'Fecha de solicitud',
             'fecha_recogida': 'Fecha de recogida' 
         }
 
         widgets = {
-            'fecha_solicitud': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'telefono': forms.NumberInput(attrs={'type': 'number', 'class': 'form-control', 'placeholder': 'Ingrese su telefono'}),
             'turno': forms.Select(attrs={'class': 'form-check-input'}),
             'fecha_recogida': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),

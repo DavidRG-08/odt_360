@@ -92,7 +92,19 @@
             </div>
 
             <!-- Botón de Registro -->
-            <button type="submit" class="btn btn-primary w-100">Registrar</button>
+             <div class="row justify-content-center mt-4">
+                <div class="col-md-4 d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Registrar
+                    </button>
+                </div>
+                <div class="col-md-4 d-grid gap-2">
+                    <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg text-white">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+
 
 
         </form>

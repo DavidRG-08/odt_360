@@ -34,14 +34,6 @@
       <form method="post" id="solicitud-data-form">
         {% csrf_token %}
 
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label"><i class="fa-regular fa-calendar"></i> Fecha de Solicitud</label>
-            <div class="input-group">
-              {{ form.fecha_solicitud }}
-            </div>
-          </div>
-
           <div class="col-md-6 mb-3">
             <label class="form-label"><i class="fa-solid fa-clock"></i> {{ form.turno.label }}</label>
             <div class="input-group">
@@ -105,11 +97,20 @@
 
           <input type="hidden" name="operador" value="{{ request.user.id }}">
 
-          <div class="col-md-12 text-center mt-4">
-            <button type="submit" class="btn btn-success">
-              <i class="fas fa-save"></i> Guardar Registro
-            </button>
+          <div class="row justify-content-center mt-4">
+            <div class="col-md-4 d-grid gap-2">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Guardar Registro
+              </button>
+            </div>
+            
+            <div class="col-md-4 d-grid gap-2">
+              <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg text-white">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+            </div>
           </div>
+
         </div>
       </form>
     </div>
