@@ -33,6 +33,13 @@ class Turno(models.Model):
         return f"{self.name}"
     
 
+class EstadoRuta(models.Model):
+    estado = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"{self.estado}"
+
+
 class SolicitudRuta(models.Model):
     fecha_solicitud = models.DateTimeField(default=datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
     operador = models.CharField(max_length=10)
@@ -45,7 +52,7 @@ class SolicitudRuta(models.Model):
     ruta = models.ForeignKey(Ruta, on_delete=models.CASCADE)
     direccion = models.CharField(max_length=100)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    estado = models.BooleanField(default=True, blank=True)
+    estado = models.ForeignKey(EstadoRuta, on_delete=models.CASCADE, default=1) 
 
     def __str__(self):
         return f"{self.operador}" + f"{self.fecha_solicitud}"

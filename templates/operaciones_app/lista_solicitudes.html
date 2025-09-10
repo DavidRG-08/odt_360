@@ -4,40 +4,67 @@
 {% block content %}
 
 <div class="container mt-5">
+     {% if grupo_operaciones %}
     <h1 class="text-center text-white fw-bold mb-4">📋 Lista de solicitudes de ruta</h1>
 
     <!-- Formulario de filtro de fechas -->
     <form method="get" action="{% url 'lista_solicitudes' %}" class=" bg-light shadow-sm p-4 rounded-3">
         <div class="row g-3">
-            <div class="col-md-4">
-                <label for="start_date" class="form-label fw-bold">📅 Fecha inicio</label>
-                <input type="date" id="start_date" name="start_date" class="form-control"
-                    value="{{ request.GET.start_date }}">
+            <div class="col-md-3">
+                <label for="start_date_op" class="form-label fw-bold">📅 Fecha inicio</label>
+                <input type="date" id="start_date_op" name="start_date_op" class="form-control"
+                    value="{{ request.GET.start_date_op }}">
             </div>
-            <div class="col-md-4">
-                <label for="end_date" class="form-label fw-bold">📅 Fecha fin</label>
-                <input type="date" id="end_date" name="end_date" class="form-control"
-                    value="{{ request.GET.end_date }}">
+            <div class="col-md-3">
+                <label for="end_date_op" class="form-label fw-bold">📅 Fecha fin</label>
+                <input type="date" id="end_date_op" name="end_date_op" class="form-control"
+                    value="{{ request.GET.end_date_op }}">
+            </div>
+            
+            <div class="col-md-2">
+                <label for="estado" class="form-label fw-bold">✅ Estado</label>
+                <select name="estado" id="estado" class="form-control">
+                    <option value="">Todos</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.id }}" {% if estado.id|stringformat:"s" == selected_estado %}selected{% endif %}>
+                            {{ estado.estado }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="col-md-4 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="fas fa-filter"></i> Filtrar
+                    <i class="fas fa-filter"></i>
+                </button>
+                <button type="button" id="limpiarFiltros" class="btn btn-primary w-100 ms-2">
+                    <i class="fa-solid fa-filter-circle-xmark"></i>
                 </button>
                 <a href="{% url 'operaciones' %}" class="btn btn-primary w-100 ms-2">
-                    <i class="fas fa-arrow-left"></i> Volver
+                    <i class="fas fa-arrow-left"></i>
                 </a>
             </div>
         </div>
     </form>
 
     <!-- Botón de exportar a Excel -->
-    {% if grupo_operaciones %}
+
     <div class="text-end mt-3">
-        <a href="{% url 'reporte_rutas' %}?start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}"
+        <a href="{% url 'reporte_rutas' %}?start_date_op={{ request.GET.start_date_op }}&end_date_op={{ request.GET.end_date_op }}&estado={{ selected_estado }}"
             class="btn btn-grad">
             <i class="fas fa-file-excel"></i> Exportar a Excel
         </a>
     </div>
+
+
+    {% else %}
+        <div class="text-center mb-4">
+            <h1 class="text-white fw-bold mb-3">📋 Lista de solicitudes de ruta</h1>
+            <a href="{% url 'operaciones' %}" class="btn btn-primary btn-lg w-100 text-white">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+
+            
     {% endif %}
   
 
@@ -81,10 +108,12 @@
                                     </a>
                                 </td>
                                 <td>
-                                    {% if registro.estado %}
-                                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Activa</span>
+                                    {% if registro.estado.id == 1 %}
+                                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Activa</span>
+                                    {% elif registro.estado.id == 3 %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Finalizada</span>
                                     {% else %}
-                                    <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Cancelada</span>
+                                        <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Cancelada</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -115,14 +144,14 @@
             {% if page_obj_ope.has_previous %}
             <li class="page-item">
                 <a class="page-link"
-                    href="?page=1{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                    href="?page=1{% if start_date_op %}&start_date_op={{ start_date_op }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
                     aria-label="First">
                     <i class="fas fa-angle-double-left"></i>
                 </a>
             </li>
             <li class="page-item">
                 <a class="page-link"
-                    href="?page={{ page_obj_ope.previous_page_number }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                    href="?page={{ page_obj_ope.previous_page_number }}{% if start_date_op %}&start_date_op={{ start_date_op }}{% endif %}{% if end_date_op %}&end_date_op={{ end_date_op }}{% endif %}"
                     aria-label="Previous">
                     <i class="fas fa-angle-left"></i>
                 </a>
@@ -135,21 +164,21 @@
             {% elif num > page_obj_ope.number|add:-3 and num < page_obj_ope.number|add:3 %} 
             <li class="page-item"><a
                     class="page-link"
-                    href="?page={{ num }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">{{ num }}</a></li>
+                    href="?page={{ num }}{% if start_date_op %}&start_date_op={{ start_date_op }}{% endif %}{% if end_date_op %}&end_date_op={{ end_date_op }}{% endif %}">{{ num }}</a></li>
                 {% endif %}
                 {% endfor %}
 
                 {% if page_obj_ope.has_next %}
                 <li class="page-item">
                     <a class="page-link"
-                        href="?page={{ page_obj_ope.next_page_number }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                        href="?page={{ page_obj_ope.next_page_number }}{% if start_date_op %}&start_date_op={{ start_date_op }}{% endif %}{% if end_date_op %}&end_date_op={{ end_date_op }}{% endif %}"
                         aria-label="Next">
                         <i class="fas fa-angle-right"></i>
                     </a>
                 </li>
                 <li class="page-item">
                     <a class="page-link"
-                        href="?page={{ page_obj_ope.paginator.num_pages }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                        href="?page={{ page_obj_ope.paginator.num_pages }}{% if start_date_op %}&start_date_op={{ start_date_op }}{% endif %}{% if end_date_op %}&end_date_op={{ end_date_op }}{% endif %}"
                         aria-label="Last">
                         <i class="fas fa-angle-double-right"></i>
                     </a>
@@ -159,6 +188,16 @@
     </nav>
 </div>
 
-<script src="{% static 'js/scripts.js' %}"></script>
+<script>
+    document.getElementById('limpiarFiltros').onclick = function() {
+    // limpia los campos del formulario    
+    document.getElementById('start_date_op').value = '';
+    document.getElementById('end_date_op').value = '';
+    document.getElementById('estado').selectedIndex = 0;
+    // envia el formulario
+    this.closest('form').submit(); // Si el botón está dentro del formulario
+};
+
+</script>
 
 {% endblock %}

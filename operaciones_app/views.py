@@ -197,25 +197,29 @@ def crear_solicitud(request):
 @permission_required('operaciones_app.view_solicitudruta', raise_exception=True)
 def lista_solicitudes(request):
     registros = SolicitudRuta.objects.all().order_by('-fecha_solicitud')
+    estado_ruta = EstadoRuta.objects.all()
+    
+    estado_id = request.GET.get('estado')
+    if estado_id:
+        registros = registros.filter(estado__id=estado_id)
 
     # filtrar segun el grupo de usuario
     if not request.user.groups.filter(name='Operaciones').exists():
         registros = registros.filter(usuario=request.user)
-
-
+         
     # Rango de fechas
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    start_date_op = request.GET.get('start_date_op')
+    end_date_op = request.GET.get('end_date_op')
 
     # filtro en un rango de fechas
-    if start_date and end_date:
+    if start_date_op and end_date_op:
         try:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-            
+            start_date_op = datetime.strptime(start_date_op, '%Y-%m-%d').date()
+            end_date_op = datetime.strptime(end_date_op, '%Y-%m-%d').date()
+
             registros = registros.filter(
-                fecha_solicitud__gte = start_date, 
-                fecha_solicitud__lte = end_date
+                fecha_solicitud__gte=start_date_op,
+                fecha_solicitud__lte=end_date_op
             )
         except ValueError:
             pass
@@ -226,7 +230,13 @@ def lista_solicitudes(request):
 
     grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
 
-    return render(request, 'operaciones_app/lista_solicitudes.html', {'page_obj_ope': page_obj_ope, 'grupo_operaciones': grupo_operaciones})
+    return render(request, 'operaciones_app/lista_solicitudes.html', {
+        'page_obj_ope': page_obj_ope, 
+        'estados': estado_ruta,
+        'selected_estado': estado_id,
+        'start_date_op': start_date_op,
+        'end_date_op': end_date_op,
+        'grupo_operaciones': grupo_operaciones})
 
 
 # Obtiene los detalles de cada registro 
@@ -242,6 +252,7 @@ def obtener_detalles_solicitud(request, solicitud_id):
 @permission_required('operaciones_app.add_solicitudruta', raise_exception=True)
 def cancelar_solicitud(request, solicitud_id):
     solicitud = get_object_or_404(SolicitudRuta, id=solicitud_id)
+    nuevo_estado = EstadoRuta.objects.get(id=2)  # Estado "Cancelada"
 
     if request.method == 'POST':
         descripcion = request.POST.get("descripcion", "").strip()
@@ -251,7 +262,7 @@ def cancelar_solicitud(request, solicitud_id):
             return redirect("detalle_solicitud", solicitud_id= solicitud_id)
         
         # Cambia estado de la solicitud
-        solicitud.estado = False
+        solicitud.estado = nuevo_estado
         solicitud.save()
 
         # Guarda en la tabla de cancelaciones
