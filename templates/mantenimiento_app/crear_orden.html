@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_tags %}
 
 {% block title %}Crear orden de alistamiento{% endblock %}
 
@@ -38,12 +39,17 @@
                     
                     <form method="post">
                         {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.vehiculo.id_for_label }}" class="form-label">Vehículo:</label>
+                            {{ form.vehiculo|add_class:"form-select" }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.user.id_for_label }}" class="form-label">Técnico:</label>
+                            {{ form.user|add_class:"form-select" }}
+                        </div>
                         
                         <!-- Campos del formulario -->
-                        <div class="mb-3">
-                            {{ form.as_p }}
-                        </div>
-
+                        
                         <!-- Botón guardar -->
                         <div class="text-center">
                             <button type="submit" class="btn btn-success px-4 btn-lg">
