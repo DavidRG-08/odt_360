@@ -34,56 +34,56 @@
       <form method="post" id="solicitud-data-form">
         {% csrf_token %}
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-clock"></i> {{ form.turno.label }}</label>
             <div class="input-group">
               {{ form.turno }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-phone"></i> {{ form.telefono.label }}</label>
             <div class="input-group">
               {{ form.telefono }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-map-marker-alt"></i> {{ form.direccion.label }}</label>
             <div class="input-group">
               {{ form.direccion }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-regular fa-calendar"></i> {{ form.fecha_recogida.label }}</label>
             <div class="input-group">
               {{ form.fecha_recogida }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-city"></i> {{ form.localidad.label }}</label>
             <div class="d-flex align-items-center">
               {{ form.localidad }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-house-user"></i> {{ form.barrio.label }}</label>
             <div class="d-flex align-items-center">
               {{ form.barrio }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-bus"></i> {{ form.ruta.label }}</label>
             <div class="d-flex align-items-center">
               {{ form.ruta }}
             </div>
           </div>
 
-          <div class="col-md-6 mb-3">
+          <div class="col-md-12 mb-3">
             <label class="form-label"><i class="fa-solid fa-map"></i> {{ form.ubicacion.label }}</label>
             <div class="input-group">
               {{ form.ubicacion }}
