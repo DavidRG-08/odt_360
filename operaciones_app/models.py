@@ -62,6 +62,7 @@ class CancelacionRuta(models.Model):
     fecha_cancelacion = models.DateTimeField()
     operador = models.CharField(max_length=10)
     descripcion = models.TextField()
+    solicitud = models.ForeignKey(SolicitudRuta, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.operador}"

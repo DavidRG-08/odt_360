@@ -269,7 +269,8 @@ def cancelar_solicitud(request, solicitud_id):
         CancelacionRuta.objects.create(
             fecha_cancelacion = now(),
             operador = request.user.username,
-            descripcion = descripcion
+            descripcion = descripcion,
+            solicitud = solicitud
         )
 
         messages.success(request, "la ruta ha sido cancelada exitosamente")
