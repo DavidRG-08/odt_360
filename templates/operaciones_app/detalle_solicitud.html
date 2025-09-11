@@ -94,7 +94,7 @@
                     <i class="fas fa-arrow-left"></i> Cerrar
                 </a>
 
-                {% if grupo_operacion %}
+                {% if not grupo_operaciones %}
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                         data-bs-target="#cancelModal" {% if not solicitud.estado.id == 1 %}disabled{% endif %}>
                     {% if solicitud.estado.id == 2 %}

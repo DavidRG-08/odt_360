@@ -244,7 +244,8 @@ def lista_solicitudes(request):
 @permission_required('operaciones_app.view_solicitudruta', raise_exception=True)
 def obtener_detalles_solicitud(request, solicitud_id):
     solicitud = get_object_or_404(SolicitudRuta, id=solicitud_id)
-    return render(request, "operaciones_app/detalle_solicitud.html", {"solicitud": solicitud})
+    grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
+    return render(request, "operaciones_app/detalle_solicitud.html", {"solicitud": solicitud, "grupo_operaciones": grupo_operaciones})
 
 
 # Vista para crear cancelacion de ruta
@@ -275,9 +276,9 @@ def cancelar_solicitud(request, solicitud_id):
 
         messages.success(request, "la ruta ha sido cancelada exitosamente")
 
-        grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
 
-        return redirect('lista_solicitudes', {'grupo_operaciones': grupo_operaciones}) # Redirige al listado de solicitudes
+
+        return redirect('lista_solicitudes') # Redirige al listado de solicitudes
 
 
 @login_required
