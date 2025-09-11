@@ -73,9 +73,9 @@
                             {% if solicitud.estado.id == 1 %}
                                 <span class="badge bg-success"><i class="fas fa-check-circle"></i> Activa</span>
                             {% elif solicitud.estado.id == 2 %}
-                                <span class="badge bg-warning"><i class="fas fa-exclamation-circle"></i> Cancelada</span>
+                                <span class="badge bg-danger"><i class="fas fa-exclamation-circle"></i> Cancelada</span>
                             {% else %}
-                                <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Finalizada</span>
+                                <span class="badge bg-secondary"><i class="fas fa-times-circle"></i> Finalizada</span>
                             {% endif %}
                         </div>
                     </div>
@@ -98,9 +98,9 @@
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                         data-bs-target="#cancelModal" {% if not solicitud.estado.id == 1 %}disabled{% endif %}>
                     {% if solicitud.estado.id == 2 %}
-                        <i class="fas fa-ban"></i> Cancelar Ruta
-                    {% else %}
                         <i class="fas fa-ban"></i> Ruta Cancelada
+                    {% elif solicitud.estado.id == 1 %}
+                        <i class="fas fa-ban"></i> Cancelar Ruta
                     {% endif %}
                 </button>
                 {% endif %}
