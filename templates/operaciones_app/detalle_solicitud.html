@@ -70,10 +70,12 @@
                     <div class="row">
                         <div class="col-md-4 fw-bold"><i class="fas fa-info-circle"></i> Estado de la solicitud:</div>
                         <div class="col-md-8">
-                            {% if solicitud.estado %}
+                            {% if solicitud.estado.id == 1 %}
                                 <span class="badge bg-success"><i class="fas fa-check-circle"></i> Activa</span>
+                            {% elif solicitud.estado.id == 2 %}
+                                <span class="badge bg-warning"><i class="fas fa-exclamation-circle"></i> Cancelada</span>
                             {% else %}
-                                <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Cancelado</span>
+                                <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Finalizada</span>
                             {% endif %}
                         </div>
                     </div>
@@ -92,14 +94,16 @@
                     <i class="fas fa-arrow-left"></i> Cerrar
                 </a>
 
+                {% if grupo_operacion %}
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                        data-bs-target="#cancelModal" {% if not solicitud.estado %}disabled{% endif %}>
-                    {% if solicitud.estado %}
+                        data-bs-target="#cancelModal" {% if not solicitud.estado.id == 1 %}disabled{% endif %}>
+                    {% if solicitud.estado.id == 2 %}
                         <i class="fas fa-ban"></i> Cancelar Ruta
                     {% else %}
                         <i class="fas fa-ban"></i> Ruta Cancelada
                     {% endif %}
                 </button>
+                {% endif %}
             </div>
         </div>
     </div>

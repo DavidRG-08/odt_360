@@ -274,9 +274,11 @@ def cancelar_solicitud(request, solicitud_id):
         )
 
         messages.success(request, "la ruta ha sido cancelada exitosamente")
-    
-        return redirect('lista_solicitudes') # Redirige al listado de solicitudes
-    
+
+        grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
+
+        return redirect('lista_solicitudes', {'grupo_operaciones': grupo_operaciones}) # Redirige al listado de solicitudes
+
 
 @login_required
 def generate_report_rutas(request):
