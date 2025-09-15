@@ -161,12 +161,14 @@ def agregar_ot(request, pk):
 
 # Ver detalle de cada orden
 @login_required
+@permission_required('mantenimiento_app.view_ordenalistamiento', raise_exception=True)
 def visualizar_orden(request, id):
     orden = get_object_or_404(OrdenAlistamiento, id=id)
     return render(request, "mantenimiento_app/visualizar_orden.html", {"orden": orden})
 
 
 @login_required
+@permission_required('mantenimiento_app.view_ordenalistamiento', raise_exception=True)
 def detalle_orden(request, orden_id):
     etapas = EtapaInspeccion.objects.filter(orden_id=orden_id)
     if not etapas.exists():
@@ -203,6 +205,7 @@ def generar_reporte_ordenes(request):
 
 
 @csrf_exempt
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def iniciar_orden(request, orden_id):
     """ Marca el inicio de la orden con la fecha y hora actual """
     if request.method == "POST":
@@ -234,6 +237,7 @@ def iniciar_orden(request, orden_id):
     
 
 @csrf_exempt
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def iniciar_inspeccion_etapa(request, orden_id, etapa_nombre):
     """Inicia la inspección de la etapa especificada"""
     if request.method == "POST":
@@ -261,6 +265,7 @@ def iniciar_inspeccion_etapa(request, orden_id, etapa_nombre):
 
 
 @csrf_exempt
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def actualizar_observaciones(request):
     """ Actualiza las observaciones de una inspección """
     if request.method == "POST":
@@ -272,6 +277,7 @@ def actualizar_observaciones(request):
 
 
 @csrf_exempt
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def finalizar_item(request, item_id):
     """ Marca la finalización del item con la fecha y hora actual """
     if request.method == "POST":
@@ -301,6 +307,7 @@ def finalizar_item(request, item_id):
 
 # detalle orden mecanica
 @login_required
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def trabajar_orden_mecanica(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 1)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
@@ -312,6 +319,7 @@ def trabajar_orden_mecanica(request, orden_id):
 
 # detalle orden externa
 @login_required
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def trabajar_orden_externa(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 2)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
@@ -322,6 +330,7 @@ def trabajar_orden_externa(request, orden_id):
 
 # detalle orden interna
 @login_required
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def trabajar_orden_interna(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 3)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
@@ -332,6 +341,7 @@ def trabajar_orden_interna(request, orden_id):
 
 # detalle orden electrica
 @login_required
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def trabajar_orden_electrica(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 4)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
