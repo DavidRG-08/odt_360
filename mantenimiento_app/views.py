@@ -19,7 +19,6 @@ from io import TextIOWrapper
 
 # Modulo Mantenimiento
 @login_required
-# @permission_required('mantenimiento_app', raise_exception=True)
 def mantenimiento(request):
     return render(request, 'mantenimiento_app/mantenimiento.html')
 
@@ -47,6 +46,7 @@ def crear_orden(request):
 
 
 # Crear orden masiva
+@login_required
 def cargar_csv(request):
     form = CsvUploadForm()
 
@@ -106,6 +106,9 @@ def consultar_ordenes(request):
     if estado_id:
         ordenes = ordenes.filter(estado_id=estado_id)
 
+    # filtrar segun el grupo de usuario
+    if not request.user.groups.filter(name='Mtto_admin').exists():
+        ordenes = ordenes.filter(user=request.user)
 
     # Rango de fechas
     start_date = request.GET.get('start_date')
@@ -137,12 +140,33 @@ def consultar_ordenes(request):
         })
 
 
+@login_required
+@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+def agregar_ot(request, pk):
+    instancia = get_object_or_404(OrdenAlistamiento, pk=pk)
+    if request.method == 'POST':
+        form = FormAgregarOt(request.POST, instance=instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Orden de trabajo agregada con exito!")
+            return redirect('consultar_ordenes')
+    
+    else:
+        form = FormAgregarOt(instance=instancia)
+    
+    return render(request, 'mantenimiento_app/agregar_ot.html', {'form': form})
+
+
+
+
 # Ver detalle de cada orden
+@login_required
 def visualizar_orden(request, id):
     orden = get_object_or_404(OrdenAlistamiento, id=id)
     return render(request, "mantenimiento_app/visualizar_orden.html", {"orden": orden})
 
 
+@login_required
 def detalle_orden(request, orden_id):
     etapas = EtapaInspeccion.objects.filter(orden_id=orden_id)
     if not etapas.exists():
@@ -151,9 +175,10 @@ def detalle_orden(request, orden_id):
 
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
+
     return render(request, "mantenimiento_app/detalle_orden.html", {"etapas": etapas, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
-
+@login_required
 def generar_reporte_ordenes(request):
     # Obtiene los filtros de fecha
     start_date = request.GET.get('start_date')
@@ -183,17 +208,31 @@ def iniciar_orden(request, orden_id):
     if request.method == "POST":
         orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
         estado_proceso = Estado.objects.get(nombre="En proceso")
+        tecnico = orden.user
+
+        # Valida si el tecnico tiene una orden abierta excepto la actual
+        otra_orden = OrdenAlistamiento.objects.filter(
+            user = tecnico,
+            estado__nombre = "En proceso"
+        ).exclude(id=orden_id).exists()
+
+        if otra_orden:
+            return JsonResponse({
+                "success": False,
+                "error": "Ya se encuentra una orden en proceso, debe finalizar antes de comenzar con una nueva orden"
+            })
+
         if not orden.fecha_inicio:
             orden.fecha_inicio = now()
             orden.estado = estado_proceso 
             orden.save()
-            # cambiar estado de la etapa a "En Proceso"
-            # EtapaInspeccion.objects.filter(orden_id=orden_id).update(estado=estado_proceso)
 
-        return JsonResponse({"fecha_inicio": orden.fecha_inicio.strftime("%Y-%m-%d %H:%M:%S")})
+        return JsonResponse({
+            "success": True,
+            "fecha_inicio": orden.fecha_inicio.strftime("%Y-%m-%d %H:%M:%S")
+        })
     
 
-@csrf_exempt
 @csrf_exempt
 def iniciar_inspeccion_etapa(request, orden_id, etapa_nombre):
     """Inicia la inspección de la etapa especificada"""
@@ -261,7 +300,7 @@ def finalizar_item(request, item_id):
 
 
 # detalle orden mecanica
-
+@login_required
 def trabajar_orden_mecanica(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 1)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
@@ -271,6 +310,8 @@ def trabajar_orden_mecanica(request, orden_id):
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
 
+# detalle orden externa
+@login_required
 def trabajar_orden_externa(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 2)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
@@ -279,6 +320,8 @@ def trabajar_orden_externa(request, orden_id):
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
 
+# detalle orden interna
+@login_required
 def trabajar_orden_interna(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 3)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
@@ -287,6 +330,8 @@ def trabajar_orden_interna(request, orden_id):
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
 
+# detalle orden electrica
+@login_required
 def trabajar_orden_electrica(request, orden_id):
     inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 4)
     orden = get_object_or_404(OrdenAlistamiento, id=orden_id)

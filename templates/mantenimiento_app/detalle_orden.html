@@ -103,9 +103,13 @@ $(document).ready(function () {
     // Iniciar orden
     $("#btnIniciarOrden").click(function () {
         $.post("{% url 'iniciar_orden' orden.id %}", function (data) {
-            $("#fechaInicio").text(data.fecha_inicio);
-            $("#btnIniciarOrden").prop("disabled", true);
-            location.reload();
+            if (data.success) {
+                $("#fechaInicio").text(data.fecha_inicio);
+                $("#btnIniciarOrden").prop("disabled", true);
+                location.reload();
+            } else {
+                alert(data.error);
+            }
         });
     });
 

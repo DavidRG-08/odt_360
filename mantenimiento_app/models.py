@@ -36,6 +36,7 @@ class OrdenAlistamiento(models.Model):
     fecha_fin = models.DateTimeField(blank=True, null=True)
     tiempo_alistamiento = models.IntegerField(blank=True, null=True)
     novedades = models.TextField(blank=True, null=True)
+    orden_trabajo = models.CharField(max_length=20, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         #Calcular duracion si ambos campos estan completos

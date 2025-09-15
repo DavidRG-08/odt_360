@@ -31,6 +31,16 @@ class CsvUploadForm(forms.Form):
     archivo_csv = forms.FileField()
 
 
+class FormAgregarOt(forms.ModelForm):
+    class Meta:
+        model = OrdenAlistamiento
+        fields = ['orden_trabajo']
+        labels = {
+            'orden_trabajo': 'Orden de Trabajo'
+        }
+
+
+
 class CrearVehiculoForm(forms.ModelForm):
     class Meta:
         model = Vehiculo

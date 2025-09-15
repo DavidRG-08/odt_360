@@ -68,6 +68,7 @@
                 <thead style="position: sticky; top: 0; background-color: #0d6efd; color: white;">
                     <tr>
                         <th class="fw-bold text-center">No Orden</th>
+                        <th class="fw-bold text-center">Tecnico</th>
                         <th class="fw-bold text-center">Fecha Orden</th>
                         <th class="fw-bold text-center">Movil</th>
                         <th class="fw-bold text-center">Estado</th>
@@ -77,7 +78,12 @@
                 <tbody>
                     {% for orden in page_obj_ord %}
                     <tr class="text-center">
-                        <td>{{ orden.id }}</td>
+                        <td>
+                            <a href="{% url 'agregar_ot' orden.id %}" class="text-decoration-none fw-bold">
+                                {{ orden.id }}
+                            </a>
+                        </td>
+                        <td>{{ orden.user }}</td>
                         <td>{{ orden.fecha_creacion_orden }}</td>
                         <td>{{ orden.vehiculo }}</td>
                         <td>
