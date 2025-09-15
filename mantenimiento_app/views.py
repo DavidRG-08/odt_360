@@ -107,7 +107,7 @@ def consultar_ordenes(request):
         ordenes = ordenes.filter(estado_id=estado_id)
 
     # filtrar segun el grupo de usuario
-    if not request.user.groups.filter(name='Mtto_admin').exists():
+    if not request.user.groups.filter(name='Mtto_admin').exists() and not request.user.groups.filter(name='Mtto_view').exists():
         ordenes = ordenes.filter(user=request.user)
 
     # Rango de fechas
