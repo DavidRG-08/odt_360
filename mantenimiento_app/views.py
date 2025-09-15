@@ -141,7 +141,7 @@ def consultar_ordenes(request):
 
 
 @login_required
-@permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@permission_required('mantenimiento_app.add_ordenalistamiento', raise_exception=True)
 def agregar_ot(request, pk):
     instancia = get_object_or_404(OrdenAlistamiento, pk=pk)
     if request.method == 'POST':
