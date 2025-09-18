@@ -5,107 +5,120 @@
 
 {% block content %}
 
-<div class="container">
-    <div class="card">
-        <h2>Crear operador</h2>
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4 p-4">
+        <h2 class="text-center text-secondary mb-4">Crear operador</h2>
 
         <!-- Mensajes de éxito o error -->
         {% if messages %}
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        <div class="alert alert-{{ message.tags }} text-center">{{ message }}</div>
         {% endfor %}
         {% endif %}
 
-        <form method="post">
+        <form method="post" novalidate>
             {% csrf_token %}
 
-            <!-- Nombre de usuario -->
+            <!-- Código de operador -->
             <div class="mb-3">
-                <label class="form-label">Codigo de operador</label>
-                {{ form.username }}
+                <label class="form-label fw-semibold">Código de operador</label>
+                <input type="text" name="{{ form.username.name }}" 
+                       value="{{ form.username.value|default_if_none:'' }}" 
+                       class="form-control form-control-lg {% if form.username.errors %}is-invalid{% endif %}">
                 {% if form.username.errors %}
-                <small class="text-danger">{{ form.username.errors.0 }}</small>
+                <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
                 {% endif %}
             </div>
 
             <!-- Nombre y Apellido -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Nombre</label>
-                    {{ form.first_name }}
+                    <label class="form-label fw-semibold">Nombre</label>
+                    <input type="text" name="{{ form.first_name.name }}" 
+                           value="{{ form.first_name.value|default_if_none:'' }}" 
+                           class="form-control form-control-lg {% if form.first_name.errors %}is-invalid{% endif %}">
                     {% if form.first_name.errors %}
-                    <small class="text-danger">{{ form.first_name.errors.0 }}</small>
+                    <div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>
                     {% endif %}
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Apellido</label>
-                    {{ form.last_name }}
+                    <label class="form-label fw-semibold">Apellido</label>
+                    <input type="text" name="{{ form.last_name.name }}" 
+                           value="{{ form.last_name.value|default_if_none:'' }}" 
+                           class="form-control form-control-lg {% if form.last_name.errors %}is-invalid{% endif %}">
                     {% if form.last_name.errors %}
-                    <small class="text-danger">{{ form.last_name.errors.0 }}</small>
+                    <div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Correo electrónico -->
             <div class="mb-3">
-                <label class="form-label">Correo electrónico</label>
-                {{ form.email }}
+                <label class="form-label fw-semibold">Correo electrónico</label>
+                <input type="email" name="{{ form.email.name }}" 
+                       value="{{ form.email.value|default_if_none:'' }}" 
+                       class="form-control form-control-lg {% if form.email.errors %}is-invalid{% endif %}">
                 {% if form.email.errors %}
-                <small class="text-danger">{{ form.email.errors.0 }}</small>
+                <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
                 {% endif %}
             </div>
 
-            <!-- Contraseña y Confirmación -->
+            <!-- Contraseña -->
             <div class="mb-3">
-                <label class="form-label">Contraseña</label>
-                {{ form.password1 }}
+                <label class="form-label fw-semibold">Contraseña</label>
+                <input type="password" name="{{ form.password1.name }}" 
+                       class="form-control form-control-lg {% if form.password1.errors %}is-invalid{% endif %}">
                 <small class="form-text text-muted">Mínimo 8 caracteres.</small>
                 {% if form.password1.errors %}
-                <small class="text-danger">{{ form.password1.errors.0 }}</small>
+                <div class="invalid-feedback">{{ form.password1.errors.0 }}</div>
                 {% endif %}
             </div>
 
+            <!-- Confirmar contraseña -->
             <div class="mb-3">
-                <label class="form-label">Confirmar contraseña</label>
-                {{ form.password2 }}
+                <label class="form-label fw-semibold">Confirmar contraseña</label>
+                <input type="password" name="{{ form.password2.name }}" 
+                       class="form-control form-control-lg {% if form.password2.errors %}is-invalid{% endif %}">
                 {% if form.password2.errors %}
-                <small class="text-danger">{{ form.password2.errors.0 }}</small>
+                <div class="invalid-feedback">{{ form.password2.errors.0 }}</div>
                 {% endif %}
             </div>
 
             <!-- Teléfono -->
             <div class="mb-3">
-                <label class="form-label">Teléfono</label>
-                {{ form.telefono }}
+                <label class="form-label fw-semibold">Teléfono</label>
+                <input type="text" name="{{ form.telefono.name }}" 
+                       value="{{ form.telefono.value|default_if_none:'' }}" 
+                       class="form-control form-control-lg {% if form.telefono.errors %}is-invalid{% endif %}">
                 {% if form.telefono.errors %}
-                <small class="text-danger">{{ form.telefono.errors.0 }}</small>
+                <div class="invalid-feedback">{{ form.telefono.errors.0 }}</div>
                 {% endif %}
             </div>
 
             <!-- Dirección -->
             <div class="mb-3">
-                <label class="form-label">Dirección</label>
-                {{ form.direccion }}
+                <label class="form-label fw-semibold">Dirección</label>
+                <input type="text" name="{{ form.direccion.name }}" 
+                       value="{{ form.direccion.value|default_if_none:'' }}" 
+                       class="form-control form-control-lg {% if form.direccion.errors %}is-invalid{% endif %}">
                 {% if form.direccion.errors %}
-                <small class="text-danger">{{ form.direccion.errors.0 }}</small>
+                <div class="invalid-feedback">{{ form.direccion.errors.0 }}</div>
                 {% endif %}
             </div>
 
-            <!-- Botón de Registro -->
-             <div class="row justify-content-center mt-4">
+            <!-- Botones -->
+            <div class="row justify-content-center mt-4">
                 <div class="col-md-4 d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg mt-2">
+                    <button type="submit" class="btn btn-primary btn-lg shadow-sm">
                         <i class="fas fa-save"></i> Registrar
                     </button>
                 </div>
                 <div class="col-md-4 d-grid gap-2">
-                    <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg mt-2 text-white">
+                    <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg shadow-sm">
                         <i class="fas fa-arrow-left"></i> Volver
                     </a>
                 </div>
             </div>
-
-
 
         </form>
     </div>
