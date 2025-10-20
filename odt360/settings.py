@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'operaciones_app',
     'mantenimiento_app',
-    'rh_app',
+    # 'rh_app',
 ]
 
 # url pagina de inicio de sesion

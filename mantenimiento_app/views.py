@@ -98,7 +98,7 @@ def cargar_csv(request):
 @login_required
 @permission_required('mantenimiento_app.view_ordenalistamiento', raise_exception=True)
 def consultar_ordenes(request):
-    ordenes = OrdenAlistamiento.objects.all().order_by('-fecha_creacion_orden')
+    ordenes = OrdenAlistamiento.objects.all().order_by('-id')
     estados = Estado.objects.all()
 
     # Filtrar por estado

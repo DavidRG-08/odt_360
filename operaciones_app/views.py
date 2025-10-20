@@ -189,7 +189,7 @@ def crear_solicitud(request):
     else:
         form = CrearSolicitudForm
     
-    return render(request, 'operaciones_app/Crear_solicitud.html', {'form': form})
+    return render(request, 'operaciones_app/crear_solicitud.html', {'form': form})
 
 
 # Vista para consultar los registros creados por los operadores
@@ -204,7 +204,7 @@ def lista_solicitudes(request):
         registros = registros.filter(estado__id=estado_id)
 
     # filtrar segun el grupo de usuario
-    if not request.user.groups.filter(name='Operaciones').exists():
+    if not request.user.groups.filter(name='Operaciones').exists() and not request.user.groups.filter(name='operaciones_view').exists():
         registros = registros.filter(usuario=request.user)
          
     # Rango de fechas
@@ -229,6 +229,7 @@ def lista_solicitudes(request):
     page_obj_ope = paginator.get_page(page_number)
 
     grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
+    grupo_view_operaciones = request.user.groups.filter(name='operaciones_view').exists()
 
     return render(request, 'operaciones_app/lista_solicitudes.html', {
         'page_obj_ope': page_obj_ope, 
@@ -236,7 +237,10 @@ def lista_solicitudes(request):
         'selected_estado': estado_id,
         'start_date_op': start_date_op,
         'end_date_op': end_date_op,
-        'grupo_operaciones': grupo_operaciones})
+        'grupo_operaciones': grupo_operaciones,
+        'grupo_view_operaciones': grupo_view_operaciones
+        }
+    )
 
 
 # Obtiene los detalles de cada registro 

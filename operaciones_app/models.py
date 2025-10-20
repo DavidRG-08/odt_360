@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -41,7 +41,7 @@ class EstadoRuta(models.Model):
 
 
 class SolicitudRuta(models.Model):
-    fecha_solicitud = models.DateTimeField(default=datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+    fecha_solicitud = models.DateTimeField(default=timezone.now)
     operador = models.CharField(max_length=10)
     telefono = models.CharField(max_length=10)
     turno = models.ForeignKey(Turno, on_delete=models.CASCADE)

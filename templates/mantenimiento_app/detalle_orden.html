@@ -49,26 +49,26 @@
                         <div class="col-md-4 text-end">
                             {% if etapa.etapa.nombre == 'Mecanica' %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                        {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
                                     <i class="fas fa-lock"></i> Iniciar inspección
                                 </button>
 
                             {% elif etapa.etapa.nombre == 'Carroceria Externa' %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                    {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                    {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
                                     <i class="fas fa-lock"></i> Iniciar inspección
                                 </button>
                                 
 
                             {% elif etapa.etapa.nombre == 'Carroceria Interna' %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                    {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                    {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
                                     <i class="fas fa-lock"></i> Iniciar inspección
                                 </button>
                                 
                             {% else %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio %}disabled{% endif %}>
+                                        {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
                                         <i class="fas fa-lock"></i> Iniciar inspección
                                 </button>
                                 
