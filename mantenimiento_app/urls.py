@@ -9,7 +9,8 @@ urlpatterns = [
     path('reporte_ordenes/', views.generar_reporte_ordenes, name='reporte_ordenes'),
     path('ver_orden/<int:id>', views.visualizar_orden, name='ver_orden'),
     path('detalle_orden/<int:orden_id>', views.detalle_orden, name='detalle_orden'),
-    path('agregar_ot/<int:pk>', views.agregar_ot, name='agregar_ot'),
+    path('modificar_orden/<int:pk>', views.agregar_ot, name='modificar_orden'),
+
 
 
     path('trabaja_orden_mec/<int:orden_id>', views.trabajar_orden_mecanica, name='trabaja_orden_mec'),

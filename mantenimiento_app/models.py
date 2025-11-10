@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 
@@ -31,7 +30,7 @@ class OrdenAlistamiento(models.Model):
     vehiculo = models.ForeignKey(Vehiculo,on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE, default=1)
-    fecha_creacion_orden = models.DateField(default=datetime.today().strftime('%Y-%m-%d'))
+    fecha_creacion_orden = models.DateField(default=date.today)
     fecha_inicio = models.DateTimeField(blank=True, null=True)
     fecha_fin = models.DateTimeField(blank=True, null=True)
     tiempo_alistamiento = models.IntegerField(blank=True, null=True)

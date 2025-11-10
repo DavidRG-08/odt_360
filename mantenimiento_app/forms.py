@@ -31,14 +31,25 @@ class CsvUploadForm(forms.Form):
     archivo_csv = forms.FileField()
 
 
-class FormAgregarOt(forms.ModelForm):
+class FormUpdateOrden(forms.ModelForm):
+
+    user = forms.ModelChoiceField(
+        queryset=User.objects.filter(groups__name='Tecnicos_mtto'),
+        label='Tecnico',
+        widget=forms.Select,
+    )
     class Meta:
         model = OrdenAlistamiento
-        fields = ['orden_trabajo']
+        fields = [
+            'user',
+            'fecha_creacion_orden',
+            'orden_trabajo',
+        ]
         labels = {
+            'user': 'Técnico',
+            'fecha_creacion_orden': 'Fecha de Creación',
             'orden_trabajo': 'Orden de Trabajo'
         }
-
 
 
 class CrearVehiculoForm(forms.ModelForm):

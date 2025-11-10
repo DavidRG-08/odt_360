@@ -249,7 +249,9 @@ def lista_solicitudes(request):
 def obtener_detalles_solicitud(request, solicitud_id):
     solicitud = get_object_or_404(SolicitudRuta, id=solicitud_id)
     grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
-    return render(request, "operaciones_app/detalle_solicitud.html", {"solicitud": solicitud, "grupo_operaciones": grupo_operaciones})
+    grupo_view_operaciones = request.user.groups.filter(name='operaciones_view').exists()
+
+    return render(request, "operaciones_app/detalle_solicitud.html", {"solicitud": solicitud, "grupo_operaciones": grupo_operaciones, "grupo_view_operaciones": grupo_view_operaciones})
 
 
 # Vista para crear cancelacion de ruta
@@ -288,14 +290,25 @@ def cancelar_solicitud(request, solicitud_id):
 @login_required
 def generate_report_rutas(request):
     # Obtener los filtros de fecha
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    start_date_op = request.GET.get('start_date_op')
+    end_date_op = request.GET.get('end_date_op')
+    estado_id = request.GET.get('estado')
     
     # Consulta para filtrar los registros
     queryset = SolicitudRuta.objects.all()
-    if start_date and end_date:
-        queryset = queryset.filter(fecha_solicitud__gte = start_date, fecha_solicitud__lte = end_date)
-        
+
+    if start_date_op and end_date_op:
+        queryset = queryset.filter(
+            fecha_solicitud__date__gte=parse_date(start_date_op),
+            fecha_solicitud__date__lte=parse_date(end_date_op)
+        )
+    
+    try:
+        if estado_id:
+            queryset = queryset.filter(estado_id=estado_id)
+    except ValueError:
+        pass
+
     # Generar el reporte solo con los registros filtrados
     report = ReporterExcelRutas(queryset)
     return report.get(request)

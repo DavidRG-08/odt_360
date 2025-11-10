@@ -3,6 +3,17 @@
 <html lang="es">
 
 <head>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N2R0JJMQ7D"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-N2R0JJMQ7D');
+    </script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Title -->
@@ -21,6 +32,7 @@
     {% endblock %}
 
 </head>
+
 
 <body>
     {% include 'partials/menu.html' %}

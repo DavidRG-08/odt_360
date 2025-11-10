@@ -79,7 +79,7 @@
                     {% for orden in page_obj_ord %}
                     <tr class="text-center">
                         <td>
-                            <a href="{% url 'agregar_ot' orden.id %}" class="text-decoration-none fw-bold">
+                            <a href="{% url 'modificar_orden' orden.id %}" class="text-decoration-none fw-bold">
                                 {{ orden.id }}
                             </a>
                         </td>

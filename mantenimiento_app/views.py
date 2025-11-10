@@ -145,15 +145,16 @@ def consultar_ordenes(request):
 def agregar_ot(request, pk):
     instancia = get_object_or_404(OrdenAlistamiento, pk=pk)
     if request.method == 'POST':
-        form = FormAgregarOt(request.POST, instance=instancia)
+        form = FormUpdateOrden(request.POST, instance=instancia)
         if form.is_valid():
             form.save()
             messages.success(request, "Orden de trabajo agregada con exito!")
             return redirect('consultar_ordenes')
     
     else:
-        form = FormAgregarOt(instance=instancia)
-    
+        form = FormUpdateOrden(instance=instancia)
+
+
     return render(request, 'mantenimiento_app/agregar_ot.html', {'form': form})
 
 
@@ -368,6 +369,7 @@ def ver_detalle_etapas(request):
             "items_por_etapa": items_por_etapa
         }
     )
+
 
 
 @login_required
