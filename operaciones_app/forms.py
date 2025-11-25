@@ -72,3 +72,67 @@ class CustomUserCreationForm(UserCreationForm):
             )
             return user
 
+
+
+# class CrearOrdenChequeoForm(forms.ModelForm):
+#     class Meta:
+#         model = OrdenFlota
+#         fields = '__all__'
+#         labels = {
+#             'numero_bus': 'Movil',
+#         }
+    
+
+
+# class AgregarTurnoInspeccionForm(forms.ModelForm):
+#     class Meta:
+#         model = TurnoFlota
+#         exclude = ['codigo_operador', 'nombre_operador' , 'orden']
+#         fields = ['turno', 'ruta', 'tabla', 'instante', 'km', 'hora', 'lugar']
+#         widgets = {
+#             'turno': forms.Select(attrs={'class': 'form-control'}),
+#             'ruta': forms.Select(attrs={'class': 'form-control'}),
+#             'tabla': forms.TextInput(attrs={'class': 'form-control'}),
+#             'instante': forms.Select(attrs={'class': 'form-control'}),
+#             'km': forms.NumberInput(attrs={'class': 'form-control'}),
+#             'hora': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+#             'lugar': forms.TextInput(attrs={'class': 'form-control'}),
+#         }
+    
+
+# class DetalleChequeoForm(forms.ModelForm):
+#     class Meta:
+#         model = detalle_chequeo
+#         fields = ['etapa', 'item', 'estado_item', 'observaciones']
+#         widgets = {
+#             'etapa': forms.Select(attrs={'class': 'form-control'}),
+#             'item': forms.Select(attrs={'class': 'form-control'}),
+#             'estado_item': forms.RadioSelect(choices=[
+#                 ('OK', '✓ OK'),
+#                 ('P', '⚠ Pendiente'),
+#             ]),
+#             'observaciones': forms.Textarea(attrs={
+#                 'class': 'form-control',
+#                 'rows': 3,
+#                 'placeholder': 'Ingresa observaciones si es necesario'
+#             }),
+#         }
+
+# class InspeccionTurnoForm(forms.ModelForm):
+#     class Meta:
+#         model = Inspeccion
+#         fields = ['salida', 'hora', 'observaciones', 'firma']
+#         widgets = {
+#             'salida': forms.RadioSelect(choices=[
+#                 ('P', 'Primera Salida'),
+#                 ('S', 'Segunda Salida'),
+#                 ('T', 'Tercera Salida'),
+#             ]),
+#             'hora': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+#             'observaciones': forms.Textarea(attrs={
+#                 'class': 'form-control',
+#                 'rows': 3,
+#                 'placeholder': 'Observaciones generales de la inspección'
+#             }),
+#             'firma': forms.TextInput(attrs={'class': 'form-control'}),
+#         }

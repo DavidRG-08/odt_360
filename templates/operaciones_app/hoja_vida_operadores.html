@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Hoja de vida operadores{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hv_operadores.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-main">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>📋 Dashboard de Operadores</h1>
+        <p class="welcome-text">Bienvenido al panel de control de CV Operadores</p>
+    </div>
+
+    <!-- Main Card with PowerBI -->
+    <div class="main-card">
+        <div class="card-header">
+            <h4>Hoja de Vida - Interventoría</h4>
+        </div>
+        <div class="card-body">
+            <div class="powerbi-container">
+                <iframe
+                    title="HOJA_DE_VIDA_INTERVENTORIA"
+                    src="https://app.powerbi.com/view?r=eyJrIjoiOGJkODk5ZTctNGM5Yy00YWJlLTk1NjMtY2EzMTE0ZGFkMGQ2IiwidCI6ImFmYWRlNjcyLTUwNjMtNGI5Yi1iYWFmLTg0NWMzZmZkZGIzMCJ9"
+                    frameborder="0"
+                    allowfullscreen="true">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Volver Flotante -->
+<a href="{% url 'operaciones' %}" class="btn-volver" title="Volver">
+    <i class="fas fa-arrow-left"></i>
+</a>
+
+{% endblock %}

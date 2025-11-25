@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate, logout, login as auth_login
@@ -5,14 +6,13 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.contrib import messages
 from datetime import datetime
-from .forms import LoginViewForm, CrearSolicitudForm
+from .forms import *
 from .models import *
 from .reports import ReporterExcelRutas
-from .forms import CustomUserCreationForm
 from django.core.exceptions import PermissionDenied
 from django.utils.timezone import now
 from django.utils.dateparse import parse_date
-
+from utils import obtener_modulos_visibles
 
 # Vista para login de usuario
 def login_view(request):    
@@ -153,7 +153,30 @@ def detalle_operador(request, id):
 # Pagina principal 
 @login_required
 def index(request):
-    return render(request, 'index.html')
+    MODULOS_INDEX = [
+        {
+            'nombre': 'Módulo de Operaciones',
+            'url': 'operaciones',
+            'icono': 'fa-cogs',
+            'grupos': ['Operaciones', 'Operador', 'operaciones_view']
+        },
+        {
+            'nombre': 'Panel Control CV',
+            'url': 'operadores_cv',
+            'icono': 'fa-book',
+            'grupos': ['TM_operaciones']
+        },
+        {
+            'nombre': 'Módulo de Mantenimiento',
+            'url': 'mantenimiento',
+            'icono': 'fa-wrench',
+            'grupos': ['Mtto_admin', 'Mtto_view', 'Tecnicos_mtto']
+        },
+    ]
+
+    modulos = obtener_modulos_visibles(MODULOS_INDEX, request.user)
+
+    return render(request, 'index.html', {'modulos': modulos})
 
 # pagina 403
 @login_required
@@ -161,10 +184,62 @@ def custom_permission_denied_view(request, exception=None):
     context = {'mensaje': 'No tienes permisos para ver esta página.'}
     return render(request, '403.html', context, status=403)
 
+
 # Modulo Operaciones 
 @login_required 
 def operaciones(request):
-    return render(request, 'operaciones_app/operaciones.html')
+    MODULOS_OPERACIONES = [
+        {
+            'nombre': 'Crear Operador',
+            'url': 'crear_operador',
+            'icono': 'fa-user-plus',
+            'grupos': ['Operaciones', 'Administrador']
+        },
+        {
+            'nombre': 'Lista operadores',
+            'url': 'lista_operadores',
+            'icono': 'fa-users',
+            'grupos': ['Operaciones', 'Administrador']
+        },
+        {
+            'nombre': 'Consultar rutas',
+            'url': 'lista_solicitudes',
+            'icono': 'fa-road',
+            'grupos': ['Administrador', 'Operaciones', 'Operador']
+        },
+        {
+            'nombre': 'Solicitar Ruta',
+            'url': 'crear_solicitud',
+            'icono': 'fa-taxi',
+            'grupos': ['Operador']
+        },
+        {
+            'nombre': 'Orden Chequeo Flota',
+            'url': 'crear_orden_chequeo',
+            'icono': 'fa-bus',
+            'grupos': ['Administrador']
+        },
+        {
+            'nombre': 'Lista Chequeo Flota',
+            'url': 'lista_ordenes_chequeo',
+            'icono': 'fa-book',
+            'grupos': ['Administrador']
+        },
+        {
+            'nombre': 'Panel control de CV Operadores',
+            'url': 'operadores_cv',
+            'icono': 'fa-bar-chart',
+            'grupos': ['TM_operaciones']
+        },
+    ]
+    
+    modulos = obtener_modulos_visibles(MODULOS_OPERACIONES, request.user)
+    
+    return render(request, 'operaciones_app/operaciones.html', {
+        'modulos': modulos
+    })
+
+
 
 
 # Vista para crear solicitud de ruta
@@ -312,3 +387,165 @@ def generate_report_rutas(request):
     # Generar el reporte solo con los registros filtrados
     report = ReporterExcelRutas(queryset)
     return report.get(request)
+
+
+'''
+Vista correspondiente a la hoja de vida del operador
+'''
+
+@login_required
+def vista_hv_operador(request):
+    grupo_tm = request.user.groups.filter(name='TM_operaciones').exists()
+
+    return render(request, 'operaciones_app/hoja_vida_operadores.html', {"grupo_tm": grupo_tm})
+
+
+
+'''
+Vistas correspondientes a la parte de chequeo de flota.
+'''
+
+# @login_required
+# def crear_orden_chequeo(request):
+#     if request.method == 'POST':
+#         form = CrearOrdenChequeoForm(request.POST)
+#         if form.is_valid():
+#             orden = form.save(commit=False)
+#             orden.fecha = timezone.now()
+#             orden.save()
+#             form.save_m2m()
+
+#             return redirect('agregar_turno_inspeccion', orden_id = orden.id)
+        
+#         else:
+#             messages.error(request, "Hubo un error al momento de crear la orden de chequeo, por favor valide los datos ingresados o intente nuevamente!")
+
+#     else:
+#         form = CrearOrdenChequeoForm()
+
+#     return render(request, "operaciones_app/crear_orden_chequeo.html", {'form': form})
+
+
+# def listado_ordenes_chequeo(request):
+#     orden_flota = OrdenFlota.objects.all().order_by('-id')
+
+#     # Rango de fechas    
+#     start_date_oc = request.GET.get('start_date_oc')
+#     end_date_oc = request.GET.get('end_date_oc')
+
+#     # filtro en un rango de fechas
+#     if start_date_oc and end_date_oc:
+#         try:
+#             start_date_oc = datetime.strptime(start_date_oc, '%Y-%m-%d').date()
+#             end_date_oc = datetime.strptime(end_date_oc, '%Y-%m-%d').date()
+
+#             orden_flota = orden_flota.filter(
+#                 fecha__gte=start_date_oc,
+#                 fecha__lte=end_date_oc
+#             )
+#         except ValueError:
+#             pass
+
+#     paginator = Paginator(orden_flota, 20)
+#     page_number = request.GET.get('page')
+#     page_obj_oc = paginator.get_page(page_number)
+
+#     grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
+
+#     return render(request, "operaciones_app/lista_ordenes_chequeo.html", {
+#         'page_obj_oc': page_obj_oc,
+#         'grupo_operaciones': grupo_operaciones,
+#         'start_date_oc': start_date_oc,
+#         'end_date_oc': end_date_oc,
+#     })
+
+
+# @login_required
+# def agregar_turno_inspeccion(request, orden_id):
+#     # Obtener la orden de chequeo
+#     orden = get_object_or_404(OrdenFlota, id=orden_id)
+
+#     if request.method == 'POST':
+#         form = AgregarTurnoInspeccionForm(request.POST)
+#         if form.is_valid():
+#             turno = form.save(commit=False)
+#             # Asignar la orden recien creada
+#             turno.orden = orden
+#             turno.codigo_operador = request.user
+#             turno.nombre_operador = request.user.get_full_name()
+#             turno.save()
+
+#             return redirect('inspeccion_turno', orden_id=orden.id)
+        
+#         else:
+#             messages.error(request, "Hubo un error al momento de agregar el turno de inspección, por favor valide los datos ingresados o intente nuevamente!")
+#     else:
+#         form = AgregarTurnoInspeccionForm()
+
+#     return render(request, "operaciones_app/agregar_turno_inspeccion.html", {
+#         'form': form,
+#         'orden': orden
+#     })
+
+
+
+# @login_required
+# def inspeccion_turno(request, orden_id):
+#     orden = get_object_or_404(OrdenFlota, id=orden_id)
+#     turnos = TurnoFlota.objects.filter(orden=orden)
+    
+#     # Obtener etapas con sus items
+#     etapas_items = []
+#     for etapa in Etapa.objects.all():
+#         items = ItemChequeo.objects.filter(etapa=etapa)
+#         if items.exists():
+#             etapas_items.append({
+#                 'etapa': etapa,
+#                 'items': items
+#             })
+    
+#     # Obtener detalles existentes
+#     detalles_existentes = detalle_chequeo.objects.filter(orden=orden)
+#     detalles_dict = {d.item_id: d for d in detalles_existentes}
+    
+#     if request.method == 'POST':
+#         # Procesar el formulario
+#         for key, value in request.POST.items():
+#             if key.startswith('item_') and key.endswith('_estado'):
+#                 item_id = int(key.split('_')[1])
+#                 try:
+#                     item = ItemChequeo.objects.get(id=item_id)
+#                     etapa = item.etapa
+#                     observaciones = request.POST.get(f'item_{item_id}_obs', '')
+                    
+#                     detalle, created = detalle_chequeo.objects.update_or_create(
+#                         orden=orden,
+#                         item=item,
+#                         defaults={
+#                             'etapa': etapa,
+#                             'estado_item': value,
+#                             'observaciones': observaciones
+#                         }
+#                     )
+#                 except ItemChequeo.DoesNotExist:
+#                     pass
+        
+#         messages.success(request, "Inspección guardada exitosamente!")
+#         return redirect('operaciones')
+    
+#     return render(request, "operaciones_app/trabajar_turno_inspeccion.html", {
+#         'orden': orden,
+#         'turnos': turnos,
+#         'etapas_items': etapas_items,
+#         'detalles_dict': detalles_dict,
+#     })
+
+
+# @login_required
+# def get_items_by_etapa(request):
+#     etapa_id = request.GET.get('etapa_id')
+#     items = ItemChequeo.objects.filter(etapa_id=etapa_id).values('id', 'nombre_item')
+#     return JsonResponse({'items': list(items)})
+
+
+

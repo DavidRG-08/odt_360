@@ -15,12 +15,42 @@ from .reports import ReporterExcelOrdenesAlistamiento
 import json
 import csv
 from io import TextIOWrapper
+from utils import obtener_modulos_visibles
+
+
 
 
 # Modulo Mantenimiento
 @login_required
 def mantenimiento(request):
-    return render(request, 'mantenimiento_app/mantenimiento.html')
+    MODULOS_MANTENIMIENTO = [
+        {
+            'nombre': 'Crear Orden de Alistamiento',
+            'url': 'crear_orden',
+            'icono': 'fa-plus-circle',
+            'grupos': ['Mtto_admin']
+        },
+        {
+            'nombre': 'Consultar Ordenes de Alistamiento',
+            'url': 'consultar_ordenes',
+            'icono': 'fa-list',
+            'grupos': ['Mtto_admin', 'Mtto_view', 'Mtto_user', 'Tecnicos_mtto']
+        },
+        {
+            'nombre': 'Vehiculos',
+            'url': 'consultar_vehiculos',
+            'icono': 'fa-bus',
+            'grupos': ['Mtto_admin', 'Mtto_view']
+        },
+        {
+            'nombre': 'Ver detalle de Etapas e Ítems',
+            'url': 'ver_detalle_etapas',
+            'icono': 'fa-tasks',
+            'grupos': ['Mtto_admin', 'Mtto_view', 'Tecnicos_mtto']
+        },
+    ]
+    modulos = obtener_modulos_visibles(MODULOS_MANTENIMIENTO, request.user)
+    return render(request, 'mantenimiento_app/mantenimiento.html', {'modulos': modulos})
 
 
 # Vista para crear ordenes 

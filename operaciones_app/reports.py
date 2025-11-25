@@ -4,6 +4,7 @@ from .models import SolicitudRuta
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class ReporterExcelRutas(TemplateView):
     def __init__(self, queryset = None):
@@ -47,19 +48,23 @@ class ReporterExcelRutas(TemplateView):
 
         for ruta in rutas_reg:
             
-            # try:
-            #     user = User.objects.get(username=ruta.operador)
-            #     nombre = f"{user.first_name} {user.last_name}"
-            # except User.DoesNotExist:
-            #     nombre = "Desconocido"
+            try:
+                user = User.objects.get(username=ruta.operador)
+                nombre = f"{user.first_name} {user.last_name}"
+            except User.DoesNotExist:
+                nombre = "Desconocido"
+
+            #Convertir fechas de UTC -> Anerica/Bogota
+            fecha_solicitud = timezone.localtime(ruta.fecha_solicitud)
+            fecha_recogida = timezone.localtime(ruta.fecha_recogida)
 
             # Agregar datos al Excel
-            ws.cell(row=cont, column=2).value = str(ruta.fecha_solicitud)
+            ws.cell(row=cont, column=2).value = fecha_solicitud.strftime("%Y-%m-%d %H:%M:%S")
             ws.cell(row=cont, column=3).value = str(ruta.operador)
-            # ws.cell(row=cont, column=4).value = nombre
+            ws.cell(row=cont, column=4).value = nombre
             ws.cell(row=cont, column=5).value = str(ruta.telefono)
             ws.cell(row=cont, column=6).value = str(ruta.turno)
-            ws.cell(row=cont, column=7).value = str(ruta.fecha_recogida)
+            ws.cell(row=cont, column=7).value = fecha_recogida.strftime("%Y-%m-%d %H:%M:%S")
             ws.cell(row=cont, column=8).value = str(ruta.localidad)
             ws.cell(row=cont, column=9).value = str(ruta.barrio)
             ws.cell(row=cont, column=10).value = str(ruta.ubicacion)

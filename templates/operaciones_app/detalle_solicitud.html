@@ -83,7 +83,7 @@
                 <li class="list-group-item">
                     <div class="row">
                         <div class="col-md-4 fw-bold"><i class="fas fa-user-circle"></i> Usuario:</div>
-                        <div class="col-md-8 text-muted">{{ solicitud.usuario }}</div>
+                        <div class="col-md-8 text-muted">{{ solicitud.usuario.get_full_name|default:solicitud.usuario }}</div>
                     </div>
                 </li>
             </ul>
