@@ -61,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'odt360.middleware.MaintenanceMiddleware',
 ]
 
 ROOT_URLCONF = 'odt360.urls'
