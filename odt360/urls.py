@@ -21,5 +21,5 @@ urlpatterns = [
     path('app/odt360/buses/admin/', admin.site.urls),
     path('', include('operaciones_app.urls')),
     path('', include('mantenimiento_app.urls')),
-    # path('', include('rh_app.urls')),
+    path('', include('radicacion_app.urls')),
 ]
