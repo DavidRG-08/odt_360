@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Agregar Turno de Flota{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg">
+    <div class="card-header bg-dark text-white text-center">
+      <h4><i class="fas fa-calendar-plus"></i> Agregar Turno de Flota</h4>
+      <p class="mb-0 text-muted">Orden: {{ orden.id }} | Bus: {{ orden.numero_bus }} | Fecha: {{ orden.fecha }}</p>
+    </div>
+    <div class="card-body">
+      {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong><i class="fas fa-exclamation-circle"></i> Corrige los errores:</strong>
+          <ul class="mb-0">
+            {% for field, errors in form.errors.items %}
+              <li><strong>{{ field }}:</strong> {{ errors.0 }}</li>
+            {% endfor %}
+          </ul>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endif %}
+
+      <form method="post" id="agregar-turno-form" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+          {% for field in form.visible_fields %}
+            <div class="col-md-12 mb-3">
+              <label class="form-label fw-bold">{{ field.label }}</label>
+
+              {% if field.field.widget.input_type == 'select' %}
+                {{ field }}
+                {% if field.errors %}
+                  <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                {% endif %}
+                
+              {% elif field.field.widget.input_type == 'textarea' %}
+                {{ field }}
+                {% if field.errors %}
+                  <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                {% endif %}
+                
+              {% else %}
+                {{ field }}
+                {% if field.errors %}
+                  <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                {% endif %}
+              {% endif %}
+
+              {% if field.help_text %}
+                <small class="form-text text-muted d-block mt-1">{{ field.help_text|safe }}</small>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <hr class="my-4">
+
+        <div class="row justify-content-center gap-2">
+          <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-success btn-lg">
+              <i class="fas fa-save"></i> Guardar Turno
+            </button>
+          </div>
+          <div class="col-md-3 d-grid">
+            <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg text-white">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+$(document).ready(function () {
+  // Inicializar Select2
+  $('#agregar-turno-form select').select2({
+    width: '100%',
+    language: 'es'
+  });
+
+  // Cargar nombre y apellido al seleccionar operador
+  $('#id_codigo_operador').on('change', function() {
+    var selectedOption = $(this).find('option:selected');
+    var userData = selectedOption.data('user');
+    
+  });
+
+  // Agregar clases Bootstrap
+  $('#agregar-turno-form input[type="text"],'
+    + '#agregar-turno-form input[type="number"],'
+    + '#agregar-turno-form input[type="email"],'
+    + '#agregar-turno-form input[type="time"],'
+    + '#agregar-turno-form textarea,'
+    + '#agregar-turno-form select').addClass('form-control');
+});
+</script>
+{% endblock %}

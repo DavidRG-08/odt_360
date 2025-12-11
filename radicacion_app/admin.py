@@ -9,5 +9,5 @@ admin.site.register(ParametrosRadicacion)
 admin.site.register(RadicacionEnviados)
 admin.site.register(RadicacionRecibidos)
 admin.site.register(TipoComunicacion)
-
+admin.site.register(Entidad)
 

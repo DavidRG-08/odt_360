@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+{% load operaciones_tags %}
+{% block title %}Inspección de Turno - Orden {{ orden.id }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+    .etapa-section {
+        margin-bottom: 30px;
+    }
+    
+    .etapa-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 5px 5px 0 0;
+        font-weight: bold;
+    }
+    
+    .table-etapa {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .table-etapa thead {
+        background-color: #2c3e50;
+        color: white;
+    }
+    
+    .table-etapa th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border: 1px solid #ddd;
+    }
+    
+    .table-etapa td {
+        padding: 12px;
+        border: 1px solid #ddd;
+    }
+    
+    .table-etapa tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .table-etapa tbody tr:hover {
+        background-color: #e8f4f8;
+    }
+    
+    .item-name {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    .estado-ok {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .estado-pendiente {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .checkbox-center {
+        text-align: center;
+    }
+    
+    .checkbox-center input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .observaciones-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-finalizar {
+        margin-top: 30px;
+    }
+    
+    .info-turnos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .turno-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .turno-card p {
+        margin: 8px 0;
+    }
+    
+    .turno-card strong {
+        display: block;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-dark text-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clipboard-check"></i> Inspección de Turno
+                    </h4>
+                    <p class="mb-0 text-muted">Orden #{{ orden.id }} | Bus: {{ orden.numero_bus }} | Fecha: {{ orden.fecha }}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'lista_ordenes_chequeo' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Información de Turnos -->
+            {% if turnos %}
+                <div class="info-turnos">
+                    {% for turno in turnos %}
+                        <div class="turno-card">
+                            <p><strong>Turno:</strong> {{ turno.get_turno_display }}</p>
+                            <p><strong>Operador:</strong> {{ turno.codigo_operador.get_full_name }}</p>
+                            <p><strong>Ruta:</strong> {{ turno.ruta.ruta }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <hr>
+
+            <!-- Formulario de Chequeo por Etapas -->
+            <form method="post" id="chequeo-form">
+                {% csrf_token %}
+
+                {% for etapa in etapas_items %}
+                    <div class="etapa-section">
+                        <div class="etapa-header">
+                            <i class="fas fa-tag"></i> {{ etapa.etapa.nombre_etapa }}
+                        </div>
+                        <table class="table-etapa">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%;">Ítem</th>
+                                    <th style="width: 15%; text-align: center;">OK</th>
+                                    <th style="width: 15%; text-align: center;">Pendiente</th>
+                                    <th style="width: 30%;">Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in etapa.items %}
+                                    {% with detalle=detalles_dict|get_item:item.id %}
+                                        <tr class="{% if detalle.estado_item == 'OK' %}estado-ok{% elif detalle.estado_item == 'P' %}estado-pendiente{% endif %}">
+                                            <td class="item-name">{{ item.nombre_item }}</td>
+                                            <td class="checkbox-center">
+                                                <input type="checkbox" 
+                                                       name="item_{{ item.id }}_estado" 
+                                                       value="OK"
+                                                       {% if detalle.estado_item == 'OK' %}checked{% endif %}
+                                                       class="estado-checkbox">
+                                            </td>
+                                            <td class="checkbox-center">
+                                                <input type="checkbox" 
+                                                       name="item_{{ item.id }}_estado" 
+                                                       value="P"
+                                                       {% if detalle.estado_item == 'P' %}checked{% endif %}
+                                                       class="estado-checkbox">
+                                            </td>
+                                            <td>
+                                                <input type="text" 
+                                                       name="item_{{ item.id }}_obs" 
+                                                       class="observaciones-input"
+                                                       value="{{ detalle.observaciones|default:'' }}"
+                                                       placeholder="Observaciones">
+                                            </td>
+                                        </tr>
+                                    {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+
+                <div class="row btn-finalizar">
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-check-circle"></i> Guardar Inspección
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg w-100">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Evitar seleccionar dos checkboxes en el mismo ítem
+    $(document).on('change', '.estado-checkbox', function() {
+        var row = $(this).closest('tr');
+        var checkboxes = row.find('.estado-checkbox');
+        
+        if ($(this).is(':checked')) {
+            checkboxes.not(this).prop('checked', false);
+        }
+    });
+
+    // Cambiar color de fila según estado seleccionado
+    $(document).on('change', '.estado-checkbox', function() {
+        var row = $(this).closest('tr');
+        var estado = $(this).val();
+        
+        row.removeClass('estado-ok estado-pendiente');
+        
+        if ($(this).is(':checked')) {
+            if (estado === 'OK') {
+                row.addClass('estado-ok');
+            } else if (estado === 'P') {
+                row.addClass('estado-pendiente');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
