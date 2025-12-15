@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from .utils import calcular_fecha_maxima_respuesta, obtener_festivos_colombia
 from .models import Responsable
+from django.core.paginator import Paginator
 
 
 
@@ -194,3 +195,25 @@ def radicados_internos_view(request):
         form = CrearRadicadoInternosForm()
             
     return render(request, 'radicacion_app/radicacion_internas.html', {'form': form})
+
+
+
+def lista_radicados_recibidos_view(request):
+    radicados_recibidos = RadicacionRecibidos.objects.all().order_by('-id')
+
+
+
+    # Paginación
+    paginator_recibidos = Paginator(radicados_recibidos, 20)  # 10 radicados por página
+    page_number = request.GET.get('page')
+    page_obj_recibidos = paginator_recibidos.get_page(page_number)
+
+    context = {
+        'page_obj_recibidos': page_obj_recibidos,
+    }
+    return render(request, 'radicacion_app/lista_radicados_recibidos.html', context)
+
+
+def detalle_radicado_recibido_view(request):
+    # radicado = RadicacionRecibidos.objects.get(id=radicado_id)
+    return render(request, 'radicacion_app/detalle_radicado_recibidos.html')

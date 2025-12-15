@@ -452,13 +452,114 @@ textarea.form-control:focus {
    ======================================== */
 
 .container-form {
-    max-width: 900px;
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 20px;
+}
+
+.container-form .card {
+    margin-bottom: 30px;
+}
+
+.container-form .card-body {
+    padding: 40px;
 }
 
 /* ========================================
-   MEDIA QUERIES
+   SECCIÓN DE FILTROS OPTIMIZADA
    ======================================== */
+
+.filters-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group .form-label {
+    margin-bottom: 0;
+}
+
+.filter-group .form-control,
+.filter-group .form-select {
+    margin-bottom: 0;
+}
+
+.filter-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-filter {
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    height: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-filter i {
+    margin-right: 6px;
+}
+
+/* ========================================
+   MEDIA QUERIES PARA FILTROS
+   ======================================== */
+
+@media (max-width: 1400px) {
+    .filters-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filter-actions {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .filters-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-section {
+        padding: 25px;
+    }
+
+    .card-body {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .filter-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-filter {
+        width: 100%;
+        text-align: center;
+    }
+}
 
 @media (max-width: 1024px) {
     .form-section {
@@ -546,3 +647,247 @@ textarea.form-control:focus {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
+/* ========================================
+   TABLA DE RADICADOS
+   ======================================== */
+
+.table-section {
+    margin-top: 30px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.table-title {
+    background: linear-gradient(135deg, #012E40 0%, #025E73 100%);
+    color: white;
+    padding: 20px 25px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.table-title i {
+    font-size: 1.3rem;
+}
+
+.table-responsive {
+    background: white;
+    overflow-x: auto;
+}
+
+.table-custom {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background: white;
+}
+
+.table-custom thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #025E73;
+}
+
+.table-custom thead tr th {
+    padding: 18px 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #012E40;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-right: 1px solid #e0e0e0;
+}
+
+.table-custom thead tr th:last-child {
+    border-right: none;
+}
+
+.table-custom thead tr th i {
+    color: #025E73;
+    margin-right: 6px;
+    font-size: 1rem;
+}
+
+.table-custom tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.table-custom tbody tr:hover {
+    background-color: #f8f9fa;
+    box-shadow: inset 0 1px 3px rgba(2, 94, 115, 0.05);
+}
+
+.table-custom tbody td {
+    padding: 16px 12px;
+    color: #333;
+    font-size: 0.95rem;
+    vertical-align: middle;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.table-custom tbody td strong {
+    color: #025E73;
+    font-weight: 700;
+}
+
+.table-custom .action-cell {
+    text-align: center;
+    padding: 10px;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    min-width: 36px;
+    height: 36px;
+}
+
+.btn-view {
+    background-color: #e3f2fd;
+    color: #2196f3;
+}
+
+.btn-view:hover {
+    background-color: #2196f3;
+    color: white;
+    transform: scale(1.08);
+}
+
+.btn-edit {
+    background-color: #fff3e0;
+    color: #ff9800;
+}
+
+.btn-edit:hover {
+    background-color: #ff9800;
+    color: white;
+    transform: scale(1.08);
+}
+
+.btn-delete {
+    background-color: #ffebee;
+    color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.08);
+}
+
+.empty-row td {
+    padding: 40px 15px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.empty-row td i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 10px;
+    color: #d0d0d0;
+}
+
+/* ========================================
+   PAGINACIÓN MEJORADA
+   ======================================== */
+
+.pagination {
+    gap: 5px;
+}
+
+.page-item .page-link {
+    border: 2px solid #025E73;
+    color: #025E73;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 40px;
+    text-align: center;
+}
+
+.page-item .page-link:hover {
+    background-color: #025E73;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(2, 94, 115, 0.2);
+}
+
+.page-item.active .page-link {
+    background-color: #025E73;
+    color: white;
+    border-color: #025E73;
+}
+
+.page-item .page-link i {
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   RESPONSIVE TABLE
+   ======================================== */
+
+@media (max-width: 1200px) {
+    .table-custom thead tr th {
+        font-size: 0.85rem;
+        padding: 15px 10px;
+    }
+
+    .table-custom tbody td {
+        font-size: 0.9rem;
+        padding: 12px 10px;
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+
+    .table-custom thead tr th {
+        font-size: 0.75rem;
+        padding: 10px 6px;
+    }
+
+    .table-custom tbody td {
+        font-size: 0.8rem;
+        padding: 8px 6px;
+        max-width: 100px;
+    }
+
+    .btn-action {
+        padding: 6px 8px;
+        min-width: 32px;
+        height: 32px;
+    }
+
+    .btn-action i {
+        font-size: 0.8rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .row.g-3 [class*="col-"] {
+        width: 100%;
+    }
+}

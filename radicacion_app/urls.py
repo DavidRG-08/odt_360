@@ -9,6 +9,8 @@ urlpatterns = [
     path('crear_radicados_pqrsd/', views.radicados_recibidos_pqrsd_view, name='crear_radicados_pqrsd'),
     path('crear_radicados_enviados/', views.radicados_enviados_view, name='crear_radicados_enviados'),
     path('crear_radicados_internos/', views.radicados_internos_view, name='crear_radicados_internos'),
+    path('lista_radicados_recibidos/', views.lista_radicados_recibidos_view, name='lista_radicados_recibidos'),
+    path('detalle_radicado_recibido/', views.detalle_radicado_recibido_view, name='detalle_radicado_recibido'),
 
     # APIs para cálculo de fechas
     path('api/festivos-colombia/', views.get_festivos_colombia, name='get_festivos_colombia'),
