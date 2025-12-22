@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Detalle Radicado Recibido{% endblock %}
+{% block title %}Detalle Radicado Interno{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
@@ -11,7 +11,7 @@
 <div class="container-form">
     <div class="card shadow-lg">
         <div class="card-header">
-            <h4><i class="fas fa-file-alt"></i> Detalle de Radicado Recibido</h4>
+            <h4><i class="fas fa-file-alt"></i> Detalle de Radicado Interno</h4>
         </div>
         <div class="card-body">
 
@@ -23,22 +23,22 @@
                 <div class="detail-grid">
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-barcode"></i> No. Radicado</label>
-                        <div class="detail-value">{{ radicado_recibido.id }}</div>
+                        <div class="detail-value">{{ radicado_interno.id }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-calendar"></i> Fecha Radicación</label>
-                        <div class="detail-value">{{ radicado_recibido.fecha_radicacion|date:"d-m-Y" }}</div>
+                        <div class="detail-value">{{ radicado_interno.fecha_radicacion|date:"d-m-Y" }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-user"></i> Radicador</label>
-                        <div class="detail-value">{{ radicado_recibido.radicador }}</div>
+                        <div class="detail-value">{{ radicado_interno.radicador }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-map-pin"></i> Medio Ingreso</label>
-                        <div class="detail-value">{{ radicado_recibido.medio_ingreso }}</div>
+                        <div class="detail-value">{{ radicado_interno.medio_ingreso }}</div>
                     </div>
                 </div>
             </div>
@@ -51,28 +51,28 @@
                 <div class="detail-grid">
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-envelope"></i> Tipo de Comunicación</label>
-                        <div class="detail-value">{{ radicado_recibido.tipo_comunicacion }}</div>
+                        <div class="detail-value">{{ radicado_interno.tipo_comunicacion }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-envelope"></i> Tipo de documento</label>
-                        <div class="detail-value">{{ radicado_recibido.tipo_documento }}</div>
+                        <div class="detail-value">{{ radicado_interno.tipo_documento }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-heading"></i> Asunto</label>
-                        <div class="detail-value">{{ radicado_recibido.asunto }}</div>
+                        <div class="detail-value">{{ radicado_interno.asunto }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-envelope"></i> # radicado de llegada</label>
-                        <div class="detail-value">{{ radicado_recibido.num_rad_llegada }}</div>
+                        <div class="detail-value">{{ radicado_interno.num_rad_llegada }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-align-left"></i> Observaciones</label>
                         <div class="detail-value detail-description">
-                            {{ radicado_recibido.observaciones }}
+                            {{ radicado_interno.observaciones }}
                         </div>
                     </div>
                 </div>
@@ -86,22 +86,22 @@
                 <div class="detail-grid">
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-building"></i> Entidad</label>
-                        <div class="detail-value">{{ radicado_recibido.entidad }}</div>
+                        <div class="detail-value">{{ radicado_interno.entidad }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-map-location-dot"></i> Oficina</label>
-                        <div class="detail-value">{{ radicado_recibido.oficina }}</div>
+                        <div class="detail-value">{{ radicado_interno.oficina }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-id-badge"></i> Responsable por responder</label>
-                        <div class="detail-value">{{ radicado_recibido.responsable_por_responder.nombre }}</div>
+                        <div class="detail-value">{{ radicado_interno.responsable_por_responder.nombre }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-envelope"></i> Anexos</label>
-                        <div class="detail-value">{{ radicado_recibido.anexos }}</div>
+                        <div class="detail-value">{{ radicado_interno.anexos }}</div>
                     </div>
                 </div>
             </div>
@@ -115,14 +115,14 @@
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-list-check"></i> Requiere respuesta</label>
-                        <div class="detail-value">{{ radicado_recibido.requiere_respuesta }}</div>
+                        <div class="detail-value">{{ radicado_interno.requiere_respuesta }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-calendar-alt"></i> Fecha Máxima Respuesta</label>
                         <div class="detail-value">
-                            {% if radicado_recibido.fecha_maxima_respuesta %}
-                            {{ radicado_recibido.fecha_maxima_respuesta|date:"d-m-Y" }}
+                            {% if radicado_interno.fecha_maxima_respuesta %}
+                            {{ radicado_interno.fecha_maxima_respuesta|date:"d-m-Y" }}
                             {% else %}
                             <span class="text-muted">No asignada</span>
                             {% endif %}
@@ -132,8 +132,8 @@
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-clock"></i> Días para Responder</label>
                         <div class="detail-value">
-                            {% if radicado_recibido.dias_respuesta %}
-                            {{ radicado_recibido.dias_respuesta }} días
+                            {% if radicado_interno.dias_respuesta %}
+                            {{ radicado_interno.dias_respuesta }} días
                             {% else %}
                             <span class="text-muted">No asignado</span>
                             {% endif %}
@@ -142,22 +142,22 @@
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-envelope"></i> Respuesta radicado interno</label>
-                        <div class="detail-value">{{ radicado_recibido.respuesta_rad_interno }}</div>
+                        <div class="detail-value">{{ radicado_interno.respuesta_rad_interno }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-check"></i> Estado respuesta</label>
-                        <div class="detail-value">{{ radicado_recibido.estado_respuesta }}</div>
+                        <div class="detail-value">{{ radicado_interno.estado_respuesta }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-calendar"></i> Fecha respuesta</label>
-                        <div class="detail-value">{{ radicado_recibido.fecha_respuesta }}</div>
+                        <div class="detail-value">{{ radicado_interno.fecha_respuesta }}</div>
                     </div>
 
                     <div class="detail-item">
                         <label class="detail-label"><i class="fas fa-envelope"></i> medio respuesta</label>
-                        <div class="detail-value">{{ radicado_recibido.medio_respuesta }}</div>
+                        <div class="detail-value">{{ radicado_interno.medio_respuesta }}</div>
                     </div>
                 </div>
             </div>
@@ -165,11 +165,11 @@
             <!-- Acciones -->
             <div class="form-section">
                 <div class="action-buttons">
-                    <a href="{% url 'lista_radicados_recibidos' %}" class="btn btn-secondary">
+                    <a href="{% url 'lista_radicados_internos' %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Volver a Lista
                     </a>
 
-                    <a href="{% url 'editar_radicado_recibido' radicado_recibido.id %}" class="btn btn-primary">
+                    <a href="#" class="btn btn-primary">
                         <i class="fas fa-edit"></i> Editar
                     </a>
 

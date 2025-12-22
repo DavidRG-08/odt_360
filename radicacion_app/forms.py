@@ -51,6 +51,43 @@ class CrearRadicadoRecibidosForm(forms.ModelForm):
             raise forms.ValidationError('El tiempo de respuesta no puede ser negativo.')
         
         return cleaned_data
+    
+
+class UpdateRadicadosRecibidosForm(forms.ModelForm):
+    class Meta:
+        model = RadicacionRecibidos
+        exclude = ['radicador', 'fecha_radicacion', 'id']
+        fields = '__all__'
+
+        widgets = {
+            'tiempo_respuesta': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': 'Ingresa el número de días hábiles'
+            }),
+            'fecha_maxima_respuesta': forms.DateInput(attrs={
+                'class': 'form-control fecha-calculada',
+                'type': 'date',
+                'readonly': True,
+                'placeholder': 'Se calcula automáticamente'
+            }),
+            'fecha_respuesta': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de respuesta'
+            })
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tiempo_respuesta = cleaned_data.get('tiempo_respuesta')
+        
+        if tiempo_respuesta and tiempo_respuesta < 0:
+            raise forms.ValidationError('El tiempo de respuesta no puede ser negativo.')
+    
+        return cleaned_data
+
+
 
 
 class CrearRadicadoEnviadosForm(forms.ModelForm):
@@ -150,3 +187,30 @@ class CrearRadicadoInternosForm(forms.ModelForm):
             raise forms.ValidationError('El tiempo de respuesta no puede ser negativo.')
         
         return cleaned_data
+    
+
+
+class CrearOficinaForm(forms.ModelForm):
+    class Meta:
+        model = Oficina
+        fields = '__all__'
+        labels = {'nombre': 'Nombre de oficina o gerencia'}
+
+
+class CrearEntidadForm(forms.ModelForm):
+    class Meta:
+        model = Entidad
+        fields = '__all__'
+        labels = {'nombre': 'Nombre de la entidad'}
+
+
+class CrearResponsableForm(forms.ModelForm):
+    class Meta:
+        model = Responsable
+        fields = '__all__'
+
+
+class CrearTipoDocumentoForm(forms.ModelForm):
+    class Meta:
+        model = TipoDocumento
+        fields = '__all__'

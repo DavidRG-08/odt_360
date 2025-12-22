@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Consultar Entidades{% endblock %}
+{% block title %}Consultar Responsables{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
@@ -11,12 +11,12 @@
 <div class="container-form">
   <div class="card shadow-lg">
     <div class="card-header">
-      <h4><i class="fas fa-list-check"></i> Lista de Entidades</h4>
+      <h4><i class="fas fa-list-check"></i> Lista de Responsables</h4>
     </div>
     <div class="card-body">
 
       <!-- Formulario de filtros -->
-      <form method="get" action="{% url 'lista_entidades' %}" id="filter-form" novalidate>
+      <form method="get" action="{% url 'lista_responsables' %}" id="filter-form" novalidate>
         <div class="form-section">
           <div class="form-section-title">
             <i class="fas fa-filter"></i> Filtros de Búsqueda
@@ -24,16 +24,16 @@
 
           <div class="filters-container">
             <div class="filter-group">
-              <label class="form-label" for="nombre_entidad">
-                <i class="fas fa-building"></i> Nombre de la entidad
+              <label class="form-label" for="nombre_responsable">
+                <i class="fas fa-building"></i> Nombre de Responsable
               </label>
               <input 
                 type="text" 
-                id="nombre_entidad" 
-                name="nombre_entidad" 
+                id="nombre_responsable" 
+                name="nombre_responsable" 
                 class="form-control"
-                placeholder="Buscar por nombre de entidad..."
-                value="{{ nombre_entidad|default_if_none:'' }}"
+                placeholder="Buscar por nombre de responsable..."
+                value="{{ nombre_responsable|default_if_none:'' }}"
               >
             </div>
 
@@ -50,7 +50,7 @@
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
 
-              <a href="{% url 'crear_entidad' %}" class="btn btn-filter btn-warning">
+              <a href="{% url 'crear_responsable' %}" class="btn btn-filter btn-warning">
                 <i class="fas fa-plus-circle"></i> Agregar
               </a>
             </div>
@@ -61,30 +61,30 @@
       <!-- Tabla de oficinas -->
       <div class="table-section">
         <div class="table-title">
-          <i class="fas fa-building"></i> Entidades
+          <i class="fas fa-building"></i> Responsables
         </div>
         <div class="table-responsive">
           <table class="table-custom">
             <thead>
               <tr>
                 <th style="width: 10%;"><i class="fas fa-cog"></i> Id</th>
-                <th style="width: 90%;"><i class="fas fa-building"></i> Nombre de la entidad</th>
+                <th style="width: 90%;"><i class="fas fa-building"></i> Nombre del Responsable</th>
               </tr>
             </thead>
             <tbody>
-              {% for entidad in page_obj_entidad %}
+              {% for responsable in page_obj_responsable %}
               <tr>
                 <td class="action-cell">
                   <a href="#" title="Ver detalles" class="btn-action btn-view">
-                    <i>{{ entidad.id }}</i>
+                    <i>{{ responsable.id }}</i>
                   </a>
                 </td>
-                <td>{{ entidad.nombre }}</td>
+                <td>{{ responsable.nombre }}</td>
               </tr>
               {% empty %}
               <tr class="empty-row">
                 <td colspan="2" class="text-center">
-                  <i class="fas fa-inbox"></i> No se encontraron oficinas
+                  <i class="fas fa-inbox"></i> No se encontraron responsables
                 </td>
               </tr>
               {% endfor %}
@@ -94,48 +94,48 @@
       </div>
 
       <!-- Paginación -->
-      {% if page_obj_entidad.paginator.num_pages > 1 %}
+      {% if page_obj_responsable.paginator.num_pages > 1 %}
       <nav aria-label="Paginación" class="mt-4">
         <ul class="pagination justify-content-center">
-          {% if page_obj_entidad.has_previous %}
+          {% if page_obj_responsable.has_previous %}
           <li class="page-item">
             <a class="page-link"
-              href="?page=1{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              href="?page=1{% if nombre_responsable %}&nombre_responsable={{ nombre_responsable }}{% endif %}"
               aria-label="Primera página">
               <i class="fas fa-angle-double-left"></i>
             </a>
           </li>
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_entidad.previous_page_number }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              href="?page={{ page_obj_responsable.previous_page_number }}{% if nombre_responsable %}&nombre_responsable={{ nombre_responsable }}{% endif %}"
               aria-label="Anterior">
               <i class="fas fa-angle-left"></i>
             </a>
           </li>
           {% endif %}
 
-          {% for num in page_obj_entidad.paginator.page_range %}
-            {% if page_obj_entidad.number == num %}
+          {% for num in page_obj_responsable.paginator.page_range %}
+            {% if page_obj_responsable.number == num %}
             <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% elif num > page_obj_entidad.number|add:-3 and num < page_obj_entidad.number|add:3 %}
+            {% elif num > page_obj_responsable.number|add:-3 and num < page_obj_responsable.number|add:3 %}
             <li class="page-item">
               <a class="page-link"
-                href="?page={{ num }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}">{{ num }}</a>
+                href="?page={{ num }}{% if nombre_responsable %}&nombre_responsable={{ nombre_responsable }}{% endif %}">{{ num }}</a>
             </li>
             {% endif %}
           {% endfor %}
 
-          {% if page_obj_entidad.has_next %}
+          {% if page_obj_responsable.has_next %}
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_entidad.next_page_number }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              href="?page={{ page_obj_responsable.next_page_number }}{% if nombre_responsable %}&nombre_responsable={{ nombre_responsable }}{% endif %}"
               aria-label="Siguiente">
               <i class="fas fa-angle-right"></i>
             </a>
           </li>
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_entidad.paginator.num_pages }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              href="?page={{ page_obj_responsable.paginator.num_pages }}{% if nombre_responsable %}&nombre_responsable={{ nombre_responsable }}{% endif %}"
               aria-label="Última página">
               <i class="fas fa-angle-double-right"></i>
             </a>
@@ -157,7 +157,7 @@
   $(document).ready(function () {
     // Limpiar filtros
     document.getElementById('limpiarFiltros').onclick = function () {
-      document.getElementById('nombre_entidad').value = '';
+      document.getElementById('nombre_responsable').value = '';
       this.closest('form').submit();
     };
   });

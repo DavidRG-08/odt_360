@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Consultar Radicados Recibidos{% endblock %}
+{% block title %}Consultar Radicados Internos{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
@@ -11,12 +11,12 @@
 <div class="container-form">
   <div class="card shadow-lg">
     <div class="card-header">
-      <h4><i class="fas fa-list-check"></i> Lista de Radicados Recibidos</h4>
+      <h4><i class="fas fa-list-check"></i> Lista de Radicados Internos</h4>
     </div>
     <div class="card-body">
 
       <!-- Formulario de filtros -->
-      <form method="get" action="{% url 'lista_radicados_recibidos' %}" id="filter-form" novalidate>
+      <form method="get" action="{% url 'lista_radicados_internos' %}" id="filter-form" novalidate>
         <div class="form-section">
           <div class="form-section-title">
             <i class="fas fa-filter"></i> Filtros de Búsqueda
@@ -72,7 +72,7 @@
                 <i class="fas fa-redo"></i> Limpiar
               </button>
 
-              <a href="{% url 'radicacion' %}" class="btn btn-filter btn-secondary">
+              <a href="{% url 'radicados_internos' %}" class="btn btn-filter btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
 
@@ -88,7 +88,7 @@
       <!-- Tabla de radicados -->
       <div class="table-section">
         <div class="table-title">
-          <i class="fas fa-envelope-open-text"></i> Radicados Recibidos
+          <i class="fas fa-envelope-open-text"></i> Radicados Internos
         </div>
         <div class="table-responsive">
           <table class="table-custom">
@@ -98,7 +98,7 @@
                 <th><i class="fas fa-calendar"></i> Fecha Radicación</th>
                 <th><i class="fas fa-barcode"></i> No. Radicado</th>
                 <th><i class="fas fa-user"></i> Radicador</th>
-                <th><i class="fas fa-map-pin"></i> Medio Ingreso</th>
+                <th><i class="fas fa-map-pin"></i> Medio de ingreso</th>
                 <th><i class="fas fa-envelope"></i> Comunicación</th>
                 <th><i class="fas fa-building"></i> Entidad</th>
                 <th><i class="fas fa-map-location-dot"></i> Oficina</th>
@@ -106,24 +106,24 @@
               </tr>
             </thead>
             <tbody>
-              {% for recibido in page_obj_recibidos %}
+              {% for interno in page_obj_internos %}
               <tr>
                 <td class="action-cell">
-                  <a href="{% url 'detalle_radicado_recibido' recibido.id %}"
+                  <a href="{% url 'detalle_radicado_interno' interno.id %}"
                     class="btn-action btn-view">
                     <i class="fas fa-eye"></i>
                   </a>
                 </td>
-                <td>{{ recibido.fecha_radicacion|date:"d-m-Y" }}</td>
-                <td><strong>{{ recibido.id }}</strong></td>
-                <td>{{ recibido.radicador }}</td>
-                <td>{{ recibido.medio_ingreso }}</td>
-                <td>{{ recibido.tipo_comunicacion }}</td>
-                <td>{{ recibido.entidad }}</td>
-                <td>{{ recibido.oficina }}</td>
+                <td>{{ interno.fecha_radicacion|date:"d-m-Y" }}</td>
+                <td><strong>{{ interno.id }}</strong></td>
+                <td>{{ interno.radicador }}</td>
+                <td>{{ interno.medio_envio }}</td>
+                <td>{{ interno.tipo_comunicacion }}</td>
+                <td>{{ interno.entidad }}</td>
+                <td>{{ interno.oficina }}</td>
                 <td>
-                  {% if recibido.fecha_maxima_respuesta %}
-                    {{ recibido.fecha_maxima_respuesta|date:"d-m-Y" }}
+                  {% if interno.fecha_maxima_respuesta %}
+                    {{ interno.fecha_maxima_respuesta|date:"d-m-Y" }}
                   {% else %}
                     <span class="text-muted">N/A</span>
                   {% endif %}
@@ -142,10 +142,10 @@
       </div>
 
       <!-- Paginación -->
-      {% if page_obj_recibidos.paginator.num_pages > 1 %}
+      {% if page_obj_internos.paginator.num_pages > 1 %}
       <nav aria-label="Paginación" class="mt-4">
         <ul class="pagination justify-content-center">
-          {% if page_obj_recibidos.has_previous %}
+          {% if page_obj_internos.has_previous %}
           <li class="page-item">
             <a class="page-link"
               href="?page=1{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
@@ -155,17 +155,17 @@
           </li>
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_recibidos.previous_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page={{ page_obj_internos.previous_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
               aria-label="Anterior">
               <i class="fas fa-angle-left"></i>
             </a>
           </li>
           {% endif %}
 
-          {% for num in page_obj_recibidos.paginator.page_range %}
-            {% if page_obj_recibidos.number == num %}
+          {% for num in page_obj_internos.paginator.page_range %}
+            {% if page_obj_internos.number == num %}
             <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% elif num > page_obj_recibidos.number|add:-3 and num < page_obj_recibidos.number|add:3 %}
+            {% elif num > page_obj_internos.number|add:-3 and num < page_obj_internos.number|add:3 %}
             <li class="page-item">
               <a class="page-link"
                 href="?page={{ num }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}">{{ num }}</a>
@@ -173,17 +173,17 @@
             {% endif %}
           {% endfor %}
 
-          {% if page_obj_recibidos.has_next %}
+          {% if page_obj_internos.has_next %}
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_recibidos.next_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page={{ page_obj_internos.next_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
               aria-label="Siguiente">
               <i class="fas fa-angle-right"></i>
             </a>
           </li>
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_recibidos.paginator.num_pages }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page={{ page_obj_internos.paginator.num_pages }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
               aria-label="Última página">
               <i class="fas fa-angle-double-right"></i>
             </a>

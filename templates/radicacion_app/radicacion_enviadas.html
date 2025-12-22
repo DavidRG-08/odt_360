@@ -227,7 +227,7 @@
           </div>
 
           <div class="col-md-4 d-grid">
-            <a href="{% url 'radicacion' %}" class="btn btn-secondary btn-lg">
+            <a href="{% url 'radicados_enviados' %}" class="btn btn-secondary btn-lg">
               <i class="fas fa-arrow-left"></i> Volver
             </a>
           </div>
@@ -348,10 +348,6 @@
               day: 'numeric'
             });
 
-            infoTiempo.html(
-              `<strong><i class="fas fa-check-circle"></i> ${fechaFormato}</strong><br>` +
-              `<small>Se sumaron ${dias} día(s) hábil(es) excluyendo fines de semana y festivos colombianos.</small>`
-            ).addClass('show');
 
             checkFecha.show();
           } else {

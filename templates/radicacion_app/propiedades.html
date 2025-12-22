@@ -1,0 +1,62 @@
+ {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Propiedades{% endblock %}
+
+{% block content %}
+
+<section class="text-center mt-5" aria-labelledby="radicacion-heading">
+    <div class="card-title bg-white text-dark text-center">
+        <h2 id="radicacion-heading">Propiedades</h2>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_oficinas' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-briefcase fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Oficinas</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_entidades' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-building fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Entidades</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_tipo_documentos' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-file-alt fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Tipo documento</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_responsables' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-user-tie fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Responsable</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Botón Volver Flotante -->
+<a href="{% url 'radicacion' %}" class="btn-volver" title="Volver">
+    <i class="fas fa-arrow-left"></i>
+</a>
+
+{% endblock %}

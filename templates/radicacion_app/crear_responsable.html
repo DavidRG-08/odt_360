@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Crear Responsable{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h4><i class="fas fa-plus-circle"></i> Crear Nueva Responsable</h4>
+    </div>
+    <div class="card-body">
+
+      <!-- Formulario de creación -->
+      <form method="post" action="{% url 'crear_responsable' %}" id="create-form" novalidate>
+        {% csrf_token %}
+        
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-info-circle"></i> Información
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="{{ form.nombre.id_for_label }}">
+              <i class="fas fa-building"></i> Nombre del nuevo Responsable
+              <span class="required">*</span>
+            </label>
+            {{ form.nombre }}
+            {% if form.nombre.errors %}
+              <div class="form-error">
+                {% for error in form.nombre.errors %}
+                  <i class="fas fa-exclamation-circle"></i> {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+            <label class="form-label" for="{{ form.oficina.id_for_label }}">
+                <i class="fas fa-building"></i> Oficina Asociada
+                <span class="required">*</span>
+            </label>
+            {{ form.oficina }}
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="form-section">
+          <div class="form-actions">
+            <button type="submit" class="btn btn-submit btn-success">
+              <i class="fas fa-save"></i> Guardar
+            </button>
+
+            <a href="{% url 'lista_responsables' %}" class="btn btn-submit btn-secondary">
+              <i class="fas fa-times"></i> Cancelar
+            </a>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Validación del formulario en cliente
+    document.getElementById('create-form').addEventListener('submit', function (e) {
+      const nombreResponsable = document.getElementById('{{ form.nombre.id_for_label }}').value.trim();
+      
+      if (!nombreResponsable) {
+        e.preventDefault();
+        alert('Por favor ingresa el nombre del responsable');
+        return false;
+      }
+    });
+  });
+</script>
+{% endblock %}

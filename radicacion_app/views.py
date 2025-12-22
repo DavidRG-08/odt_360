@@ -1,14 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from django.contrib import messages
 from django.http import JsonResponse
 from .utils import calcular_fecha_maxima_respuesta, obtener_festivos_colombia
 from .models import Responsable
 from django.core.paginator import Paginator
+from datetime import datetime
+from django.contrib.auth.decorators import login_required, permission_required
 
 
-
-# Create your views here.
+@login_required
 def radicacion(request):
     MODULOS_RADICACION = [
         {
@@ -19,16 +20,22 @@ def radicacion(request):
         },
         {
             'nombre': 'Enviados',
-            'url': 'crear_radicados_enviados',
+            'url': 'radicados_enviados',
             'icono': 'fas fa-paper-plane',
             'grupos': ['todos']
         },
         {
             'nombre': 'Internos',
-            'url': 'crear_radicados_internos',
+            'url': 'radicados_internos',
             'icono': 'fas fa-building',
             'grupos': ['todos']
         },
+        {
+            'nombre': 'Propiedades',
+            'url': 'propiedades',
+            'icono': 'fas fa-folder-open',
+            'grupos': ['admin', 'radicacion']
+        }
     ]
     return render(request, 'radicacion_app/radicacion.html', {'modulos': MODULOS_RADICACION})
 
@@ -102,24 +109,180 @@ def get_oficina_responsable(request):
 
 # Vistas propias de la aplicacion
 
+@login_required
+@permission_required('radicacion_app.view_oficina', raise_exception=True)
+def view_oficina(request):
+    oficinas = Oficina.objects.all().order_by('id')
 
-def oficina_view(request):
-    return render(request, 'radicacion_app/oficina.html')
+    # Filtro por nombre de oficina
+    nombre_oficina = request.GET.get('nombre_oficina')
+    if nombre_oficina:
+        oficinas = oficinas.filter(nombre__icontains=nombre_oficina)
+
+    # Paginacion
+    paginator = Paginator(oficinas, 20)
+    page_number = request.GET.get('page')
+    page_obj_oficina = paginator.get_page(page_number)
+
+    return render(request, 'radicacion_app/lista_oficinas.html', {
+        'page_obj_oficina': page_obj_oficina,
+        'nombre_oficina': nombre_oficina,
+    })
 
 
-def responsable_view(request):
-    return render(request, 'radicacion_app/lista_responsables.html')
+@permission_required('radicacion_app.add_oficina', raise_exception=True)
+@login_required
+def crear_oficina(request):
+    if request.method == 'POST':
+        form = CrearOficinaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Oficina creada exitosamente.')
+            return redirect('lista_oficinas')
+        else:
+            messages.error(request, 'Error al crear la oficina. Por favor verifica los datos ingresados.')
+    else:
+        form = CrearOficinaForm()
+
+    return render(request, 'radicacion_app/crear_oficina.html', {'form': form})
 
 
-def entidades_view(request):
-    return render(request, 'radicacion_app/lista_entidades.html')
+@permission_required('radicacion_app.view_responsable', raise_exception=True)
+@login_required
+def view_responsable(request):
+    responsables = Responsable.objects.all().order_by('id')
+
+    nombre_responsable = request.GET.get('nombre_responsable')
+    if nombre_responsable:
+        responsables = responsables.filter(nombre__icontains=nombre_responsable)
+
+    # Paginacion
+    paginator = Paginator(responsables, 20)
+    page_number = request.GET.get('page')
+    page_obj_responsable = paginator.get_page(page_number)                                                                                                                                                                                                                                          
+
+    return render(request, 'radicacion_app/lista_responsables.html', {
+        'page_obj_responsable': page_obj_responsable,
+        'nombre_responsable': nombre_responsable,
+    })
 
 
-def menu_radicados_recibidos_view(request):
+@permission_required('radicacion_app.add_responsable', raise_exception=True)
+@login_required
+def crear_responsable(request):
+    if request.method == 'POST':
+        form = CrearResponsableForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Responsable creado exitosamente.')
+            return redirect('lista_responsables')
+        else:
+            messages.error(request, 'Error al crear el responsable. Por favor verifica los datos ingresados.')
+    else:
+        form = CrearResponsableForm()
+
+    return render(request, 'radicacion_app/crear_responsable.html', {'form': form})
+
+
+
+@login_required
+@permission_required('radicacion_app.view_entidad', raise_exception=True)
+def view_entidades(request):
+    entidades = Entidad.objects.all().order_by('id')
+
+    nombre_entidad = request.GET.get('nombre_entidad')
+    if nombre_entidad:
+        entidades = entidades.filter(nombre__icontains=nombre_entidad)
+
+    # Paginacion
+    paginator = Paginator(entidades, 20)
+    page_number = request.GET.get('page')
+    page_obj_entidad = paginator.get_page(page_number)
+    
+    return render(request, 'radicacion_app/lista_entidades.html', {
+        'page_obj_entidad': page_obj_entidad,
+        'nombre_entidad': nombre_entidad,
+    })
+
+
+@login_required
+@permission_required('radicacion_app.add_entidad', raise_exception=True)
+def crear_entidad(request):
+    if request.method == 'POST':
+        form = CrearEntidadForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Entidad creada exitosamente.')
+            return redirect('lista_entidades')
+        else:
+            messages.error(request, 'Error al crear la entidad. Por favor verifica los datos ingresados.')
+    else:
+        form = CrearEntidadForm()
+
+    return render(request, 'radicacion_app/crear_entidad.html', {'form': form})
+
+
+@login_required
+@permission_required('radicacion_app.view_entidad', raise_exception=True)
+def view_tipo_documento(request):
+    documento = TipoDocumento.objects.all().order_by('id')
+
+    tipo_documento = request.GET.get('tipo_documento')
+    if tipo_documento:
+        documento = documento.filter(tipo__icontains=tipo_documento)
+
+    # Paginacion
+    paginator = Paginator(documento, 20)
+    page_number = request.GET.get('page')
+    page_obj_documento = paginator.get_page(page_number)
+
+    return render(request, 'radicacion_app/lista_documentos.html', {
+        'page_obj_documento': page_obj_documento,
+        'tipo_documento': tipo_documento,
+    })
+
+
+@login_required
+@permission_required('radicacion_app.add_entidad', raise_exception=True)
+def crear_tipo_documento(request):
+    if request.method == 'POST':
+        form = CrearTipoDocumentoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo de documento creado exitosamente.')
+            return redirect('lista_tipo_documentos')
+        else:
+            messages.error(request, 'Error al crear el tipo de documento. Por favor verifica los datos ingresados.')
+    else:
+        form = CrearTipoDocumentoForm()
+
+    return render(request, 'radicacion_app/crear_tipo_documento.html', {'form': form})
+
+
+# VIstas para los menus de radicacion
+@login_required
+def menu_propiedades(request):
+    return render(request, 'radicacion_app/propiedades.html')
+
+
+@login_required
+def menu_radicados_recibidos(request):
     return render(request, 'radicacion_app/radicacion_menu_recibidos.html')
 
+@login_required
+def menu_radicados_enviados(request):
+    return render(request, 'radicacion_app/radicacion_menu_enviados.html')
 
-def radicados_recibidos_view(request):
+@login_required
+def menu_radicados_internos(request):
+    return render(request, 'radicacion_app/radicacion_menu_internos.html')
+
+# funciones para crear los diferentes tipos de radicados
+
+# Radicados Recibidos
+@login_required
+@permission_required('radicacion_app.add_radicacionrecibidos', raise_exception=True)
+def crear_radicados_recibidos(request):
     consecutivo_rec = ParametrosRadicacion.objects.get(pk=1)
     
     if request.method == 'POST':
@@ -132,7 +295,7 @@ def radicados_recibidos_view(request):
             radicado.save()
 
             messages.success(request, 'Radicado creado exitosamente.')
-            return redirect('home')
+            return redirect('lista_radicados_recibidos')
         
         else:
             messages.error(request, 'Error al crear el radicado. Por favor verifica los datos ingresados.')
@@ -143,13 +306,85 @@ def radicados_recibidos_view(request):
     return render(request, 'radicacion_app/radicacion_recibidas.html', {'form': form})
 
 
+@login_required
+@permission_required('radicacion_app.view_radicacionrecibidos', raise_exception=True)
+def view_radicados_recibidos(request):
+    radicados_recibidos = RadicacionRecibidos.objects.all().order_by('-id')
+    oficinas = Oficina.objects.all()
+
+    # Filtrar por oficina
+    oficina_id = request.GET.get('oficina')
+    if oficina_id:
+        radicados_recibidos = radicados_recibidos.filter(oficina__id=oficina_id)
+
+
+    #rango de fechas
+    start_date_rad = request.GET.get('start_date_rad')
+    end_date_rad = request.GET.get('end_date_rad')
+
+    if start_date_rad and end_date_rad:
+        try:
+            start_date_rad = datetime.strptime(start_date_rad, '%Y-%m-%d').date()
+            end_date_rad = datetime.strptime(end_date_rad, '%Y-%m-%d').date()
+
+            radicados_recibidos = radicados_recibidos.filter(
+                fecha_radicacion__gte=start_date_rad,
+                fecha_radicacion__lte=end_date_rad
+            )
+        except ValueError:
+            pass
+
+    # Paginación
+    paginator = Paginator(radicados_recibidos, 20)  # 10 radicados por página
+    page_number = request.GET.get('page')
+    page_obj_recibidos = paginator.get_page(page_number)
+
+    return render(request, 'radicacion_app/lista_radicados_recibidos.html', {
+        'page_obj_recibidos': page_obj_recibidos,
+        'start_date_rad': start_date_rad,
+        'end_date_rad': end_date_rad,
+        'oficinas': oficinas,
+        'selected_oficina': oficina_id,
+    })
+
+
+@login_required
+def editar_radicado_recibido(request, radicado_id):
+    instancia = get_object_or_404(RadicacionRecibidos, pk=radicado_id)
+    if request.method == 'POST':
+        form = UpdateRadicadosRecibidosForm(request.POST, instance=instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Radicado actualizado exitosamente.')
+            return redirect('lista_radicados_recibidos')
+    
+    else:
+        form = UpdateRadicadosRecibidosForm(instance=instancia)
+
+    return render(request, 'radicacion_app/editar_radicado_recibido.html', {'form': form, 'instancia': instancia})
+
+
+@login_required
+def obtener_detalle_rad_recibido(request, radicado_id):
+    rad_recibido = RadicacionRecibidos.objects.get(id=radicado_id)
+
+    return render(request, 'radicacion_app/detalle_radicado_recibidos.html', {"radicado_recibido": rad_recibido})
+
+
+
+# Radicados Recibidos PQRSD
+
 def radicados_recibidos_pqrsd_view(request):
 
 
     return render(request, 'radicacion_app/radicacion_recibidas_pqrsd.html')
 
 
-def radicados_enviados_view(request):
+
+# Radicados Enviados
+@login_required
+@permission_required('radicacion_app.add_radicacionenviados', raise_exception=True)
+def crear_radicados_enviados(request):
     consecutivo_env = ParametrosRadicacion.objects.get(pk=2)
 
     if request.method == 'POST':
@@ -173,7 +408,60 @@ def radicados_enviados_view(request):
     return render(request, 'radicacion_app/radicacion_enviadas.html', {'form': form})
 
 
-def radicados_internos_view(request):
+@login_required
+@permission_required('radicacion_app.view_radicacionenviados', raise_exception=True)
+def view_radicados_enviados(request):
+    radicados_enviados = RadicacionEnviados.objects.all().order_by('-id')
+    oficinas = Oficina.objects.all()
+
+    # Filtrar por oficina
+    oficina_id = request.GET.get('oficina')
+    if oficina_id:
+        radicados_enviados = radicados_enviados.filter(oficina__id=oficina_id)
+
+
+    #rango de fechas
+    start_date_rad = request.GET.get('start_date_rad')
+    end_date_rad = request.GET.get('end_date_rad')
+
+    if start_date_rad and end_date_rad:
+        try:
+            start_date_rad = datetime.strptime(start_date_rad, '%Y-%m-%d').date()
+            end_date_rad = datetime.strptime(end_date_rad, '%Y-%m-%d').date()
+
+            radicados_enviados = radicados_enviados.filter(
+                fecha_radicacion__gte=start_date_rad,
+                fecha_radicacion__lte=end_date_rad
+            )
+        except ValueError:
+            pass
+
+    # Paginación
+    paginator = Paginator(radicados_enviados, 20)  # 10 radicados por página
+    page_number = request.GET.get('page')
+    page_obj_enviados = paginator.get_page(page_number)
+
+    return render(request, 'radicacion_app/lista_radicados_enviados.html', {
+        'page_obj_enviados': page_obj_enviados,
+        'start_date_rad': start_date_rad,
+        'end_date_rad': end_date_rad,
+        'oficinas': oficinas,
+        'selected_oficina': oficina_id,
+    })
+
+
+@login_required
+def obtener_detalle_rad_enviado(request, radicado_id):
+    rad_enviado = RadicacionEnviados.objects.get(id=radicado_id)
+
+    return render(request, 'radicacion_app/detalle_radicado_enviados.html', {"radicado_enviado": rad_enviado})
+
+
+
+# Radicados Internos
+@login_required
+@permission_required('radicacion_app.add_radicacioninternos', raise_exception=True)
+def crear_radicados_internos(request):
     consecutivo_rec = ParametrosRadicacion.objects.get(pk=3)
     
     if request.method == 'POST':
@@ -197,23 +485,50 @@ def radicados_internos_view(request):
     return render(request, 'radicacion_app/radicacion_internas.html', {'form': form})
 
 
+@login_required
+@permission_required('radicacion_app.view_radicacioninternos', raise_exception=True)
+def view_radicados_internos(request):
+    radicados_internos = RadicacionInternos.objects.all().order_by('-id')
+    oficinas = Oficina.objects.all()
 
-def lista_radicados_recibidos_view(request):
-    radicados_recibidos = RadicacionRecibidos.objects.all().order_by('-id')
+    # Filtrar por oficina
+    oficina_id = request.GET.get('oficina')
+    if oficina_id:
+        radicados_internos = radicados_internos.filter(oficina__id=oficina_id)
 
 
+    #rango de fechas
+    start_date_rad = request.GET.get('start_date_rad')
+    end_date_rad = request.GET.get('end_date_rad')
+
+    if start_date_rad and end_date_rad:
+        try:
+            start_date_rad = datetime.strptime(start_date_rad, '%Y-%m-%d').date()
+            end_date_rad = datetime.strptime(end_date_rad, '%Y-%m-%d').date()
+
+            radicados_internos = radicados_internos.filter(
+                fecha_radicacion__gte=start_date_rad,
+                fecha_radicacion__lte=end_date_rad
+            )
+        except ValueError:
+            pass
 
     # Paginación
-    paginator_recibidos = Paginator(radicados_recibidos, 20)  # 10 radicados por página
+    paginator = Paginator(radicados_internos, 20)  # 20 radicados por página
     page_number = request.GET.get('page')
-    page_obj_recibidos = paginator_recibidos.get_page(page_number)
+    page_obj_internos = paginator.get_page(page_number)
 
-    context = {
-        'page_obj_recibidos': page_obj_recibidos,
-    }
-    return render(request, 'radicacion_app/lista_radicados_recibidos.html', context)
+    return render(request, 'radicacion_app/lista_radicados_internos.html', {
+        'page_obj_internos': page_obj_internos,
+        'start_date_rad': start_date_rad,
+        'end_date_rad': end_date_rad,
+        'oficinas': oficinas,
+        'selected_oficina': oficina_id,
+    })
 
 
-def detalle_radicado_recibido_view(request):
-    # radicado = RadicacionRecibidos.objects.get(id=radicado_id)
-    return render(request, 'radicacion_app/detalle_radicado_recibidos.html')
+@login_required
+def obtener_detalle_rad_interno(request, radicado_id):
+    rad_interno = RadicacionInternos.objects.get(id=radicado_id)
+
+    return render(request, 'radicacion_app/detalle_radicado_interno.html', {"radicado_interno": rad_interno})
