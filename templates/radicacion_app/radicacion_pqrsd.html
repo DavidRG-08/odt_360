@@ -1,0 +1,58 @@
+ {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}pqrsd{% endblock %}
+
+{% block content %}
+
+<section class="text-center mt-5" aria-labelledby="radicacion-heading">
+    <div class="card-title bg-white text-dark text-center">
+        <h2 id="radicacion-heading">PQRSD</h2>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'crear_radicado_pqrsd' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-edit fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Crear PQRSD</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_radicados_pqrsd' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-tasks fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Ver PQRSD</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'crear_radicado_pqrsd' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-envelope-open fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Enviar PQRSD</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'lista_radicados_pqrsd' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-table fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">PQRSD Enviados</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

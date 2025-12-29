@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Crear PQRSD recibido{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h4><i class="fas fa-envelope-open-text"></i> Registrar PQRSD</h4>
+    </div>
+    <div class="card-body">
+
+      <!-- Mensajes de error -->
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong><i class="fas fa-exclamation-circle"></i> Por favor, corrige los siguientes errores:</strong>
+        <ul>
+          {% for field, errors in form.errors.items %}
+          <li><strong>{{ field }}:</strong> {{ errors.0 }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {{ form.media }}
+      <form method="post" id="solicitud-data-form" novalidate>
+        {% csrf_token %}
+
+        <!-- ========== SECCIÓN 1: INFORMACIÓN DE INGRESO ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-inbox"></i> Información de Ingreso
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.unidad_negocio.id_for_label }}">
+                <i class="fas fa-envelope"></i> {{ form.unidad_negocio.label }}
+              </label>
+              {{ form.unidad_negocio }}
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.fecha_recibido_usuario.id_for_label }}">
+                <i class="fas fa-calendar"></i> {{ form.fecha_recibido_usuario.label }}
+              </label>
+              <div class="input-group">
+                {{ form.fecha_recibido_usuario }}
+                <span class="input-group-text">
+                  <i class="fas fa-spinner spinner" id="spinner-vencimientos" style="display: none;"></i>
+                </span>
+              </div>
+              <small class="form-text">
+                <i class="fas fa-info-circle"></i> Al seleccionar esta fecha se calculan automáticamente los vencimientos
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.fecha_asignacion_traslado.id_for_label }}">
+                <i class="fas fa-calendar"></i> {{ form.fecha_asignacion_traslado.label }}
+              </label>
+              {{ form.fecha_asignacion_traslado }}
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 2: DATOS DEL REMITENTE ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-building"></i> Datos del Remitente
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.radicado_recibido.id_for_label }}">
+              <i class="fas fa-barcode"></i> {{ form.radicado_recibido.label }}
+            </label>
+            {{ form.radicado_recibido }}
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.canal_recepcion.id_for_label }}">
+              <i class="fas fa-phone"></i> {{ form.canal_recepcion.label }}
+            </label>
+            {{ form.canal_recepcion }}
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.tipo_peticion.id_for_label }}">
+                <i class="fas fa-list"></i> {{ form.tipo_peticion.label }}
+              </label>
+              {{ form.tipo_peticion }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.nombre_remitente.id_for_label }}">
+                <i class="fas fa-user"></i> {{ form.nombre_remitente.label }}
+              </label>
+              {{ form.nombre_remitente }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.telefono.id_for_label }}">
+                <i class="fas fa-phone"></i> {{ form.telefono.label }}
+              </label>
+              {{ form.telefono }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.direccion.id_for_label }}">
+                <i class="fas fa-map-pin"></i> {{ form.direccion.label }}
+              </label>
+              {{ form.direccion }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.email.id_for_label }}">
+                <i class="fas fa-envelope"></i> {{ form.email.label }}
+              </label>
+              {{ form.email }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.asunto.id_for_label }}">
+                <i class="fas fa-sticky-note"></i> {{ form.asunto.label }}
+              </label>
+              {{ form.asunto }}
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 3: DATOS DEL EVENTO ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-calendar-alt"></i> Datos del Evento
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.fecha_evento.id_for_label }}">
+                <i class="fas fa-calendar"></i> {{ form.fecha_evento.label }}
+              </label>
+              {{ form.fecha_evento }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.hora_evento.id_for_label }}">
+                <i class="fas fa-clock"></i> {{ form.hora_evento.label }}
+              </label>
+              {{ form.hora_evento }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.lugar_evento.id_for_label }}">
+                <i class="fas fa-map-location-dot"></i> {{ form.lugar_evento.label }}
+              </label>
+              {{ form.lugar_evento }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.serial_o_placa.id_for_label }}">
+                <i class="fas fa-car"></i> {{ form.serial_o_placa.label }}
+              </label>
+              {{ form.serial_o_placa }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.ruta.id_for_label }}">
+                <i class="fas fa-route"></i> {{ form.ruta.label }}
+              </label>
+              {{ form.ruta }}
+            </div>
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.descripcion.id_for_label }}">
+              <i class="fas fa-align-left"></i> {{ form.descripcion.label }}
+            </label>
+            {{ form.descripcion }}
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 4: ASIGNACIÓN Y CONTROL ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-tasks"></i> Asignación y Control
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.asignado_a.id_for_label }}">
+                <i class="fas fa-user-tie"></i> {{ form.asignado_a.label }}
+              </label>
+              {{ form.asignado_a }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.culpabilidad.id_for_label }}">
+                <i class="fas fa-gavel"></i> {{ form.culpabilidad.label }}
+              </label>
+              {{ form.culpabilidad }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.operador.id_for_label }}">
+                <i class="fas fa-user-circle"></i> {{ form.operador.label }}
+              </label>
+              {{ form.operador }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.fecha_cierre.id_for_label }}">
+                <i class="fas fa-calendar-check"></i> {{ form.fecha_cierre.label }}
+              </label>
+              {{ form.fecha_cierre }}
+            </div>
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.observaciones.id_for_label }}">
+              <i class="fas fa-comment"></i> {{ form.observaciones.label }}
+            </label>
+            {{ form.observaciones }}
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 5: VENCIMIENTOS (CALCULADOS AUTOMÁTICAMENTE) ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-hourglass-end"></i> Vencimientos (Calculados Automáticamente)
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.vencimiento_interno.id_for_label }}">
+                <i class="fas fa-calendar"></i> {{ form.vencimiento_interno.label }}
+              </label>
+              <div class="input-group">
+                {{ form.vencimiento_interno }}
+                <span class="input-group-text">
+                  <i class="fas fa-check-circle text-success" id="check-vencimiento-interno" style="display: none;"></i>
+                </span>
+              </div>
+              <small class="form-text">
+                <i class="fas fa-info-circle"></i> Se calcula sumando 7 días corridos a la fecha recibida
+              </small>
+              <div class="info-vencimiento-interno" id="info-vencimiento-interno"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.vencimiento_por_ley.id_for_label }}">
+                <i class="fas fa-calendar"></i> {{ form.vencimiento_por_ley.label }}
+              </label>
+              <div class="input-group">
+                {{ form.vencimiento_por_ley }}
+                <span class="input-group-text">
+                  <i class="fas fa-check-circle text-success" id="check-vencimiento-ley" style="display: none;"></i>
+                </span>
+              </div>
+              <small class="form-text">
+                <i class="fas fa-info-circle"></i> Se calcula sumando 15 días hábiles (excluye fines de semana y festivos)
+              </small>
+              <div class="info-vencimiento-ley" id="info-vencimiento-ley"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== BOTONES DE ACCIÓN ========== -->
+        <input type="hidden" name="radicador" value="{{ request.user.id }}">
+
+        <div class="row justify-content-center mt-4 g-3">
+          <div class="col-md-4 d-grid">
+            <button type="submit" class="btn btn-success btn-lg">
+              <i class="fas fa-save"></i> Guardar Registro
+            </button>
+          </div>
+
+          <div class="col-md-4 d-grid">
+            <a href="{% url 'radicacion' %}" class="btn btn-secondary btn-lg">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Activar Select2 en los dropdowns
+    $('select').select2({
+      width: '100%',
+      language: 'es'
+    });
+
+    // ============================================================
+    // CALCULAR VENCIMIENTOS AUTOMÁTICAMENTE
+    // ============================================================
+
+    const fechaRecibidoInput = $('#id_fecha_recibido_usuario');
+    const vencimientoInternoInput = $('#id_vencimiento_interno');
+    const vencimientoPorLeyInput = $('#id_vencimiento_por_ley');
+    const spinnerVencimientos = $('#spinner-vencimientos');
+    const checkVencimientoInterno = $('#check-vencimiento-interno');
+    const checkVencimientoLey = $('#check-vencimiento-ley');
+    const infoVencimientoInterno = $('#info-vencimiento-interno');
+    const infoVencimientoLey = $('#info-vencimiento-ley');
+
+    function calcularVencimientos() {
+      const fechaRecibido = fechaRecibidoInput.val();
+
+      if (!fechaRecibido) {
+        vencimientoInternoInput.val('');
+        vencimientoPorLeyInput.val('');
+        checkVencimientoInterno.hide();
+        checkVencimientoLey.hide();
+        infoVencimientoInterno.removeClass('show').html('');
+        infoVencimientoLey.removeClass('show').html('');
+        return;
+      }
+
+      spinnerVencimientos.show();
+
+      $.ajax({
+        url: '{% url "calcular_vencimientos_pqrsd" %}',
+        type: 'GET',
+        data: { fecha_recibido: fechaRecibido },
+        success: function (response) {
+          if (response.vencimiento_por_ley && response.vencimiento_interno) {
+            // Cargar vencimiento interno
+            vencimientoInternoInput.val(response.vencimiento_interno);
+            vencimientoInternoInput.addClass('vencimiento-calculado');
+            
+            const fechaInternoFormato = new Date(response.vencimiento_interno + 'T00:00:00').toLocaleDateString('es-CO', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+            
+            infoVencimientoInterno.html(
+              `<strong><i class="fas fa-check-circle"></i> Vencimiento Interno Calculado:</strong> ${fechaInternoFormato} (7 días corridos)`
+            ).addClass('show');
+            checkVencimientoInterno.show();
+
+            // Cargar vencimiento por ley
+            vencimientoPorLeyInput.val(response.vencimiento_por_ley);
+            vencimientoPorLeyInput.addClass('vencimiento-calculado');
+            
+            const fechaLeyFormato = new Date(response.vencimiento_por_ley + 'T00:00:00').toLocaleDateString('es-CO', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+            
+            infoVencimientoLey.html(
+              `<strong><i class="fas fa-check-circle"></i> Vencimiento por Ley Calculado:</strong> ${fechaLeyFormato} (15 días hábiles)`
+            ).addClass('show');
+            checkVencimientoLey.show();
+          } else if (response.error) {
+            alert('❌ Error: ' + response.error);
+            vencimientoInternoInput.val('');
+            vencimientoPorLeyInput.val('');
+          }
+        },
+        error: function () {
+          alert('❌ Error en la conexión.');
+          vencimientoInternoInput.val('');
+          vencimientoPorLeyInput.val('');
+        },
+        complete: function () {
+          spinnerVencimientos.hide();
+        }
+      });
+    }
+
+    fechaRecibidoInput.on('change', function () {
+      calcularVencimientos();
+    });
+
+    // Evitar que el usuario edite directamente los campos de vencimiento
+    vencimientoInternoInput.on('focus', function () {
+      $(this).blur();
+    });
+
+    vencimientoPorLeyInput.on('focus', function () {
+      $(this).blur();
+    });
+  });
+</script>
+
+{% endblock %}

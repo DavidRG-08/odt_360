@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path('radicacion/', views.radicacion, name='radicacion'),
+    path('radicados_administrativos/', views.menu_radicados_administrativos, name='radicados_administrativos'),
+    path('radicacion_pqrsd/', views.radicacion_pqrsd, name='radicacion_pqrsd'),
     path('radicados_recibidos/', views.menu_radicados_recibidos, name='radicados_recibidos'),
     path('radicados_enviados/', views.menu_radicados_enviados, name='radicados_enviados'),
     path('radicados_internos/', views.menu_radicados_internos, name='radicados_internos'),
@@ -22,7 +24,10 @@ urlpatterns = [
     path('radicados_internos/detalle/<str:radicado_id>/', views.obtener_detalle_rad_interno, name='detalle_radicado_interno'),
 
     # PQRSD
-    path('crear_radicados_pqrsd/', views.radicados_recibidos_pqrsd_view, name='crear_radicados_pqrsd'),
+    path('crear_radicado_pqrsd/', views.crear_radicados_recibidos_pqrsd, name='crear_radicado_pqrsd'),
+    path('lista_radicados_pqrsd/', views.view_radicados_recibidos_pqrsd, name='lista_radicados_pqrsd'),
+    path('pqrsd/detalle/<str:radicado_id>/', views.obtener_detalle_pqrsd_recibido, name='detalle_radicado_pqrsd'),
+    path('pqrsd/editar/<str:radicado_id>/', views.editar_pqrsd_recibido, name='editar_radicado_pqrsd'),
 
     # APIs para cálculo de fechas
     path('api/festivos-colombia/', views.get_festivos_colombia, name='get_festivos_colombia'),
@@ -31,6 +36,10 @@ urlpatterns = [
     # API para obtener oficina del responsable
     path('api/get-oficina-responsable/', views.get_oficina_responsable, name='get_oficina_responsable'),
 
+    # APIs para cálculo de vencimientos
+    path('api/calcular-vencimientos-pqrsd/', views.calcular_vencimientos_pqrsd, name='calcular_vencimientos_pqrsd'),
+
+    # Menú de propiedades administrativas
     path('propiedades/', views.menu_propiedades, name='propiedades'),
     path('propiedades/oficinas/', views.view_oficina, name='lista_oficinas'),
     path('propiedades/oficina/crear_oficina/', views.crear_oficina, name='crear_oficina'),

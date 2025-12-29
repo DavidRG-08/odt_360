@@ -214,3 +214,98 @@ class RadicacionInternos(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.asunto}"
+    
+
+
+
+# Tablas PQRSD
+
+class CanalesRecepcion(models.Model):
+    nombre = models.CharField(max_length=100, primary_key=True)
+
+    def __str__(self):
+        return f"{self.nombre}"
+    
+
+class RutaVehiculo(models.Model):
+    ruta = models.CharField(max_length=20, primary_key=True) 
+
+    def __str__(self):
+        return f"{self.ruta}"
+    
+
+class TipoPeticion(models.Model):
+    nombre = models.CharField(max_length=50, primary_key=True)
+
+    def __str__(self):
+        return f"{self.nombre}"
+    
+
+class Area(models.Model):
+    nombre_area = models.CharField(max_length=100, primary_key=True)
+
+    def __str__(self):
+        return f"{self.nombre_area}"
+    
+
+class Tipologia(models.Model):
+    nombre = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.nombre}" 
+    
+
+class RadicadosRecibidosPqrsd(models.Model):
+    id = models.CharField(max_length=20, primary_key=True)
+    fecha_radicacion = models.DateField(default=date.today)
+    radicador = models.ForeignKey(User , on_delete=models.CASCADE)
+    tipo_radicado = models.CharField(max_length=10, default='PQRSD')
+    UNIDAD = [
+        ('Buses', 'Buses'),
+        ('Cable', 'Cable')
+    ]
+    unidad_negocio = models.CharField(max_length=20, choices=UNIDAD)
+    fecha_recibido_usuario = models.DateField()
+    fecha_asignacion_traslado = models.DateField()
+    radicado_recibido = models.CharField(max_length=40)
+    canal_recepcion = models.ForeignKey(CanalesRecepcion, on_delete=models.CASCADE)
+    tipo_peticion = models.ForeignKey(TipoPeticion, on_delete=models.CASCADE)
+    nombre_remitente = models.CharField(max_length=200)
+    telefono = models.CharField(max_length=20)
+    direccion = models.CharField(max_length=200)
+    email = models.EmailField()
+    asunto = models.ForeignKey(Tipologia, on_delete=models.CASCADE)
+    fecha_evento = models.DateField()
+    hora_evento = models.TimeField()
+    lugar_evento = models.CharField(max_length=200)
+    serial_o_placa = models.CharField(max_length=20)
+    ruta = models.ForeignKey(RutaVehiculo, on_delete=models.CASCADE)
+    descripcion = models.TextField()
+    asignado_a = models.ForeignKey(Area, on_delete=models.CASCADE)
+    vencimiento_interno = models.DateField()
+    vencimiento_por_ley = models.DateField()
+    fecha_cierre = models.DateField(blank=True, null=True)
+    ESTADO = [
+        ('SI', 'SI'),
+        ('NO', 'NO'),
+        ('No Aplica', 'No Aplica'),
+    ]
+    culpabilidad = models.CharField(max_length=10, choices=ESTADO)
+    OPE = [
+        ('Operador', 'Operador'),
+        ('Operadora', 'Operadora'),
+        ('No Aplica', 'No Aplica'),
+    ]
+    operador = models.CharField(max_length=20, choices=OPE)
+    observaciones = models.TextField(blank=True, null=True)
+
+
+
+class RadicadosEnviadosPqrsd(models.Model):
+    id = models.CharField(max_length=20, primary_key=True)
+    radicador = models.ForeignKey(User , on_delete=models.CASCADE)
+    fecha_radicacion = models.DateField(default=date.today)
+    tipo_radicado = models.CharField(max_length=10, default='PQRSD')
+    asunto = models.CharField(max_length=200)
+    radicado_asociado = models.ForeignKey(RadicadosRecibidosPqrsd, on_delete=models.CASCADE, blank=True, null=True)
+    destinatario = models.CharField(max_length=200)

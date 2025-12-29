@@ -88,8 +88,6 @@ class UpdateRadicadosRecibidosForm(forms.ModelForm):
         return cleaned_data
 
 
-
-
 class CrearRadicadoEnviadosForm(forms.ModelForm):
     class Meta:
         model = RadicacionEnviados
@@ -189,7 +187,6 @@ class CrearRadicadoInternosForm(forms.ModelForm):
         return cleaned_data
     
 
-
 class CrearOficinaForm(forms.ModelForm):
     class Meta:
         model = Oficina
@@ -214,3 +211,69 @@ class CrearTipoDocumentoForm(forms.ModelForm):
     class Meta:
         model = TipoDocumento
         fields = '__all__'
+
+
+
+class CrearRadicadoPqrsdForm(forms.ModelForm):
+    class Meta:
+        model = RadicadosRecibidosPqrsd
+        exclude = ['radicador', 'fecha_radicacion', 'id', 'tipo_radicado']
+        fields = '__all__'
+
+        widgets = {
+            'fecha_recibido_usuario': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de recibido'
+            }),
+            'fecha_asignacion_traslado': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de asignación o traslado'
+            }),
+            'fecha_evento': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha del evento'
+            }),
+            'hora_evento': forms.TimeInput(attrs={
+                'class': 'form-control',
+                'type': 'time',
+                'placeholder': 'Selecciona la hora del evento'
+            }),
+            'fecha_cierre': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de cierre'
+            }),
+            'vencimiento_interno': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de vencimiento interno'
+            }),
+            'vencimiento_por_ley': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de vencimiento por ley'
+            }),
+        }
+
+
+
+class UpdatePqrsdRecibidosForm(forms.ModelForm):
+    class Meta:
+        model = RadicadosRecibidosPqrsd
+        fields = [
+            'fecha_cierre',
+            'culpabilidad',
+            'operador',
+            'observaciones'
+        ]
+
+        widgets = {
+            'fecha_cierre': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de cierre'
+            }),
+        }

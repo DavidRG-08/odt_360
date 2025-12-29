@@ -2,42 +2,66 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from django.contrib import messages
 from django.http import JsonResponse
-from .utils import calcular_fecha_maxima_respuesta, obtener_festivos_colombia
+from .utils import calcular_fecha_maxima_respuesta, obtener_festivos_colombia, calcular_fecha_vencimiento_ley, calcular_fecha_vencimiento_interno
 from .models import Responsable
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.contrib.auth.decorators import login_required, permission_required
+from datetime import datetime, timedelta
 
 
 @login_required
 def radicacion(request):
     MODULOS_RADICACION = [
         {
-            'nombre': 'Recibidos',
-            'url': 'radicados_recibidos',
-            'icono': 'fas fa-envelope-open-text',
+            'nombre': 'Administracion',
+            'url': 'radicados_administrativos',
+            'icono': 'fas fa-address-card',
             'grupos': ['todos']
         },
         {
-            'nombre': 'Enviados',
-            'url': 'radicados_enviados',
-            'icono': 'fas fa-paper-plane',
+            'nombre': 'PQRSD',
+            'url': 'radicacion_pqrsd',
+            'icono': 'fas fa-comments',
             'grupos': ['todos']
-        },
-        {
-            'nombre': 'Internos',
-            'url': 'radicados_internos',
-            'icono': 'fas fa-building',
-            'grupos': ['todos']
-        },
-        {
-            'nombre': 'Propiedades',
-            'url': 'propiedades',
-            'icono': 'fas fa-folder-open',
-            'grupos': ['admin', 'radicacion']
         }
     ]
     return render(request, 'radicacion_app/radicacion.html', {'modulos': MODULOS_RADICACION})
+
+
+# VIstas para los menus de radicacion
+@login_required
+def menu_radicados_administrativos(request):
+    return render(request, 'radicacion_app/radicados_administrativos.html')
+
+
+def radicacion_pqrsd(request):
+    return render(request, 'radicacion_app/radicacion_pqrsd.html')
+
+
+@login_required
+def menu_radicados_recibidos(request):
+    return render(request, 'radicacion_app/administrativo/radicacion_menu_recibidos.html')
+
+
+@login_required
+def menu_radicados_enviados(request):
+    return render(request, 'radicacion_app/administrativo/radicacion_menu_enviados.html')
+
+
+@login_required
+def menu_radicados_internos(request):
+    return render(request, 'radicacion_app/administrativo/radicacion_menu_internos.html')
+
+
+@login_required
+def menu_propiedades(request):
+    return render(request, 'radicacion_app/administrativo/propiedades.html')
+
+
+@login_required
+def menu_propiedades_pqrsd(request):
+    return render(request, 'radicacion_app/pqrsd/propiedades_pqrsd.html')
 
 
 def get_festivos_colombia(request):
@@ -107,6 +131,43 @@ def get_oficina_responsable(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
+def calcular_vencimientos_pqrsd(request):
+    """
+    API que calcula automáticamente los vencimientos para PQRSD.
+    
+    GET params:
+        fecha_recibido: fecha en formato YYYY-MM-DD
+    """
+    if request.method == 'GET':
+        try:
+            fecha_recibido = request.GET.get('fecha_recibido')
+            
+            if not fecha_recibido:
+                return JsonResponse({
+                    'error': 'fecha_recibido es requerida'
+                }, status=400)
+            
+            # Calcular vencimientos
+            vencimiento_ley = calcular_fecha_vencimiento_ley(fecha_recibido, dias=15)
+            vencimiento_interno = calcular_fecha_vencimiento_interno(fecha_recibido, dias=7)
+            
+            return JsonResponse({
+                'vencimiento_por_ley': vencimiento_ley.strftime('%Y-%m-%d'),
+                'vencimiento_interno': vencimiento_interno.strftime('%Y-%m-%d'),
+            })
+        
+        except ValueError as e:
+            return JsonResponse({
+                'error': f'Formato de fecha inválido: {str(e)}'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error al calcular vencimientos: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
 # Vistas propias de la aplicacion
 
 @login_required
@@ -124,7 +185,7 @@ def view_oficina(request):
     page_number = request.GET.get('page')
     page_obj_oficina = paginator.get_page(page_number)
 
-    return render(request, 'radicacion_app/lista_oficinas.html', {
+    return render(request, 'radicacion_app/administrativo/lista_oficinas.html', {
         'page_obj_oficina': page_obj_oficina,
         'nombre_oficina': nombre_oficina,
     })
@@ -144,7 +205,7 @@ def crear_oficina(request):
     else:
         form = CrearOficinaForm()
 
-    return render(request, 'radicacion_app/crear_oficina.html', {'form': form})
+    return render(request, 'radicacion_app/administrativo/crear_oficina.html', {'form': form})
 
 
 @permission_required('radicacion_app.view_responsable', raise_exception=True)
@@ -161,7 +222,7 @@ def view_responsable(request):
     page_number = request.GET.get('page')
     page_obj_responsable = paginator.get_page(page_number)                                                                                                                                                                                                                                          
 
-    return render(request, 'radicacion_app/lista_responsables.html', {
+    return render(request, 'radicacion_app/administrativo/lista_responsables.html', {
         'page_obj_responsable': page_obj_responsable,
         'nombre_responsable': nombre_responsable,
     })
@@ -181,7 +242,7 @@ def crear_responsable(request):
     else:
         form = CrearResponsableForm()
 
-    return render(request, 'radicacion_app/crear_responsable.html', {'form': form})
+    return render(request, 'radicacion_app/administrativo/crear_responsable.html', {'form': form})
 
 
 
@@ -198,8 +259,8 @@ def view_entidades(request):
     paginator = Paginator(entidades, 20)
     page_number = request.GET.get('page')
     page_obj_entidad = paginator.get_page(page_number)
-    
-    return render(request, 'radicacion_app/lista_entidades.html', {
+
+    return render(request, 'radicacion_app/administrativo/lista_entidades.html', {
         'page_obj_entidad': page_obj_entidad,
         'nombre_entidad': nombre_entidad,
     })
@@ -219,7 +280,7 @@ def crear_entidad(request):
     else:
         form = CrearEntidadForm()
 
-    return render(request, 'radicacion_app/crear_entidad.html', {'form': form})
+    return render(request, 'radicacion_app/administrativo/crear_entidad.html', {'form': form})
 
 
 @login_required
@@ -236,7 +297,7 @@ def view_tipo_documento(request):
     page_number = request.GET.get('page')
     page_obj_documento = paginator.get_page(page_number)
 
-    return render(request, 'radicacion_app/lista_documentos.html', {
+    return render(request, 'radicacion_app/administrativo/lista_documentos.html', {
         'page_obj_documento': page_obj_documento,
         'tipo_documento': tipo_documento,
     })
@@ -256,26 +317,10 @@ def crear_tipo_documento(request):
     else:
         form = CrearTipoDocumentoForm()
 
-    return render(request, 'radicacion_app/crear_tipo_documento.html', {'form': form})
+    return render(request, 'radicacion_app/administrativo/crear_tipo_documento.html', {'form': form})
 
 
-# VIstas para los menus de radicacion
-@login_required
-def menu_propiedades(request):
-    return render(request, 'radicacion_app/propiedades.html')
 
-
-@login_required
-def menu_radicados_recibidos(request):
-    return render(request, 'radicacion_app/radicacion_menu_recibidos.html')
-
-@login_required
-def menu_radicados_enviados(request):
-    return render(request, 'radicacion_app/radicacion_menu_enviados.html')
-
-@login_required
-def menu_radicados_internos(request):
-    return render(request, 'radicacion_app/radicacion_menu_internos.html')
 
 # funciones para crear los diferentes tipos de radicados
 
@@ -301,9 +346,9 @@ def crear_radicados_recibidos(request):
             messages.error(request, 'Error al crear el radicado. Por favor verifica los datos ingresados.')
     
     else:
-        form = CrearRadicadoRecibidosForm
-            
-    return render(request, 'radicacion_app/radicacion_recibidas.html', {'form': form})
+        form = CrearRadicadoRecibidosForm()
+
+    return render(request, 'radicacion_app/administrativo/radicacion_recibidas.html', {'form': form})
 
 
 @login_required
@@ -339,7 +384,7 @@ def view_radicados_recibidos(request):
     page_number = request.GET.get('page')
     page_obj_recibidos = paginator.get_page(page_number)
 
-    return render(request, 'radicacion_app/lista_radicados_recibidos.html', {
+    return render(request, 'radicacion_app/administrativo/lista_radicados_recibidos.html', {
         'page_obj_recibidos': page_obj_recibidos,
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
@@ -361,24 +406,14 @@ def editar_radicado_recibido(request, radicado_id):
     else:
         form = UpdateRadicadosRecibidosForm(instance=instancia)
 
-    return render(request, 'radicacion_app/editar_radicado_recibido.html', {'form': form, 'instancia': instancia})
+    return render(request, 'radicacion_app/administrativo/editar_radicado_recibido.html', {'form': form, 'instancia': instancia})
 
 
 @login_required
 def obtener_detalle_rad_recibido(request, radicado_id):
     rad_recibido = RadicacionRecibidos.objects.get(id=radicado_id)
 
-    return render(request, 'radicacion_app/detalle_radicado_recibidos.html', {"radicado_recibido": rad_recibido})
-
-
-
-# Radicados Recibidos PQRSD
-
-def radicados_recibidos_pqrsd_view(request):
-
-
-    return render(request, 'radicacion_app/radicacion_recibidas_pqrsd.html')
-
+    return render(request, 'radicacion_app/administrativo/detalle_radicado_recibidos.html', {"radicado_recibido": rad_recibido})
 
 
 # Radicados Enviados
@@ -405,7 +440,7 @@ def crear_radicados_enviados(request):
     else:
         form = CrearRadicadoEnviadosForm()
     
-    return render(request, 'radicacion_app/radicacion_enviadas.html', {'form': form})
+    return render(request, 'radicacion_app/administrativo/radicacion_enviadas.html', {'form': form})
 
 
 @login_required
@@ -441,7 +476,7 @@ def view_radicados_enviados(request):
     page_number = request.GET.get('page')
     page_obj_enviados = paginator.get_page(page_number)
 
-    return render(request, 'radicacion_app/lista_radicados_enviados.html', {
+    return render(request, 'radicacion_app/administrativo/lista_radicados_enviados.html', {
         'page_obj_enviados': page_obj_enviados,
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
@@ -454,7 +489,7 @@ def view_radicados_enviados(request):
 def obtener_detalle_rad_enviado(request, radicado_id):
     rad_enviado = RadicacionEnviados.objects.get(id=radicado_id)
 
-    return render(request, 'radicacion_app/detalle_radicado_enviados.html', {"radicado_enviado": rad_enviado})
+    return render(request, 'radicacion_app/administrativo/detalle_radicado_enviados.html', {"radicado_enviado": rad_enviado})
 
 
 
@@ -482,7 +517,7 @@ def crear_radicados_internos(request):
     else:
         form = CrearRadicadoInternosForm()
             
-    return render(request, 'radicacion_app/radicacion_internas.html', {'form': form})
+    return render(request, 'radicacion_app/administrativo/radicacion_internas.html', {'form': form})
 
 
 @login_required
@@ -518,7 +553,7 @@ def view_radicados_internos(request):
     page_number = request.GET.get('page')
     page_obj_internos = paginator.get_page(page_number)
 
-    return render(request, 'radicacion_app/lista_radicados_internos.html', {
+    return render(request, 'radicacion_app/administrativo/lista_radicados_internos.html', {
         'page_obj_internos': page_obj_internos,
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
@@ -531,4 +566,93 @@ def view_radicados_internos(request):
 def obtener_detalle_rad_interno(request, radicado_id):
     rad_interno = RadicacionInternos.objects.get(id=radicado_id)
 
-    return render(request, 'radicacion_app/detalle_radicado_interno.html', {"radicado_interno": rad_interno})
+    return render(request, 'radicacion_app/administrativo/detalle_radicado_interno.html', {"radicado_interno": rad_interno})
+
+
+
+# Radicados Recibidos PQRSD
+@login_required
+@permission_required('radicacion_app.add_radicadosrecibidospqrsd', raise_exception=True)
+def crear_radicados_recibidos_pqrsd(request):
+    consecutivo_rec = ParametrosRadicacion.objects.get(pk=1)
+    
+    if request.method == 'POST':
+        form = CrearRadicadoPqrsdForm(request.POST)
+        if form.is_valid():
+            radicado = form.save(commit=False)
+           
+            radicado.id = consecutivo_rec.generar_id_radicado()
+            radicado.radicador = request.user
+            radicado.save()
+
+            messages.success(request, 'Radicado creado exitosamente.')
+            return redirect('lista_radicados_pqrsd')
+        
+        else:
+            messages.error(request, 'Error al crear el radicado. Por favor verifica los datos ingresados.')
+    
+    else:
+        form = CrearRadicadoPqrsdForm
+            
+    return render(request, 'radicacion_app/pqrsd/radicacion_recibidas_pqrsd.html', {'form': form})
+
+
+
+
+@login_required
+@permission_required('radicacion_app.view_radicadosrecibidospqrsd', raise_exception=True)
+def view_radicados_recibidos_pqrsd(request):
+    rad_pqrsd = RadicadosRecibidosPqrsd.objects.all().order_by('-id')
+
+
+    #rango de fechas
+    start_date_rad = request.GET.get('start_date_rad')
+    end_date_rad = request.GET.get('end_date_rad')
+
+    if start_date_rad and end_date_rad:
+        try:
+            start_date_rad = datetime.strptime(start_date_rad, '%Y-%m-%d').date()
+            end_date_rad = datetime.strptime(end_date_rad, '%Y-%m-%d').date()
+
+            rad_pqrsd = rad_pqrsd.filter(
+                fecha_radicacion__gte=start_date_rad,
+                fecha_radicacion__lte=end_date_rad
+            )
+        except ValueError:
+            pass
+    
+    paginator = Paginator(rad_pqrsd, 20)
+    page_number = request.GET.get('page')
+    page_obj_rad_pqrsd = paginator.get_page(page_number)
+
+
+    return render(request, 'radicacion_app/pqrsd/lista_radicados_recibidos_pqrsd.html', {
+        'page_obj_rad_pqrsd': page_obj_rad_pqrsd,
+        'start_date_rad': start_date_rad,
+        'end_date_rad': end_date_rad,
+    })
+
+
+@login_required
+def obtener_detalle_pqrsd_recibido(request, radicado_id):
+    rad_pqrsd = RadicadosRecibidosPqrsd.objects.get(id=radicado_id)
+
+    return render(request, 'radicacion_app/pqrsd/detalle_pqrsd_recibido.html', {"radicado_recibido": rad_pqrsd})
+
+
+@login_required
+def editar_pqrsd_recibido(request, radicado_id):
+    instancia = get_object_or_404(RadicadosRecibidosPqrsd, pk=radicado_id)
+    if request.method == 'POST':
+        form = UpdatePqrsdRecibidosForm(request.POST, instance=instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Radicado actualizado exitosamente.')
+            return redirect('lista_radicados_pqrsd')
+    
+    else:
+        form = UpdatePqrsdRecibidosForm(instance=instancia)
+
+    return render(request, 'radicacion_app/pqrsd/editar_pqrsd_recibido.html', {'form': form, 'instancia': instancia})
+
+
