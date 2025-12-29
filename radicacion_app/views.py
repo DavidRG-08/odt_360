@@ -17,13 +17,13 @@ def radicacion(request):
             'nombre': 'Administracion',
             'url': 'radicados_administrativos',
             'icono': 'fas fa-address-card',
-            'grupos': ['todos']
+            'grupos': ['radicacion', 'admin']
         },
         {
             'nombre': 'PQRSD',
             'url': 'radicacion_pqrsd',
             'icono': 'fas fa-comments',
-            'grupos': ['todos']
+            'grupos': ['radicacion_pqrsd', 'admin']
         }
     ]
     return render(request, 'radicacion_app/radicacion.html', {'modulos': MODULOS_RADICACION})
