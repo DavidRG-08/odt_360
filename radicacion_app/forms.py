@@ -277,3 +277,19 @@ class UpdatePqrsdRecibidosForm(forms.ModelForm):
                 'placeholder': 'Selecciona la fecha de cierre'
             }),
         }
+
+
+
+class CrearRadicadoEnviadoPqrsdForm(forms.ModelForm):
+    class Meta:
+        model = RadicadosEnviadosPqrsd
+        exclude = ['id', 'radicador', 'fecha_radicacion',  'tipo_radicado']
+        fields = [
+            'asunto',
+            'radicado_asociado',
+            'destinatario',
+        ]
+
+        
+
+

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Detalle PQRSD Enviado{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h4><i class="fas fa-file-alt"></i> Detalle de PQRSD Enviado</h4>
+        </div>
+        <div class="card-body">
+
+            <!-- Información General -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-envelope-open-text"></i> Información General
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label class="detail-label"><i class="fas fa-barcode"></i> No. Radicado</label>
+                        <div class="detail-value">{{ radicado_enviado.id }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label class="detail-label"><i class="fas fa-calendar"></i> Fecha Radicación</label>
+                        <div class="detail-value">{{ radicado_enviado.fecha_radicacion|date:"d-m-Y" }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label class="detail-label"><i class="fas fa-user"></i> Radicador</label>
+                        <div class="detail-value">{{ radicado_enviado.radicador }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label class="detail-label"><i class="fas fa-envelope-open-text"></i> Tipo Radicado</label>
+                        <div class="detail-value">{{ radicado_enviado.tipo_radicado }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <label class="detail-label"><i class="fas fa-barcode"></i> Radicado Asociado</label>
+                        <div class="detail-value">
+                            {% if radicado_enviado.radicado_asociado %}
+                                <a href="{% url 'detalle_radicado_pqrsd' radicado_enviado.radicado_asociado.id %}">
+                                    {{ radicado_enviado.radicado_asociado.id }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Sin asociar</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="detail-item full">
+                        <label class="detail-label"><i class="fas fa-sticky-note"></i> Asunto</label>
+                        <div class="detail-value">{{ radicado_enviado.asunto }}</div>
+                    </div>
+
+                    <div class="detail-item full">
+                        <label class="detail-label"><i class="fas fa-user-tie"></i> Destinatario</label>
+                        <div class="detail-value">{{ radicado_enviado.destinatario }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="form-section">
+                <div class="action-buttons">
+                    <a href="{% url 'lista_radicados_pqrsd' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Lista
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+{% endblock %}

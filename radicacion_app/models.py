@@ -299,6 +299,8 @@ class RadicadosRecibidosPqrsd(models.Model):
     operador = models.CharField(max_length=20, choices=OPE)
     observaciones = models.TextField(blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.id} - {self.asunto}"
 
 
 class RadicadosEnviadosPqrsd(models.Model):
@@ -309,3 +311,6 @@ class RadicadosEnviadosPqrsd(models.Model):
     asunto = models.CharField(max_length=200)
     radicado_asociado = models.ForeignKey(RadicadosRecibidosPqrsd, on_delete=models.CASCADE, blank=True, null=True)
     destinatario = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f"{self.id} - {self.asunto}"

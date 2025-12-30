@@ -28,6 +28,10 @@ urlpatterns = [
     path('lista_radicados_pqrsd/', views.view_radicados_recibidos_pqrsd, name='lista_radicados_pqrsd'),
     path('pqrsd/detalle/<str:radicado_id>/', views.obtener_detalle_pqrsd_recibido, name='detalle_radicado_pqrsd'),
     path('pqrsd/editar/<str:radicado_id>/', views.editar_pqrsd_recibido, name='editar_radicado_pqrsd'),
+    path('crear_radicado_enviado_pqrsd/', views.crear_radicados_enviados_pqrsd, name='crear_radicado_enviado_pqrsd'),
+    path('lista_radicados_enviados_pqrsd/', views.view_radicados_enviados_pqrsd, name='lista_radicados_enviados_pqrsd'),
+    path('pqrsd/enviado/detalle/<str:radicado_id>/', views.obtener_detalle_pqrsd_enviado, name='detalle_radicado_enviado_pqrsd'),
+
 
     # APIs para cálculo de fechas
     path('api/festivos-colombia/', views.get_festivos_colombia, name='get_festivos_colombia'),
@@ -49,6 +53,13 @@ urlpatterns = [
     path('propiedades/responsable/crear_responsable/', views.crear_responsable, name='crear_responsable'),
     path('propiedades/tipo_documento/', views.view_tipo_documento, name='lista_tipo_documentos'),
     path('propiedades/tipo_documento/crear_tipo_documento/', views.crear_tipo_documento, name='crear_tipo_documento'),
+
+    # Reportes
+    path('reportes/radicados_recibidos/', views.generar_reporte_radicados_recibidos, name='reporte_radicados_recibidos'),
+    path('reportes/radicados_enviados/', views.generar_reporte_radicados_enviados, name='reporte_radicados_enviados'),
+    path('reportes/radicados_internos/', views.generar_reporte_radicados_internos, name='reporte_radicados_internos'),
+    path('reportes/radicados_pqrsd_recibidos/', views.generar_reporte_radicados_pqrsd_recibidos, name='reporte_radicados_pqrsd_recibidos'),
+    path('reportes/radicados_pqrsd_enviados/', views.generar_reporte_radicados_pqrsd_enviados, name='reporte_radicados_pqrsd_enviados'),
 
 
 ]

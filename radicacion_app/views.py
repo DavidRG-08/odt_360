@@ -8,6 +8,8 @@ from django.core.paginator import Paginator
 from datetime import datetime
 from django.contrib.auth.decorators import login_required, permission_required
 from datetime import datetime, timedelta
+from .reports import *
+
 
 
 @login_required
@@ -656,3 +658,194 @@ def editar_pqrsd_recibido(request, radicado_id):
     return render(request, 'radicacion_app/pqrsd/editar_pqrsd_recibido.html', {'form': form, 'instancia': instancia})
 
 
+
+####################################################
+
+@login_required
+@permission_required('radicacion_app.add_radicadosenviadospqrsd', raise_exception=True)
+def crear_radicados_enviados_pqrsd(request):
+    consecutivo_rec = ParametrosRadicacion.objects.get(pk=2)
+    
+    if request.method == 'POST':
+        form = CrearRadicadoEnviadoPqrsdForm(request.POST)
+        if form.is_valid():
+            radicado = form.save(commit=False)
+           
+            radicado.id = consecutivo_rec.generar_id_radicado()
+            radicado.radicador = request.user
+            radicado.save()
+
+            messages.success(request, 'Radicado creado exitosamente.')
+            return redirect('lista_radicados_enviados_pqrsd')
+        
+        else:
+            messages.error(request, 'Error al crear el radicado. Por favor verifica los datos ingresados.')
+    
+    else:
+        form = CrearRadicadoEnviadoPqrsdForm
+            
+    return render(request, 'radicacion_app/pqrsd/radicacion_enviados_pqrsd.html', {'form': form})
+
+
+
+
+@login_required
+@permission_required('radicacion_app.view_radicadosenviadospqrsd', raise_exception=True)
+def view_radicados_enviados_pqrsd(request):
+    rad_pqrsd = RadicadosEnviadosPqrsd.objects.all().order_by('-id')
+
+
+    #rango de fechas
+    start_date_rad = request.GET.get('start_date_rad')
+    end_date_rad = request.GET.get('end_date_rad')
+
+    if start_date_rad and end_date_rad:
+        try:
+            start_date_rad = datetime.strptime(start_date_rad, '%Y-%m-%d').date()
+            end_date_rad = datetime.strptime(end_date_rad, '%Y-%m-%d').date()
+
+            rad_pqrsd = rad_pqrsd.filter(
+                fecha_radicacion__gte=start_date_rad,
+                fecha_radicacion__lte=end_date_rad
+            )
+        except ValueError:
+            pass
+    
+    paginator = Paginator(rad_pqrsd, 20)
+    page_number = request.GET.get('page')
+    page_obj_rad_pqrsd = paginator.get_page(page_number)
+
+
+    return render(request, 'radicacion_app/pqrsd/lista_radicados_enviados_pqrsd.html', {
+        'page_obj_rad_pqrsd': page_obj_rad_pqrsd,
+        'start_date_rad': start_date_rad,
+        'end_date_rad': end_date_rad,
+    })
+
+
+@login_required
+def obtener_detalle_pqrsd_enviado(request, radicado_id):
+    rad_pqrsd = RadicadosEnviadosPqrsd.objects.get(id=radicado_id)
+
+    return render(request, 'radicacion_app/pqrsd/detalle_pqrsd_enviado.html', {"radicado_enviado": rad_pqrsd})
+
+
+
+
+# Reportes Excel
+
+@login_required
+def generar_reporte_radicados_recibidos(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    queryset = RadicacionRecibidos.objects.all()
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+            queryset = queryset.filter(
+                fecha_radicacion__gte=start_date,
+                fecha_radicacion__lte=end_date
+            )
+        except ValueError:
+            pass
+
+    reporter = ReporterExcelRadicadosRecibidos(queryset)
+
+    return reporter.get(request)
+
+
+@login_required
+def generar_reporte_radicados_enviados(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    queryset = RadicacionEnviados.objects.all()
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+            queryset = queryset.filter(
+                fecha_radicacion__gte=start_date,
+                fecha_radicacion__lte=end_date
+            )
+        except ValueError:
+            pass
+
+    reporter = ReporterExcelRadicadosEnviados(queryset)
+
+    return reporter.get(request)
+
+
+@login_required
+def generar_reporte_radicados_internos(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    queryset = RadicacionInternos.objects.all()
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+            queryset = queryset.filter(
+                fecha_radicacion__gte=start_date,
+                fecha_radicacion__lte=end_date
+            )
+        except ValueError:
+            pass
+
+    reporter = ReporterExcelRadicadosInternos(queryset)
+
+    return reporter.get(request)
+
+
+
+@login_required
+def generar_reporte_radicados_pqrsd_recibidos(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    queryset = RadicadosRecibidosPqrsd.objects.all()
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+            queryset = queryset.filter(
+                fecha_radicacion__gte=start_date,
+                fecha_radicacion__lte=end_date
+            )
+        except ValueError:
+            pass
+
+    reporter = ReporterExcelPqrsdRecibidos(queryset)
+
+    return reporter.get(request)
+
+
+
+@login_required
+def generar_reporte_radicados_pqrsd_enviados(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    queryset = RadicadosEnviadosPqrsd.objects.all()
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+            queryset = queryset.filter(
+                fecha_radicacion__gte=start_date,
+                fecha_radicacion__lte=end_date
+            )
+        except ValueError:
+            pass
+
+    reporter = ReporterExcelPqrsdEnviados(queryset)
+
+    return reporter.get(request)

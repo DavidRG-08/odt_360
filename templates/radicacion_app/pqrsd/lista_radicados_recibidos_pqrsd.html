@@ -77,6 +77,11 @@
               <a href="{% url 'crear_radicado_pqrsd' %}" class="btn btn-filter btn-success">
                 <i class="fas fa-plus-circle"></i> Agregar PQRSD
               </a>
+
+              <a href="{% url 'reporte_radicados_pqrsd_recibidos' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&unidad_negocio={{ selected_unidad_negocio }}"
+                class="btn btn-filter btn-success">
+                <i class="fas fa-file-excel"></i> Exportar
+              </a>
             </div>
           </div>
         </div>
