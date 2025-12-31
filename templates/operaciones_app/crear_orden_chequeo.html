@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Crear orden de inspección{% endblock %}
+
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg">
+    <div class="card-header bg-dark text-white text-center">
+      <h4><i class="fas fa-clipboard-check"></i> Orden de Chequeo</h4>
+    </div>
+    <div class="card-body">
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Corrige los errores:</strong>
+        <ul>
+          {% for field, errors in form.errors.items %}
+            <li><strong>{{ field }}:</strong> {{ errors.0 }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {{ form.media }}
+      {% now "Y-m-d" as today %}
+      <form method="post" id="orden-chequeo-form">
+        {% csrf_token %}
+
+        <div class="row">
+          {% for field in form.visible_fields %}
+            <div class="col-md-12 mb-3">
+              <label class="form-label">{{ field.label }}</label>
+              {% if field.name == 'fecha' %}
+                <input
+                  type="date"
+                  name="{{ field.html_name }}"
+                  id="{{ field.id_for_label }}"
+                  class="form-control {% if field.errors %}is-invalid{% endif %}"
+                  value="{{ field.value|default:today }}">
+                {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+                {% for err in field.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+              {% else %}
+                {{ field }}
+                {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="row justify-content-center mt-4">
+          <div class="col-md-4 d-grid gap-2">
+            <button type="submit" class="btn btn-success btn-lg">
+              <i class="fas fa-save"></i> Guardar Orden
+            </button>
+          </div>
+          <div class="col-md-4 d-grid gap-2">
+            <a href="{% url 'operaciones' %}" class="btn btn-secondary btn-lg text-white">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  // Select2 para selects
+  $('select').select2({ width: '100%' });
+  
+});
+</script>
+{% endblock %}
+
+
+
+
+

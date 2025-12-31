@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Consultar Radicados Enviados{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h4><i class="fas fa-list-check"></i> Lista de Radicados Enviados</h4>
+    </div>
+    <div class="card-body">
+
+      <!-- Formulario de filtros -->
+      <form method="get" action="{% url 'lista_radicados_enviados' %}" id="filter-form" novalidate>
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-filter"></i> Filtros de Búsqueda
+          </div>
+
+          <div class="filters-container">
+            <div class="filter-group">
+              <label class="form-label" for="start_date_rad">
+                <i class="fas fa-calendar-alt"></i> Fecha Inicio
+              </label>
+              <input 
+                type="date" 
+                id="start_date_rad" 
+                name="start_date_rad" 
+                class="form-control"
+                value="{{ request.GET.start_date_rad }}"
+              >
+            </div>
+
+            <div class="filter-group">
+              <label class="form-label" for="end_date_rad">
+                <i class="fas fa-calendar-alt"></i> Fecha Fin
+              </label>
+              <input 
+                type="date" 
+                id="end_date_rad" 
+                name="end_date_rad" 
+                class="form-control"
+                value="{{ request.GET.end_date_rad }}"
+              >
+            </div>
+
+            <div class="filter-group">
+              <label class="form-label" for="oficina">
+                <i class="fas fa-circle-notch"></i> Oficina
+              </label>
+              <select name="oficina" id="oficina" class="form-select">
+                <option value="">Todas las oficinas</option>
+                {% for oficina in oficinas %}
+                  <option value="{{ oficina.id }}" {% if oficina.id|stringformat:"s" == selected_oficina %}selected{% endif %}>
+                    {{ oficina.nombre }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-actions">
+              <button type="submit" class="btn btn-filter btn-success">
+                <i class="fas fa-search"></i> Buscar
+              </button>
+
+              <button type="button" id="limpiarFiltros" class="btn btn-filter btn-secondary">
+                <i class="fas fa-redo"></i> Limpiar
+              </button>
+
+              <a href="{% url 'radicados_administrativos' %}" class="btn btn-filter btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+
+              <a href="{% url 'reporte_radicados_enviados' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&oficina={{ selected_oficina }}"
+                class="btn btn-filter btn-success">
+                <i class="fas fa-file-excel"></i> Exportar
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Tabla de radicados -->
+      <div class="table-section">
+        <div class="table-title">
+          <i class="fas fa-envelope-open-text"></i> Radicados Enviados
+        </div>
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th><i class="fas fa-cogs"></i> Acción</th>
+                <th><i class="fas fa-calendar"></i> Fecha Radicación</th>
+                <th><i class="fas fa-barcode"></i> No. Radicado</th>
+                <th><i class="fas fa-user"></i> Radicador</th>
+                <th><i class="fas fa-map-pin"></i> Medio de envio</th>
+                <th><i class="fas fa-envelope"></i> Comunicación</th>
+                <th><i class="fas fa-building"></i> Entidad</th>
+                <th><i class="fas fa-map-location-dot"></i> Oficina</th>
+                <th><i class="fas fa-calendar-check"></i> Fecha Máxima Respuesta</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for enviado in page_obj_enviados %}
+              <tr>
+                <td class="action-cell">
+                  <a href="{% url 'detalle_radicado_enviado' enviado.id %}"
+                    class="btn-action btn-view">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </td>
+                <td>{{ enviado.fecha_radicacion|date:"d-m-Y" }}</td>
+                <td><strong>{{ enviado.id }}</strong></td>
+                <td>{{ enviado.radicador }}</td>
+                <td>{{ enviado.medio_envio }}</td>
+                <td>{{ enviado.tipo_comunicacion }}</td>
+                <td>{{ enviado.entidad }}</td>
+                <td>{{ enviado.oficina }}</td>
+                <td>
+                  {% if enviado.fecha_maxima_respuesta %}
+                    {{ enviado.fecha_maxima_respuesta|date:"d-m-Y" }}
+                  {% else %}
+                    <span class="text-muted">N/A</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr class="empty-row">
+                <td colspan="9" class="text-center">
+                  <i class="fas fa-inbox"></i> No se encontraron radicados recibidos
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Paginación -->
+      {% if page_obj_enviados.paginator.num_pages > 1 %}
+      <nav aria-label="Paginación" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if page_obj_enviados.has_previous %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?page=1{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              aria-label="Primera página">
+              <i class="fas fa-angle-double-left"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link"
+              href="?page={{ page_obj_enviados.previous_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              aria-label="Anterior">
+              <i class="fas fa-angle-left"></i>
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in page_obj_enviados.paginator.page_range %}
+            {% if page_obj_enviados.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj_enviados.number|add:-3 and num < page_obj_enviados.number|add:3 %}
+            <li class="page-item">
+              <a class="page-link"
+                href="?page={{ num }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj_enviados.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?page={{ page_obj_enviados.next_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              aria-label="Siguiente">
+              <i class="fas fa-angle-right"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link"
+              href="?page={{ page_obj_enviados.paginator.num_pages }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              aria-label="Última página">
+              <i class="fas fa-angle-double-right"></i>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Limpiar filtros
+    document.getElementById('limpiarFiltros').onclick = function () {
+      document.getElementById('start_date_rad').value = '';
+      document.getElementById('end_date_rad').value = '';
+      document.getElementById('oficina').selectedIndex = 0;
+      this.closest('form').submit();
+    };
+  });
+</script>
+{% endblock %}

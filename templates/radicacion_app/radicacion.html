@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Operaciones{% endblock %}
+
+{% block content %}
+
+<section class="text-center mt-5" aria-labelledby="radicacion-heading">
+    <div class="card-title bg-white text-white text-center">
+        <h2 id="radicacion-heading">Radicación</h2>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 g-2 row justify-content-center">
+        {% for modulo in modulos %}
+            <div class="col">
+                <div class="card">
+                    <a href="{% url modulo.url %}" class="option-btn" aria-label="{{ modulo.nombre }}">
+                        <i class="fa {{ modulo.icono }} fa-4x" aria-hidden="true"></i>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ modulo.nombre }}</h5>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

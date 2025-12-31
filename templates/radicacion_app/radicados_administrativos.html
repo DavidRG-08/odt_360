@@ -1,0 +1,58 @@
+ {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Radicacion{% endblock %}
+
+{% block content %}
+
+<section class="text-center mt-5" aria-labelledby="radicacion-heading">
+    <div class="card-title bg-white text-dark text-center">
+        <h2 id="radicacion-heading">Radicación</h2>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'radicados_recibidos' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-folder-open fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Recibidos</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'radicados_enviados' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-envelope fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Enviados</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'radicados_internos' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-building fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Internos</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'propiedades' %}" class="option-btn" aria-label="Radicacion">
+                    <i class="fas fa-cogs fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Propiedades</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

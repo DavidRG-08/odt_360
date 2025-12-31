@@ -172,6 +172,12 @@ def index(request):
             'icono': 'fa-wrench',
             'grupos': ['Mtto_admin', 'Mtto_view', 'Tecnicos_mtto']
         },
+        {
+            'nombre': 'Módulo de Radicación',
+            'url': 'radicacion',
+            'icono': 'fa-archive',
+            'grupos': ['radicacion', 'radicacion_pqrsd']
+        },
     ]
 
     modulos = obtener_modulos_visibles(MODULOS_INDEX, request.user)
@@ -205,7 +211,7 @@ def operaciones(request):
             'nombre': 'Consultar rutas',
             'url': 'lista_solicitudes',
             'icono': 'fa-road',
-            'grupos': ['Administrador', 'Operaciones', 'Operador']
+            'grupos': ['Administrador', 'Operaciones', 'Operador', 'operaciones_view']
         },
         {
             'nombre': 'Solicitar Ruta',

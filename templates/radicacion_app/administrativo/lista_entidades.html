@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Consultar Entidades{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h4><i class="fas fa-list-check"></i> Lista de Entidades</h4>
+    </div>
+    <div class="card-body">
+
+      <!-- Formulario de filtros -->
+      <form method="get" action="{% url 'lista_entidades' %}" id="filter-form" novalidate>
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-filter"></i> Filtros de Búsqueda
+          </div>
+
+          <div class="filters-container">
+            <div class="filter-group">
+              <label class="form-label" for="nombre_entidad">
+                <i class="fas fa-building"></i> Nombre de la entidad
+              </label>
+              <input 
+                type="text" 
+                id="nombre_entidad" 
+                name="nombre_entidad" 
+                class="form-control"
+                placeholder="Buscar por nombre de entidad..."
+                value="{{ nombre_entidad|default_if_none:'' }}"
+              >
+            </div>
+
+            <div class="filter-actions" style="display: flex; gap: 10px; flex-wrap: nowrap;">
+              <button type="submit" class="btn btn-filter btn-success">
+                <i class="fas fa-search"></i> Buscar
+              </button>
+
+              <button type="button" id="limpiarFiltros" class="btn btn-filter btn-info">
+                <i class="fas fa-redo"></i> Limpiar
+              </button>
+
+              <a href="{% url 'propiedades' %}" class="btn btn-filter btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+
+              <a href="{% url 'crear_entidad' %}" class="btn btn-filter btn-warning">
+                <i class="fas fa-plus-circle"></i> Agregar
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Tabla de oficinas -->
+      <div class="table-section">
+        <div class="table-title">
+          <i class="fas fa-building"></i> Entidades
+        </div>
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th style="width: 10%;"><i class="fas fa-cog"></i> Id</th>
+                <th style="width: 90%;"><i class="fas fa-building"></i> Nombre de la entidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entidad in page_obj_entidad %}
+              <tr>
+                <td class="action-cell">
+                  <a href="#" title="Ver detalles" class="btn-action btn-view">
+                    <i>{{ entidad.id }}</i>
+                  </a>
+                </td>
+                <td>{{ entidad.nombre }}</td>
+              </tr>
+              {% empty %}
+              <tr class="empty-row">
+                <td colspan="2" class="text-center">
+                  <i class="fas fa-inbox"></i> No se encontraron oficinas
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Paginación -->
+      {% if page_obj_entidad.paginator.num_pages > 1 %}
+      <nav aria-label="Paginación" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if page_obj_entidad.has_previous %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?page=1{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              aria-label="Primera página">
+              <i class="fas fa-angle-double-left"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link"
+              href="?page={{ page_obj_entidad.previous_page_number }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              aria-label="Anterior">
+              <i class="fas fa-angle-left"></i>
+            </a>
+          </li>
+          {% endif %}
+
+          {% for num in page_obj_entidad.paginator.page_range %}
+            {% if page_obj_entidad.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj_entidad.number|add:-3 and num < page_obj_entidad.number|add:3 %}
+            <li class="page-item">
+              <a class="page-link"
+                href="?page={{ num }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj_entidad.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?page={{ page_obj_entidad.next_page_number }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              aria-label="Siguiente">
+              <i class="fas fa-angle-right"></i>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link"
+              href="?page={{ page_obj_entidad.paginator.num_pages }}{% if nombre_entidad %}&nombre_entidad={{ nombre_entidad }}{% endif %}"
+              aria-label="Última página">
+              <i class="fas fa-angle-double-right"></i>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Limpiar filtros
+    document.getElementById('limpiarFiltros').onclick = function () {
+      document.getElementById('nombre_entidad').value = '';
+      this.closest('form').submit();
+    };
+  });
+</script>
+{% endblock %}

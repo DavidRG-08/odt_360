@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Crear Radicados internos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h4><i class="fas fa-envelope-open-text"></i>Radicado Internos</h4>
+    </div>
+    <div class="card-body">
+
+      <!-- Mensajes de error -->
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong><i class="fas fa-exclamation-circle"></i> Por favor, corrige los siguientes errores:</strong>
+        <ul>
+          {% for field, errors in form.errors.items %}
+          <li><strong>{{ field }}:</strong> {{ errors.0 }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {{ form.media }}
+      <form method="post" id="solicitud-data-form" novalidate>
+        {% csrf_token %}
+
+        <!-- ========== SECCIÓN 1: INFORMACIÓN DE INGRESO ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-inbox"></i> Información de Ingreso
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.medio_ingreso.id_for_label }}">
+                <i class="fas fa-map-pin"></i> {{ form.medio_ingreso.label }}
+              </label>
+              {{ form.medio_ingreso }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.tipo_comunicacion.id_for_label }}">
+                <i class="fas fa-envelope"></i> {{ form.tipo_comunicacion.label }}
+              </label>
+              {{ form.tipo_comunicacion }}
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.tipo_documento.id_for_label }}">
+                <i class="fas fa-file"></i> {{ form.tipo_documento.label }}
+              </label>
+              {{ form.tipo_documento }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.num_rad_llegada.id_for_label }}">
+                <i class="fas fa-barcode"></i> {{ form.num_rad_llegada.label }}
+              </label>
+              {{ form.num_rad_llegada }}
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 2: DATOS DEL REMITENTE ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-building"></i> Datos del Remitente
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.entidad.id_for_label }}">
+              <i class="fas fa-bank"></i> {{ form.entidad.label }}
+            </label>
+            {{ form.entidad }}
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.asunto.id_for_label }}">
+              <i class="fas fa-sticky-note"></i> {{ form.asunto.label }}
+            </label>
+            {{ form.asunto }}
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.anexos.id_for_label }}">
+                <i class="fas fa-paperclip"></i> {{ form.anexos.label }}
+              </label>
+              {{ form.anexos }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.observaciones.id_for_label }}">
+                <i class="fas fa-comment"></i> {{ form.observaciones.label }}
+              </label>
+              {{ form.observaciones }}
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 3: ASIGNACIÓN Y RESPUESTA ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-tasks"></i> Asignación y Respuesta
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.responsable_por_responder.id_for_label }}">
+                <i class="fas fa-user-tie"></i> {{ form.responsable_por_responder.label }}
+              </label>
+              <div class="input-group">
+                {{ form.responsable_por_responder }}
+                <span class="input-group-text">
+                  <i class="fas fa-spinner spinner" id="spinner-responsable" style="display: none;"></i>
+                </span>
+              </div>
+              <div class="info-oficina-cargada" id="info-oficina-cargada"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.oficina.id_for_label }}">
+                <i class="fas fa-map-location-dot"></i> {{ form.oficina.label }}
+              </label>
+              <div class="input-group">
+                {{ form.oficina }}
+                <span class="input-group-text">
+                  <i class="fas fa-check-circle text-success" id="check-oficina" style="display: none;"></i>
+                </span>
+              </div>
+              <small class="form-text">
+                <i class="fas fa-info-circle"></i> Se carga automáticamente según el responsable seleccionado
+              </small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.requiere_respuesta.id_for_label }}">
+                <i class="fas fa-reply"></i> {{ form.requiere_respuesta.label }}
+              </label>
+              {{ form.requiere_respuesta }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.tiempo_respuesta.id_for_label }}">
+                <i class="fas fa-hourglass-end"></i> {{ form.tiempo_respuesta.label }}
+              </label>
+              <div class="input-group">
+                {{ form.tiempo_respuesta }}
+                <span class="input-group-text">
+                  <i class="fas fa-spinner spinner" id="spinner-tiempo" style="display: none;"></i>
+                </span>
+              </div>
+              <small class="form-text">
+                <i class="fas fa-info-circle"></i> Días hábiles (sin sábados, domingos ni festivos)
+              </small>
+              <div class="info-dias-habiles" id="info-dias-habiles"></div>
+            </div>
+          </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.fecha_maxima_respuesta.id_for_label }}">
+              <i class="fas fa-calendar-check"></i> {{ form.fecha_maxima_respuesta.label }}
+            </label>
+            <div class="input-group">
+              {{ form.fecha_maxima_respuesta }}
+              <span class="input-group-text">
+                <i class="fas fa-check-circle text-success" id="check-fecha" style="display: none;"></i>
+              </span>
+            </div>
+            <small class="form-text">
+              <i class="fas fa-info-circle"></i> Se calcula automáticamente basada en los días hábiles ingresados
+            </small>
+          </div>
+        </div>
+
+        <!-- ========== SECCIÓN 4: CONTROL DE RESPUESTA ========== -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="fas fa-check-double"></i> Control de Respuesta
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.respuesta_rad_interno.id_for_label }}">
+                <i class="fas fa-link"></i> {{ form.respuesta_rad_interno.label }}
+              </label>
+              {{ form.respuesta_rad_interno }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.estado_respuesta.id_for_label }}">
+                <i class="fas fa-circle-notch"></i> {{ form.estado_respuesta.label }}
+              </label>
+              {{ form.estado_respuesta }}
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="{{ form.fecha_respuesta.id_for_label }}">
+                <i class="fas fa-calendar"></i> {{ form.fecha_respuesta.label }}
+              </label>
+              {{ form.fecha_respuesta }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.medio_respuesta.id_for_label }}">
+                <i class="fas fa-share"></i> {{ form.medio_respuesta.label }}
+              </label>
+              {{ form.medio_respuesta }}
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== BOTONES DE ACCIÓN ========== -->
+        <input type="hidden" name="radicador" value="{{ request.user.id }}">
+
+        <div class="row justify-content-center mt-4 g-3">
+          <div class="col-md-4 d-grid">
+            <button type="submit" class="btn btn-success btn-lg">
+              <i class="fas fa-save"></i> Guardar Registro
+            </button>
+          </div>
+
+          <div class="col-md-4 d-grid">
+            <a href="{% url 'radicados_internos' %}" class="btn btn-secondary btn-lg">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    // Activar Select2 en los dropdowns
+    $('select').select2({
+      width: '100%',
+      language: 'es'
+    });
+
+    // ============================================================
+    // CARGAR OFICINA AUTOMÁTICAMENTE SEGÚN RESPONSABLE SELECCIONADO
+    // ============================================================
+
+    const responsableSelect = $('#id_responsable_por_responder');
+    const oficinaSelect = $('#id_oficina');
+    const spinnerResponsable = $('#spinner-responsable');
+    const checkOficina = $('#check-oficina');
+    const infoOficina = $('#info-oficina-cargada');
+
+    function cargarOficinaResponsable() {
+      const responsableId = responsableSelect.val();
+
+      if (!responsableId) {
+        oficinaSelect.val(null).trigger('change');
+        checkOficina.hide();
+        infoOficina.removeClass('show').html('');
+        return;
+      }
+
+      spinnerResponsable.show();
+
+      $.ajax({
+        url: '{% url "get_oficina_responsable" %}',
+        type: 'GET',
+        data: { responsable_id: responsableId },
+        success: function (response) {
+          if (response.exito) {
+            oficinaSelect.val(response.oficina_id).trigger('change');
+            oficinaSelect.addClass('oficina-cargada');
+            infoOficina.html(
+              `<strong><i class="fas fa-check-circle"></i> Oficina cargada automáticamente:</strong> ${response.oficina_nombre}`
+            ).addClass('show');
+            checkOficina.show();
+          } else {
+            alert('❌ Error al cargar la oficina: ' + response.error);
+            oficinaSelect.val(null).trigger('change');
+          }
+        },
+        error: function () {
+          alert('❌ Error en la conexión.');
+          oficinaSelect.val(null).trigger('change');
+        },
+        complete: function () {
+          spinnerResponsable.hide();
+        }
+      });
+    }
+
+    responsableSelect.on('change', function () {
+      cargarOficinaResponsable();
+    });
+
+    // ============================================================
+    // CALCULAR FECHA DE RESPUESTA
+    // ============================================================
+
+    const tiempoRespuestaInput = $('#id_tiempo_respuesta');
+    const fechaMaximaInput = $('#id_fecha_maxima_respuesta');
+    const spinnerTiempo = $('#spinner-tiempo');
+    const checkFecha = $('#check-fecha');
+    const infoTiempo = $('#info-dias-habiles');
+
+    function calcularFechaRespuesta() {
+      const dias = parseInt(tiempoRespuestaInput.val());
+
+      if (isNaN(dias) || dias === '') {
+        fechaMaximaInput.val('');
+        checkFecha.hide();
+        infoTiempo.removeClass('show').html('');
+        return;
+      }
+
+      if (dias < 0) {
+        alert('⚠️ Los días no pueden ser negativos');
+        tiempoRespuestaInput.val('');
+        return;
+      }
+
+      spinnerTiempo.show();
+
+      $.ajax({
+        url: '{% url "calcular_fecha_respuesta" %}',
+        type: 'GET',
+        data: { dias: dias },
+        success: function (response) {
+          if (response.exito) {
+            fechaMaximaInput.val(response.fecha_maxima);
+            fechaMaximaInput.addClass('fecha-calculada');
+
+            const fechaFormato = new Date(response.fecha_maxima).toLocaleDateString('es-CO', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+
+            infoTiempo.html(
+              `<strong><i class="fas fa-check-circle"></i> ${fechaFormato}</strong><br>` +
+              `<small>Se sumaron ${dias} día(s) hábil(es) excluyendo fines de semana y festivos colombianos.</small>`
+            ).addClass('show');
+
+            checkFecha.show();
+          } else {
+            alert('❌ Error: ' + response.error);
+            fechaMaximaInput.val('');
+          }
+        },
+        error: function () {
+          alert('❌ Error en la conexión.');
+          fechaMaximaInput.val('');
+        },
+        complete: function () {
+          spinnerTiempo.hide();
+        }
+      });
+    }
+
+    tiempoRespuestaInput.on('change keyup', function () {
+      calcularFechaRespuesta();
+    });
+
+    tiempoRespuestaInput.on('keypress', function (e) {
+      const char = String.fromCharCode(e.which);
+      if (!/[0-9]/.test(char)) {
+        e.preventDefault();
+      }
+    });
+
+    fechaMaximaInput.on('focus', function () {
+      $(this).blur();
+    });
+  });
+</script>
+{% endblock %}
