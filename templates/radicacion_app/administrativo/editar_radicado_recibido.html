@@ -4,7 +4,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/radicados_editar.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
 {% endblock %}
 
 {% block content %}
@@ -14,14 +16,14 @@
             <h4><i class="fas fa-edit"></i> Editar Radicado Recibido</h4>
         </div>
         <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="editar-form">
+                {% csrf_token %}
 
-            <!-- Información General -->
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-info-circle"></i> Información General
-                </div>
-                <form method="post" enctype="multipart/form-data" class="form-fields">
-                    {% csrf_token %}
+                <!-- Información General -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-info-circle"></i> Información General
+                    </div>
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -57,8 +59,8 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group full-width">
+                    <div class="form-row full">
+                        <div class="form-group">
                             <label class="form-label"><i class="fas fa-heading"></i> {{ form.asunto.label }}</label>
                             {{ form.asunto }}
                             {% if form.asunto.errors %}
@@ -66,16 +68,13 @@
                             {% endif %}
                         </div>
                     </div>
-                </form>
-            </div>
-
-            <!-- Información de Asignación -->
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-user-check"></i> Información de Asignación
                 </div>
-                <form method="post" enctype="multipart/form-data" class="form-fields">
-                    {% csrf_token %}
+
+                <!-- Información de Asignación -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-user-check"></i> Información de Asignación
+                    </div>
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -102,16 +101,13 @@
                             {% endif %}
                         </div>
                     </div>
-                </form>
-            </div>
-
-            <!-- Información de Respuesta -->
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-calendar-check"></i> Información de Respuesta
                 </div>
-                <form method="post" enctype="multipart/form-data" class="form-fields">
-                    {% csrf_token %}
+
+                <!-- Información de Respuesta -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-calendar-check"></i> Información de Respuesta
+                    </div>
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -125,20 +121,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-hourglass-half"></i> {{ form.tiempo_respuesta.label }}</label>
-                            {{ form.tiempo_respuesta }}
-                            {% if form.tiempo_respuesta.errors %}
-                                <div class="form-error">{{ form.tiempo_respuesta.errors }}</div>
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.num_radicado_2025.label }}</label>
+                            {{ form.num_radicado_2025 }}
+                            {% if form.num_radicado_2025.errors %}
+                                <div class="form-error">{{ form.num_radicado_2025.errors }}</div>
                             {% endif %}
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-calendar"></i> {{ form.fecha_maxima_respuesta.label }}</label>
-                            {{ form.fecha_maxima_respuesta }}
-                            {% if form.fecha_maxima_respuesta.errors %}
-                                <div class="form-error">{{ form.fecha_maxima_respuesta.errors }}</div>
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_respuesta.label }}</label>
+                            {{ form.medio_respuesta }}
+                            {% if form.medio_respuesta.errors %}
+                                <div class="form-error">{{ form.medio_respuesta.errors }}</div>
                             {% endif %}
                         </div>
+                         
                     </div>
 
                     <div class="form-row">
@@ -158,33 +155,26 @@
                             {% endif %}
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_respuesta.label }}</label>
-                            {{ form.medio_respuesta }}
-                            {% if form.medio_respuesta.errors %}
-                                <div class="form-error">{{ form.medio_respuesta.errors }}</div>
-                            {% endif %}
-                        </div>
                     </div>
-                </form>
-            </div>
 
-            <!-- Acciones -->
-            <div class="form-section">
-                <div class="action-buttons">
-                    <a href="{% url 'detalle_radicado_recibido' radicado_id=instancia.id %}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancelar
-                    </a>
-                    <button type="submit" form="editar-form" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Cambios
-                    </button>
+
                 </div>
-            </div>
+
+                <!-- Acciones -->
+                <div class="form-section">
+                    <div class="action-buttons">
+                        <a href="{% url 'lista_radicados_recibidos' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" form="editar-form">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
 
         </div>
     </div>
 </div>
-
-
 
 {% endblock %}

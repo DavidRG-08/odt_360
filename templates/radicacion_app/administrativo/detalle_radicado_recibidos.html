@@ -159,6 +159,11 @@
                         <label class="detail-label"><i class="fas fa-envelope"></i> medio respuesta</label>
                         <div class="detail-value">{{ radicado_recibido.medio_respuesta }}</div>
                     </div>
+
+                    <div class="detail-item">
+                        <label class="detail-label"><i class="fas fa-envelope"></i> Numero radicado 2025</label>
+                        <div class="detail-value">{{ radicado_recibido.num_radicado_2025 }}</div>
+                    </div>
                 </div>
             </div>
 
@@ -171,10 +176,6 @@
 
                     <a href="{% url 'editar_radicado_recibido' radicado_recibido.id %}" class="btn btn-primary">
                         <i class="fas fa-edit"></i> Editar
-                    </a>
-
-                    <a href="#" class="btn btn-info">
-                        <i class="fas fa-print"></i> Imprimir
                     </a>
                 </div>
             </div>

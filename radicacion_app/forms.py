@@ -56,7 +56,8 @@ class CrearRadicadoRecibidosForm(forms.ModelForm):
 class UpdateRadicadosRecibidosForm(forms.ModelForm):
     class Meta:
         model = RadicacionRecibidos
-        exclude = ['radicador', 'fecha_radicacion', 'id']
+        exclude = ['radicador', 'fecha_radicacion', 'id', 'tiempo_respuesta', 'fecha_maxima_respuesta', 
+                   'anexos', 'observaciones', 'respuesta_rad_interno']
         fields = '__all__'
 
         widgets = {
@@ -78,14 +79,6 @@ class UpdateRadicadosRecibidosForm(forms.ModelForm):
             })
         }
 
-    def clean(self):
-        cleaned_data = super().clean()
-        tiempo_respuesta = cleaned_data.get('tiempo_respuesta')
-        
-        if tiempo_respuesta and tiempo_respuesta < 0:
-            raise forms.ValidationError('El tiempo de respuesta no puede ser negativo.')
-    
-        return cleaned_data
 
 
 class CrearRadicadoEnviadosForm(forms.ModelForm):

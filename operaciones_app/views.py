@@ -176,7 +176,7 @@ def index(request):
             'nombre': 'Módulo de Radicación',
             'url': 'radicacion',
             'icono': 'fa-archive',
-            'grupos': ['todos']
+            'grupos': ['radicacion', 'radicacion_pqrsd']
         },
     ]
 

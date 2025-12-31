@@ -72,7 +72,7 @@
                 <i class="fas fa-redo"></i> Limpiar
               </button>
 
-              <a href="{% url 'radicacion' %}" class="btn btn-filter btn-secondary">
+              <a href="{% url 'radicados_administrativos' %}" class="btn btn-filter btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
 
@@ -80,7 +80,13 @@
                 class="btn btn-filter btn-success">
                 <i class="fas fa-file-excel"></i> Exportar
               </a>
+
             </div>
+
+              <a href="{% url 'crear_radicados_recibidos' %}"
+                class="btn btn-filter btn-success">
+                <i class="fas fa-file-text"></i> Crear Radicado
+              </a>
           </div>
         </div>
       </form>

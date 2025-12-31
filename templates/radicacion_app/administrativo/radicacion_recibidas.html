@@ -222,6 +222,13 @@
               </label>
               {{ form.medio_respuesta }}
             </div>
+
+            <div class="form-group">
+              <label class="form-label" for="{{ form.num_radicado_2025.id_for_label }}">
+                <i class="fas fa-share"></i> {{ form.num_radicado_2025.label }}
+              </label>
+              {{ form.num_radicado_2025 }}
+            </div>
           </div>
         </div>
 
@@ -236,7 +243,7 @@
           </div>
 
           <div class="col-md-4 d-grid">
-            <a href="{% url 'radicacion' %}" class="btn btn-secondary btn-lg">
+            <a href="{% url 'radicados_recibidos' %}" class="btn btn-secondary btn-lg">
               <i class="fas fa-arrow-left"></i> Volver
             </a>
           </div>

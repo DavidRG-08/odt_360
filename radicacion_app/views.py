@@ -16,16 +16,16 @@ from .reports import *
 def radicacion(request):
     MODULOS_RADICACION = [
         {
-            'nombre': 'Administracion',
+            'nombre': 'administración',
             'url': 'radicados_administrativos',
             'icono': 'fas fa-address-card',
-            'grupos': ['radicacion', 'admin']
+            'grupos': ['radicacion']
         },
         {
             'nombre': 'PQRSD',
             'url': 'radicacion_pqrsd',
             'icono': 'fas fa-comments',
-            'grupos': ['radicacion_pqrsd', 'admin']
+            'grupos': ['radicacion_pqrsd']
         }
     ]
     return render(request, 'radicacion_app/radicacion.html', {'modulos': MODULOS_RADICACION})
@@ -408,7 +408,7 @@ def editar_radicado_recibido(request, radicado_id):
     else:
         form = UpdateRadicadosRecibidosForm(instance=instancia)
 
-    return render(request, 'radicacion_app/administrativo/editar_radicado_recibido.html', {'form': form, 'instancia': instancia})
+    return render(request, 'radicacion_app/administrativo/editar_radicado_recibido.html', {'form': form})
 
 
 @login_required
@@ -606,6 +606,11 @@ def crear_radicados_recibidos_pqrsd(request):
 def view_radicados_recibidos_pqrsd(request):
     rad_pqrsd = RadicadosRecibidosPqrsd.objects.all().order_by('-id')
 
+    # filtrar por unidad de negocio
+    unidad_negocio = request.GET.get('unidad_negocio')
+    if unidad_negocio:
+        rad_pqrsd = rad_pqrsd.filter(unidad_negocio=unidad_negocio)
+
 
     #rango de fechas
     start_date_rad = request.GET.get('start_date_rad')
@@ -632,6 +637,7 @@ def view_radicados_recibidos_pqrsd(request):
         'page_obj_rad_pqrsd': page_obj_rad_pqrsd,
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
+        'selected_unidad': unidad_negocio,
     })
 
 
@@ -665,6 +671,8 @@ def editar_pqrsd_recibido(request, radicado_id):
 @permission_required('radicacion_app.add_radicadosenviadospqrsd', raise_exception=True)
 def crear_radicados_enviados_pqrsd(request):
     consecutivo_rec = ParametrosRadicacion.objects.get(pk=2)
+
+
     
     if request.method == 'POST':
         form = CrearRadicadoEnviadoPqrsdForm(request.POST)
@@ -693,6 +701,8 @@ def crear_radicados_enviados_pqrsd(request):
 @permission_required('radicacion_app.view_radicadosenviadospqrsd', raise_exception=True)
 def view_radicados_enviados_pqrsd(request):
     rad_pqrsd = RadicadosEnviadosPqrsd.objects.all().order_by('-id')
+
+
 
 
     #rango de fechas

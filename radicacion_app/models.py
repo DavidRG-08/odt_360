@@ -136,7 +136,7 @@ class RadicacionRecibidos(models.Model):
     num_rad_llegada = models.CharField(max_length=20, blank=True, null=True)
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     asunto = models.CharField(max_length=200)
-    anexos = models.IntegerField()
+    anexos = models.IntegerField(default=0)
     responsable_por_responder = models.ForeignKey(Responsable, on_delete=models.CASCADE, related_name='responsable_por_responder')
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE)
     RESPUESTA = [
@@ -160,6 +160,7 @@ class RadicacionRecibidos(models.Model):
     estado_respuesta = models.CharField(max_length=20, choices=RESPUESTA_ESTADO, blank=True, null=True)    
     fecha_respuesta = models.DateField(blank=True, null=True)
     medio_respuesta = models.CharField(max_length=50, blank=True, null=True)
+    num_radicado_2025 = models.CharField(max_length=40, blank=True, null=True)
 
 
     def __str__(self):

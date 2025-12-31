@@ -7,7 +7,9 @@
 
 <section class="text-center mt-5" aria-labelledby="radicacion-heading">
     <div class="card-title bg-white text-dark text-center">
-        <h2 id="radicacion-heading">Propiedades</h2>
+        <a href="{% url 'radicados_administrativos' %}" class="btn-volver" title="Volver">
+            <h2 id="radicacion-heading">Propiedades</h2>
+        </a>
     </div>
     
     <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
@@ -54,9 +56,5 @@
     </div>
 </section>
 
-<!-- Botón Volver Flotante -->
-<a href="{% url 'radicacion' %}" class="btn-volver" title="Volver">
-    <i class="fas fa-arrow-left"></i>
-</a>
 
 {% endblock %}
