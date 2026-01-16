@@ -81,6 +81,9 @@
           <div class="form-group form-row full">
             <label class="form-label" for="{{ form.entidad.id_for_label }}">
               <i class="fas fa-bank"></i> {{ form.entidad.label }}
+              <button type="button" class="btn btn-sm btn-primary ms-2" id="btn-crear-entidad" data-bs-toggle="modal" data-bs-target="#modalCrearEntidad">
+                <i class="fas fa-plus"></i> Crear
+              </button>
             </label>
             {{ form.entidad }}
           </div>
@@ -233,6 +236,35 @@
           </div>
         </div>
 
+
+        <!-- Modal para crear entidad -->
+        <div class="modal fade" id="modalCrearEntidad" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-building"></i> Crear Nueva Entidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-crear-entidad">
+                  {% csrf_token %}
+                  <div class="mb-3">
+                    <label for="nombre-entidad" class="form-label">Nombre de la Entidad</label>
+                    <input type="text" class="form-control" id="nombre-entidad" name="nombre" required>
+                  </div>
+                  <div id="alert-crear-entidad"></div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btn-guardar-entidad">
+                  <i class="fas fa-save"></i> Guardar Entidad
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </form>
     </div>
   </div>
@@ -379,6 +411,104 @@
     fechaMaximaInput.on('focus', function () {
       $(this).blur();
     });
+
+    // ============================================================
+    // CREAR ENTIDAD EN MODAL
+    // ============================================================
+
+   
+    const btnGuardarEntidad = $('#btn-guardar-entidad');
+    const formCrearEntidad = $('#form-crear-entidad');
+    const alertCrearEntidad = $('#alert-crear-entidad');
+    const modalElement = document.getElementById('modalCrearEntidad');
+    // obtener o crear la misma instancia que usa el atributo data-bs-toggle
+    const modalCrearEntidad = (bootstrap.Modal.getOrCreateInstance)
+      ? bootstrap.Modal.getOrCreateInstance(modalElement)
+      : (bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement));
+    const entidadSelect = $('#id_entidad');
+
+    // variable para mantener la petición activa y permitir abortarla si se cierra el modal
+    let crearEntidadXhr = null;
+
+    // limpiar/rehabilitar estado cuando el modal quede oculto
+    modalElement.addEventListener('hidden.bs.modal', function () {
+      if (crearEntidadXhr && crearEntidadXhr.readyState !== 4) {
+        try { crearEntidadXhr.abort(); } catch (e) {}
+      }
+      if (formCrearEntidad && formCrearEntidad[0]) formCrearEntidad[0].reset();
+      alertCrearEntidad.html('');
+      btnGuardarEntidad.prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Entidad');
+    });
+
+    btnGuardarEntidad.on('click', function () {
+      const nombre = $('#nombre-entidad').val().trim();
+
+      if (!nombre) {
+        mostrarAlerta('Por favor ingresa el nombre de la entidad', 'danger');
+        return;
+      }
+
+      btnGuardarEntidad.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
+
+      crearEntidadXhr = $.ajax({
+        url: '{% url "crear_entidad_ajax" %}',
+        type: 'POST',
+        data: {
+          csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val(),
+          nombre: nombre
+        },
+        success: function (response) {
+          if (response.exito) {
+            mostrarAlerta('✅ Entidad creada correctamente', 'success');
+
+            // Actualizar el select con la nueva entidad
+            entidadSelect.append(new Option(response.nombre, response.id, false, true));
+            entidadSelect.trigger('change');
+
+            // Limpiar formulario
+            if (formCrearEntidad && formCrearEntidad[0]) formCrearEntidad[0].reset();
+
+            // Cerrar modal después de 1.2 segundos
+            setTimeout(() => {
+              // usar la instancia correcta para ocultar
+              try { modalCrearEntidad.hide(); } catch (e) { /* fallback - nada */ }
+              alertCrearEntidad.html('');
+              btnGuardarEntidad.prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Entidad');
+            }, 1200);
+          } else {
+            mostrarAlerta('❌ Error: ' + response.error, 'danger');
+            btnGuardarEntidad.prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Entidad');
+          }
+        },
+        error: function (jqXHR, textStatus) {
+          if (textStatus === 'abort') {
+            // petición abortada por cierre del modal — no mostrar error
+            return;
+          }
+          mostrarAlerta('❌ Error en la conexión', 'danger');
+          btnGuardarEntidad.prop('disabled', false).html('<i class="fas fa-save"></i> Guardar Entidad');
+        },
+        complete: function () {
+          crearEntidadXhr = null;
+        }
+      });
+    });
+
+    formCrearEntidad.on('keypress', function (e) {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        btnGuardarEntidad.click();
+      }
+    });
+
+    function mostrarAlerta(mensaje, tipo) {
+      alertCrearEntidad.html(
+        `<div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+          ${mensaje}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`
+      );
+    }
   });
 </script>
 {% endblock %}

@@ -18,10 +18,12 @@ urlpatterns = [
     path('crear_radicados_enviados/', views.crear_radicados_enviados, name='crear_radicados_enviados'),
     path('lista_radicados_enviados/', views.view_radicados_enviados, name='lista_radicados_enviados'),
     path('radicados_enviados/detalle/<str:radicado_id>/', views.obtener_detalle_rad_enviado, name='detalle_radicado_enviado'),
+    path('radicados_enviados/editar/<str:radicado_id>/', views.editar_radicado_enviado, name='editar_radicado_enviado'),
 
     path('crear_radicados_internos/', views.crear_radicados_internos, name='crear_radicados_internos'),
     path('lista_radicados_internos/', views.view_radicados_internos, name='lista_radicados_internos'),
     path('radicados_internos/detalle/<str:radicado_id>/', views.obtener_detalle_rad_interno, name='detalle_radicado_interno'),
+    path('radicados_internos/editar/<str:radicado_id>/', views.editar_radicado_interno, name='editar_radicado_interno'),
 
     # PQRSD
     path('crear_radicado_pqrsd/', views.crear_radicados_recibidos_pqrsd, name='crear_radicado_pqrsd'),
@@ -49,6 +51,7 @@ urlpatterns = [
     path('propiedades/oficina/crear_oficina/', views.crear_oficina, name='crear_oficina'),
     path('propiedades/entidades/', views.view_entidades, name='lista_entidades'),
     path('propiedades/entidad/crear_entidad/', views.crear_entidad, name='crear_entidad'),
+    path('crear-entidad-ajax/', views.crear_entidad_ajax, name='crear_entidad_ajax'),
     path('propiedades/responsable/', views.view_responsable, name='lista_responsables'),
     path('propiedades/responsable/crear_responsable/', views.crear_responsable, name='crear_responsable'),
     path('propiedades/tipo_documento/', views.view_tipo_documento, name='lista_tipo_documentos'),

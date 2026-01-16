@@ -7,6 +7,7 @@ from .models import Responsable
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
 from .reports import *
 
@@ -19,13 +20,13 @@ def radicacion(request):
             'nombre': 'administración',
             'url': 'radicados_administrativos',
             'icono': 'fas fa-address-card',
-            'grupos': ['radicacion']
+            'grupos': ['radicacion', 'radicacion_view']
         },
         {
             'nombre': 'PQRSD',
             'url': 'radicacion_pqrsd',
             'icono': 'fas fa-comments',
-            'grupos': ['radicacion_pqrsd']
+            'grupos': ['radicacion_pqrsd','radicacion_pqrsd_view']
         }
     ]
     return render(request, 'radicacion_app/radicacion.html', {'modulos': MODULOS_RADICACION})
@@ -285,6 +286,24 @@ def crear_entidad(request):
     return render(request, 'radicacion_app/administrativo/crear_entidad.html', {'form': form})
 
 
+@require_http_methods(["POST"])
+def crear_entidad_ajax(request):
+    """Crea una nueva entidad vía AJAX"""
+    try:
+        nombre = request.POST.get('nombre', '').strip()
+
+        if not nombre:
+            return JsonResponse({'exito': False, 'error': 'El nombre es requerido'})
+
+        from .models import Entidad
+        entidad = Entidad.objects.create(nombre=nombre)
+        return JsonResponse({'exito': True, 'id': entidad.id, 'nombre': entidad.nombre})
+
+    except Exception as e:
+        return JsonResponse({'exito': False, 'error': str(e)})
+
+
+
 @login_required
 @permission_required('radicacion_app.view_entidad', raise_exception=True)
 def view_tipo_documento(request):
@@ -434,7 +453,7 @@ def crear_radicados_enviados(request):
             recibido.save()
 
             messages.success(request, 'Radicado enviado creado exitosamente.')
-            return redirect('home')
+            return redirect('lista_radicados_enviados')
         
         else:
             messages.error(request, 'Error al crear el radicado enviado. Por favor verifica los datos ingresados.')
@@ -487,6 +506,24 @@ def view_radicados_enviados(request):
     })
 
 
+
+@login_required
+def editar_radicado_enviado(request, radicado_id):
+    instancia = get_object_or_404(RadicacionEnviados, pk=radicado_id)
+    if request.method == 'POST':
+        form = UpdateRadicadosEnviadosForm(request.POST, instance=instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Radicado actualizado exitosamente.')
+            return redirect('lista_radicados_enviados')
+    
+    else:
+        form = UpdateRadicadosEnviadosForm(instance=instancia)
+
+    return render(request, 'radicacion_app/administrativo/editar_radicado_enviado.html', {'form': form})
+
+
+
 @login_required
 def obtener_detalle_rad_enviado(request, radicado_id):
     rad_enviado = RadicacionEnviados.objects.get(id=radicado_id)
@@ -511,7 +548,7 @@ def crear_radicados_internos(request):
             radicado.save()
 
             messages.success(request, 'Radicado creado exitosamente.')
-            return redirect('home')
+            return redirect('lista_radicados_internos')
         
         else:
             messages.error(request, 'Error al crear el radicado. Por favor verifica los datos ingresados.')
@@ -569,6 +606,22 @@ def obtener_detalle_rad_interno(request, radicado_id):
     rad_interno = RadicacionInternos.objects.get(id=radicado_id)
 
     return render(request, 'radicacion_app/administrativo/detalle_radicado_interno.html', {"radicado_interno": rad_interno})
+
+
+@login_required
+def editar_radicado_interno(request, radicado_id):
+    instancia = get_object_or_404(RadicacionInternos, pk=radicado_id)
+    if request.method == 'POST':
+        form = UpdateRadicadosInternosForm(request.POST, instance=instancia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Radicado actualizado exitosamente.')
+            return redirect('lista_radicados_internos')
+    
+    else:
+        form = UpdateRadicadosInternosForm(instance=instancia)
+
+    return render(request, 'radicacion_app/administrativo/editar_radicado_interno.html', {'form': form})
 
 
 

@@ -81,6 +81,10 @@
                 <i class="fas fa-file-excel"></i> Exportar
               </a>
             </div>
+              <a href="{% url 'crear_radicados_enviados' %}"
+                class="btn btn-filter btn-success">
+                <i class="fas fa-file-text"></i> Crear Radicado
+              </a>
           </div>
         </div>
       </form>
@@ -96,13 +100,14 @@
               <tr>
                 <th><i class="fas fa-cogs"></i> Acción</th>
                 <th><i class="fas fa-calendar"></i> Fecha Radicación</th>
-                <th><i class="fas fa-barcode"></i> No. Radicado</th>
-                <th><i class="fas fa-user"></i> Radicador</th>
+                <th><i class="fas fa-user"></i> No. Radicado</th>
                 <th><i class="fas fa-map-pin"></i> Medio de envio</th>
                 <th><i class="fas fa-envelope"></i> Comunicación</th>
                 <th><i class="fas fa-building"></i> Entidad</th>
                 <th><i class="fas fa-map-location-dot"></i> Oficina</th>
+                <th><i class="fas fa-building"></i> No Radicado llegada</th>
                 <th><i class="fas fa-calendar-check"></i> Fecha Máxima Respuesta</th>
+                <th><i class="fas fa-barcode"></i> Radicador</th>
               </tr>
             </thead>
             <tbody>
@@ -116,11 +121,12 @@
                 </td>
                 <td>{{ enviado.fecha_radicacion|date:"d-m-Y" }}</td>
                 <td><strong>{{ enviado.id }}</strong></td>
-                <td>{{ enviado.radicador }}</td>
+
                 <td>{{ enviado.medio_envio }}</td>
                 <td>{{ enviado.tipo_comunicacion }}</td>
                 <td>{{ enviado.entidad }}</td>
                 <td>{{ enviado.oficina }}</td>
+                <td>{{ enviado.num_rad_llegada }}</td>
                 <td>
                   {% if enviado.fecha_maxima_respuesta %}
                     {{ enviado.fecha_maxima_respuesta|date:"d-m-Y" }}
@@ -128,6 +134,7 @@
                     <span class="text-muted">N/A</span>
                   {% endif %}
                 </td>
+                <td>{{ enviado.radicador }}</td>
               </tr>
               {% empty %}
               <tr class="empty-row">

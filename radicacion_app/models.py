@@ -73,7 +73,7 @@ class ParametrosRadicacion(models.Model):
     
 
 class RadicacionEnviados(models.Model):
-    id = models.CharField(max_length=20, primary_key=True)
+    id = models.CharField(max_length=20, primary_key=True) 
     fecha_radicacion = models.DateField(default=date.today)
     ENVIO = [
         ('Correo electronico', 'Correo electronico'),

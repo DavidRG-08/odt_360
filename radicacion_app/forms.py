@@ -81,6 +81,62 @@ class UpdateRadicadosRecibidosForm(forms.ModelForm):
 
 
 
+class UpdateRadicadosEnviadosForm(forms.ModelForm):
+    class Meta:
+        model = RadicacionEnviados
+        exclude = ['id', 'fecha_radicacion', 'radicador', 'tiempo_respuesta', 'fecha_maxima_respuesta', 
+                   'anexos', 'observaciones']
+        fields = '__all__'
+
+        widgets = {
+            'tiempo_respuesta': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': 'Ingresa el número de días hábiles'
+            }),
+            'fecha_maxima_respuesta': forms.DateInput(attrs={
+                'class': 'form-control fecha-calculada',
+                'type': 'date',
+                'readonly': True,
+                'placeholder': 'Se calcula automáticamente'
+            }),
+            'fecha_respuesta': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de respuesta'
+            })
+        }
+
+
+class UpdateRadicadosInternosForm(forms.ModelForm):
+    class Meta:
+        model = RadicacionInternos
+        exclude = ['radicador', 'fecha_radicacion', 'id', 'tiempo_respuesta', 'fecha_maxima_respuesta', 
+                   'anexos', 'observaciones', 'respuesta_rad_interno']
+        fields = '__all__'
+
+        widgets = {
+            'tiempo_respuesta': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'placeholder': 'Ingresa el número de días hábiles'
+            }),
+            'fecha_maxima_respuesta': forms.DateInput(attrs={
+                'class': 'form-control fecha-calculada',
+                'type': 'date',
+                'readonly': True,
+                'placeholder': 'Se calcula automáticamente'
+            }),
+            'fecha_respuesta': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'placeholder': 'Selecciona la fecha de respuesta'
+            })
+        }
+
+
+
+
 class CrearRadicadoEnviadosForm(forms.ModelForm):
     class Meta:
         model = RadicacionEnviados

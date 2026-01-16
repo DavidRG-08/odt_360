@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Editar radicado enviado{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/radicados_editar.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h4><i class="fas fa-edit"></i> Editar Radicado Enviado</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="editar-form">
+                {% csrf_token %}
+
+                <!-- Información General -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-info-circle"></i> Información General
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_envio.label }}</label>
+                            {{ form.medio_envio }}
+                            {% if form.medio_envio.errors %}
+                                <div class="form-error">{{ form.medio_envio.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-file-alt"></i> {{ form.tipo_comunicacion.label }}</label>
+                            {{ form.tipo_comunicacion }}
+                            {% if form.tipo_comunicacion.errors %}
+                                <div class="form-error">{{ form.tipo_comunicacion.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-file"></i> {{ form.tipo_documento.label }}</label>
+                            {{ form.tipo_documento }}
+                            {% if form.tipo_documento.errors %}
+                                <div class="form-error">{{ form.tipo_documento.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-barcode"></i> {{ form.num_rad_llegada.label }}</label>
+                            {{ form.num_rad_llegada }}
+                            {% if form.num_rad_llegada.errors %}
+                                <div class="form-error">{{ form.num_rad_llegada.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-barcode"></i> {{ form.num_rad_interno.label }}</label>
+                            {{ form.num_rad_interno }}
+                            {% if form.num_rad_interno.errors %}
+                                <div class="form-error">{{ form.num_rad_interno.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-heading"></i> {{ form.asunto.label }}</label>
+                            {{ form.asunto }}
+                            {% if form.asunto.errors %}
+                                <div class="form-error">{{ form.asunto.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Asignación -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-user-check"></i> Información de Asignación
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-building"></i> {{ form.entidad.label }}</label>
+                            {{ form.entidad }}
+                            {% if form.entidad.errors %}
+                                <div class="form-error">{{ form.entidad.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-map-location-dot"></i> {{ form.oficina.label }}</label>
+                            {{ form.oficina }}
+                            {% if form.oficina.errors %}
+                                <div class="form-error">{{ form.oficina.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-id-badge"></i> {{ form.enviado_por.label }}</label>
+                            {{ form.enviado_por }}
+                            {% if form.enviado_por.errors %}
+                                <div class="form-error">{{ form.enviado_por.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Respuesta -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-calendar-check"></i> Información de Respuesta
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-check-circle"></i> {{ form.requiere_respuesta.label }}</label>
+                            <div class="form-check">
+                                {{ form.requiere_respuesta }}
+                            </div>
+                            {% if form.requiere_respuesta.errors %}
+                                <div class="form-error">{{ form.requiere_respuesta.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-calendar"></i> {{ form.fecha_respuesta.label }}</label>
+                            {{ form.fecha_respuesta }}
+                            {% if form.fecha_respuesta.errors %}
+                                <div class="form-error">{{ form.fecha_respuesta.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.recibido.label }}</label>
+                            {{ form.recibido }}
+                            {% if form.recibido.errors %}
+                                <div class="form-error">{{ form.recibido.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="form-section">
+                    <div class="action-buttons">
+                        <a href="{% url 'lista_radicados_enviados' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" form="editar-form">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
