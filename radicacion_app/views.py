@@ -378,6 +378,11 @@ def view_radicados_recibidos(request):
     radicados_recibidos = RadicacionRecibidos.objects.all().order_by('-id')
     oficinas = Oficina.objects.all()
 
+
+    radicado_id = request.GET.get('radicado')
+    if radicado_id:
+        radicados_recibidos = radicados_recibidos.filter(id__icontains=radicado_id)
+
     # Filtrar por oficina
     oficina_id = request.GET.get('oficina')
     if oficina_id:
@@ -411,6 +416,8 @@ def view_radicados_recibidos(request):
         'end_date_rad': end_date_rad,
         'oficinas': oficinas,
         'selected_oficina': oficina_id,
+        'radicados': radicados_recibidos,
+        'selected_radicado': radicado_id,
     })
 
 

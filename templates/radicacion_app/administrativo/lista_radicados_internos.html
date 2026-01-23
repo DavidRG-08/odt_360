@@ -101,12 +101,12 @@
                 <th><i class="fas fa-cogs"></i> Acción</th>
                 <th><i class="fas fa-calendar"></i> Fecha Radicación</th>
                 <th><i class="fas fa-barcode"></i> No. Radicado</th>
-                <th><i class="fas fa-user"></i> Radicador</th>
                 <th><i class="fas fa-map-pin"></i> Medio de ingreso</th>
                 <th><i class="fas fa-envelope"></i> Comunicación</th>
                 <th><i class="fas fa-building"></i> Entidad</th>
                 <th><i class="fas fa-map-location-dot"></i> Oficina</th>
                 <th><i class="fas fa-calendar-check"></i> Fecha Máxima Respuesta</th>
+                <th><i class="fas fa-user"></i> Radicador</th>
               </tr>
             </thead>
             <tbody>
@@ -120,8 +120,7 @@
                 </td>
                 <td>{{ interno.fecha_radicacion|date:"d-m-Y" }}</td>
                 <td><strong>{{ interno.id }}</strong></td>
-                <td>{{ interno.radicador }}</td>
-                <td>{{ interno.medio_envio }}</td>
+                <td>{{ interno.medio_ingreso }}</td>
                 <td>{{ interno.tipo_comunicacion }}</td>
                 <td>{{ interno.entidad }}</td>
                 <td>{{ interno.oficina }}</td>
@@ -132,11 +131,12 @@
                     <span class="text-muted">N/A</span>
                   {% endif %}
                 </td>
+                <td>{{ interno.radicador }}</td>
               </tr>
               {% empty %}
               <tr class="empty-row">
                 <td colspan="9" class="text-center">
-                  <i class="fas fa-inbox"></i> No se encontraron radicados recibidos
+                  <i class="fas fa-inbox"></i> No se encontraron radicados internos
                 </td>
               </tr>
               {% endfor %}
