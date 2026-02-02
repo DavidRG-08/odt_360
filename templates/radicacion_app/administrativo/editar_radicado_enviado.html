@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Editar radicado recibido{% endblock %}
+{% block title %}Editar radicado enviado{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
@@ -13,7 +13,7 @@
 <div class="container-form">
     <div class="card shadow-lg">
         <div class="card-header">
-            <h4><i class="fas fa-edit"></i> Editar Radicado Recibido {{ instancia.id }}</h4>
+            <h4><i class="fas fa-edit"></i> Editar Radicado Enviado {{ instancia.id }}</h4>
         </div>
         <div class="card-body">
             <form method="post" enctype="multipart/form-data" id="editar-form">
@@ -27,10 +27,10 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_ingreso.label }}</label>
-                            {{ form.medio_ingreso }}
-                            {% if form.medio_ingreso.errors %}
-                                <div class="form-error">{{ form.medio_ingreso.errors }}</div>
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_envio.label }}</label>
+                            {{ form.medio_envio }}
+                            {% if form.medio_envio.errors %}
+                                <div class="form-error">{{ form.medio_envio.errors }}</div>
                             {% endif %}
                         </div>
 
@@ -55,6 +55,14 @@
                             {{ form.num_rad_llegada }}
                             {% if form.num_rad_llegada.errors %}
                                 <div class="form-error">{{ form.num_rad_llegada.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-barcode"></i> {{ form.num_rad_interno.label }}</label>
+                            {{ form.num_rad_interno }}
+                            {% if form.num_rad_interno.errors %}
+                                <div class="form-error">{{ form.num_rad_interno.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -94,10 +102,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-id-badge"></i> {{ form.responsable_por_responder.label }}</label>
-                            {{ form.responsable_por_responder }}
-                            {% if form.responsable_por_responder.errors %}
-                                <div class="form-error">{{ form.responsable_por_responder.errors }}</div>
+                            <label class="form-label"><i class="fas fa-id-badge"></i> {{ form.enviado_por.label }}</label>
+                            {{ form.enviado_por }}
+                            {% if form.enviado_por.errors %}
+                                <div class="form-error">{{ form.enviado_por.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -141,33 +149,6 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.num_radicado_2025.label }}</label>
-                            {{ form.num_radicado_2025 }}
-                            {% if form.num_radicado_2025.errors %}
-                                <div class="form-error">{{ form.num_radicado_2025.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_respuesta.label }}</label>
-                            {{ form.medio_respuesta }}
-                            {% if form.medio_respuesta.errors %}
-                                <div class="form-error">{{ form.medio_respuesta.errors }}</div>
-                            {% endif %}
-                        </div>
-                         
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fas fa-check"></i> {{ form.estado_respuesta.label }}</label>
-                            {{ form.estado_respuesta }}
-                            {% if form.estado_respuesta.errors %}
-                                <div class="form-error">{{ form.estado_respuesta.errors }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="form-group">
                             <label class="form-label"><i class="fas fa-calendar"></i> {{ form.fecha_respuesta.label }}</label>
                             {{ form.fecha_respuesta }}
                             {% if form.fecha_respuesta.errors %}
@@ -175,15 +156,20 @@
                             {% endif %}
                         </div>
 
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.recibido.label }}</label>
+                            {{ form.recibido }}
+                            {% if form.recibido.errors %}
+                                <div class="form-error">{{ form.recibido.errors }}</div>
+                            {% endif %}
+                        </div>
                     </div>
-
-
                 </div>
 
                 <!-- Acciones -->
                 <div class="form-section">
                     <div class="action-buttons">
-                        <a href="{% url 'lista_radicados_recibidos' %}" class="btn btn-secondary">
+                        <a href="{% url 'lista_radicados_enviados' %}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary" form="editar-form">

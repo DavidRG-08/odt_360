@@ -92,6 +92,7 @@ def calcular_fecha_vencimiento_interno(fecha_inicio, dias=7):
     Returns:
         datetime.date con la fecha de vencimiento
     """
+
     from datetime import datetime, timedelta
     
     # Convertir string a date si es necesario

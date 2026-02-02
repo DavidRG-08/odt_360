@@ -1,6 +1,9 @@
 # Archivos que no se requieren
 usuarios.py
 /rh_app
+/templates/radicacion_app/administrativo/lista_radicados_enviados.html.bak
+
+/radicacion_app/migrations
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
