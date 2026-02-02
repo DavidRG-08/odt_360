@@ -1,0 +1,153 @@
+/* ========================================
+   MODERN FILTERS & ACTIONS LAYOUT
+   ======================================== */
+
+.filters-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 10px;
+}
+
+/* Filters Row - Horizontal Layout */
+.filters-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #012E40;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label i {
+    color: #025E73;
+    font-size: 1.1rem;
+    min-width: 18px;
+}
+
+/* Actions Row - Horizontal Button Layout */
+.actions-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px !important;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    min-height: 44px;
+}
+
+.btn-action i {
+    font-size: 1rem;
+}
+
+/* Button Styles */
+.btn-action.btn-primary {
+    background-color: #028a8a;
+    color: white;
+}
+
+.btn-action.btn-primary:hover {
+    background-color: #025E73;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(2, 94, 115, 0.3);
+}
+
+.btn-action.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-action.btn-success:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-action.btn-outline {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 2px solid #ddd !important;
+}
+
+.btn-action.btn-outline:hover {
+    background-color: #e8e8e8;
+    border-color: #025E73 !important;
+    color: #025E73;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile Responsive */
+@media (max-width: 1200px) {
+    .filters-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .actions-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-row {
+        grid-template-columns: 1fr;
+    }
+
+    .actions-row {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-action {
+        width: 100%;
+    }
+
+    .filter-row {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .filters-wrapper {
+        gap: 16px;
+    }
+
+    .filter-item {
+        gap: 6px;
+    }
+
+    .filter-label {
+        font-size: 0.9rem;
+    }
+
+    .btn-action {
+        padding: 10px 12px !important;
+        font-size: 0.9rem;
+    }
+}

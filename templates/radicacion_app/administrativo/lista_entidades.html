@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/filters-modern.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 {% endblock %}
 
@@ -22,35 +23,33 @@
             <i class="fas fa-filter"></i> Filtros de Búsqueda
           </div>
 
-          <div class="filters-container">
-            <div class="filter-group">
-              <label class="form-label" for="nombre_entidad">
-                <i class="fas fa-building"></i> Nombre de la entidad
-              </label>
-              <input 
-                type="text" 
-                id="nombre_entidad" 
-                name="nombre_entidad" 
-                class="form-control"
-                placeholder="Buscar por nombre de entidad..."
-                value="{{ nombre_entidad|default_if_none:'' }}"
-              >
+          <div class="filters-wrapper">
+            <div class="filters-row">
+              <div class="filter-item">
+                <label class="filter-label" for="nombre_entidad">
+                  <i class="fas fa-building"></i> Nombre de la entidad
+                </label>
+                <input 
+                  type="text" 
+                  id="nombre_entidad" 
+                  name="nombre_entidad" 
+                  class="form-control"
+                  placeholder="Buscar por nombre de entidad..."
+                  value="{{ nombre_entidad|default_if_none:'' }}"
+                >
+              </div>
             </div>
-
-            <div class="filter-actions" style="display: flex; gap: 10px; flex-wrap: nowrap;">
-              <button type="submit" class="btn btn-filter btn-success">
+            <div class="actions-row">
+              <button type="submit" class="btn btn-action btn-success">
                 <i class="fas fa-search"></i> Buscar
               </button>
-
-              <button type="button" id="limpiarFiltros" class="btn btn-filter btn-info">
+              <button type="button" id="limpiarFiltros" class="btn btn-action btn-outline">
                 <i class="fas fa-redo"></i> Limpiar
               </button>
-
-              <a href="{% url 'propiedades' %}" class="btn btn-filter btn-secondary">
+              <a href="{% url 'propiedades' %}" class="btn btn-action btn-outline">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
-
-              <a href="{% url 'crear_entidad' %}" class="btn btn-filter btn-warning">
+              <a href="{% url 'crear_entidad' %}" class="btn btn-action btn-primary">
                 <i class="fas fa-plus-circle"></i> Agregar
               </a>
             </div>

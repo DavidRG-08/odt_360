@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/filters-modern.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 {% endblock %}
 
@@ -22,11 +23,11 @@
             <i class="fas fa-filter"></i> Filtros de Búsqueda
           </div>
 
-          <div class="filters-container">
-            <div class="row g-3 align-items-end">
-              <!-- Fecha Inicio -->
-              <div class="col-12 col-md-3">
-                <label class="form-label" for="start_date_rad">
+          <div class="filters-wrapper">
+            <!-- Fila de Filtros -->
+            <div class="filters-row">
+              <div class="filter-item">
+                <label class="filter-label" for="start_date_rad">
                   <i class="fas fa-calendar-alt"></i> Fecha Inicio
                 </label>
                 <input 
@@ -38,9 +39,8 @@
                 >
               </div>
 
-              <!-- Fecha Fin -->
-              <div class="col-12 col-md-3">
-                <label class="form-label" for="end_date_rad">
+              <div class="filter-item">
+                <label class="filter-label" for="end_date_rad">
                   <i class="fas fa-calendar-alt"></i> Fecha Fin
                 </label>
                 <input 
@@ -52,13 +52,12 @@
                 >
               </div>
 
-              <!-- Oficina -->
-              <div class="col-12 col-md-3">
-                <label class="form-label" for="oficina">
-                  <i class="fas fa-circle-notch"></i> Oficina
+              <div class="filter-item">
+                <label class="filter-label" for="oficina">
+                  <i class="fas fa-building"></i> Oficina
                 </label>
                 <select name="oficina" id="oficina" class="form-select">
-                  <option value="">Todas</option>
+                  <option value="">Todas las oficinas</option>
                   {% for oficina in oficinas %}
                     <option value="{{ oficina.id }}" {% if oficina.id|stringformat:"s" == selected_oficina %}selected{% endif %}>
                       {{ oficina.nombre }}
@@ -67,40 +66,41 @@
                 </select>
               </div>
 
-              <!-- No Radicado -->
-              <div class="col-12 col-md-3">
-                <label for="radicado" class="form-label">
+              <div class="filter-item">
+                <label class="filter-label" for="radicado">
                   <i class="fas fa-barcode"></i> No Radicado
                 </label>
-                <input type="text" id="radicado" name="radicado" class="form-control" value="{{ selected_radicado|default:'' }}" placeholder="Radicado">
+                <input 
+                  type="text" 
+                  id="radicado" 
+                  name="radicado" 
+                  class="form-control"
+                  value="{{ selected_radicado|default:'' }}" 
+                  placeholder="Radicado">
               </div>
+            </div>
 
-              <!-- Botones -->
-              <div class="col-12 col-md-3">
-                <div class="d-flex gap-2">
-                  <button type="submit" class="btn btn-success flex-fill">
-                    <i class="fas fa-search"></i> Buscar
-                  </button>
+            <!-- Fila de Botones de Acción -->
+            <div class="actions-row">
+              <button type="submit" class="btn btn-action btn-primary">
+                <i class="fas fa-search"></i> Buscar
+              </button>
 
-                  <button type="button" id="limpiarFiltros" class="btn btn-secondary flex-fill">
-                    <i class="fas fa-redo"></i> Limpiar
-                  </button>
+              <button type="button" id="limpiarFiltros" class="btn btn-action btn-outline">
+                <i class="fas fa-redo"></i> Limpiar
+              </button>
 
-                  <a href="{% url 'radicados_administrativos' %}" class="btn btn-secondary flex-fill">
-                    <i class="fas fa-arrow-left"></i> Volver
-                  </a>
+              <a href="{% url 'reporte_radicados_recibidos' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&oficina={{ request.GET.oficina }}&radicado={{ request.GET.radicado }}" class="btn btn-action btn-success">
+                <i class="fas fa-file-excel"></i> Exportar
+              </a>
 
-                  <a href="{% url 'reporte_radicados_recibidos' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&oficina={{ selected_oficina }}"
-                    class="btn btn-success flex-fill">
-                    <i class="fas fa-file-excel"></i> Exportar
-                  </a>
+              <a href="{% url 'crear_radicados_recibidos' %}" class="btn btn-action btn-success">
+                <i class="fas fa-plus"></i> Crear
+              </a>
 
-                  <a href="{% url 'crear_radicados_recibidos' %}"
-                    class="btn btn-success flex-fill">
-                    <i class="fas fa-file-text"></i> Crear
-                  </a>
-                </div>
-              </div>
+              <a href="{% url 'radicados_administrativos' %}" class="btn btn-action btn-outline">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
             </div>
           </div>
         </div>
@@ -231,6 +231,7 @@
       document.getElementById('start_date_rad').value = '';
       document.getElementById('end_date_rad').value = '';
       document.getElementById('oficina').selectedIndex = 0;
+      document.getElementById('radicado').value = '';
       this.closest('form').submit();
     };
   });

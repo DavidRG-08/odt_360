@@ -13,7 +13,7 @@
 <div class="container-form">
     <div class="card shadow-lg">
         <div class="card-header">
-            <h4><i class="fas fa-edit"></i> Editar Radicado Recibido</h4>
+            <h4><i class="fas fa-edit"></i> Editar Radicado Recibido {{ instancia.id }}</h4>
         </div>
         <div class="card-body">
             <form method="post" enctype="multipart/form-data" id="editar-form">
@@ -117,6 +117,26 @@
                             </div>
                             {% if form.requiere_respuesta.errors %}
                                 <div class="form-error">{{ form.requiere_respuesta.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-check-circle"></i> {{ form.tiempo_respuesta.label }}</label>
+                            <div class="form-check">
+                                {{ form.tiempo_respuesta }}
+                            </div>
+                            {% if form.tiempo_respuesta.errors %}
+                                <div class="form-error">{{ form.tiempo_respuesta.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-check-circle"></i> {{ form.fecha_maxima_respuesta.label }}</label>
+                            <div class="form-check">
+                                {{ form.fecha_maxima_respuesta }}
+                            </div>
+                            {% if form.fecha_maxima_respuesta.errors %}
+                                <div class="form-error">{{ form.fecha_maxima_respuesta.errors }}</div>
                             {% endif %}
                         </div>
 

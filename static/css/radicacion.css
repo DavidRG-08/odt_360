@@ -484,9 +484,10 @@ textarea.form-control:focus {
 
 .filters-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    align-items: flex-end;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+    grid-auto-rows: auto;
     margin-bottom: 10px;
 }
 
@@ -505,11 +506,65 @@ textarea.form-control:focus {
     margin-bottom: 0;
 }
 
+/* Left fields layout inside filters */
+.filters-left .filter-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.filter-fields .col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Right column: vertical actions */
+.filters-right .filter-actions-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.filters-right .filter-actions-vertical .btn-filter {
+    width: 100%;
+    text-align: left;
+}
+
+/* grid version for multiple action buttons to match mockup */
+.filter-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.filter-actions-grid .btn-filter {
+    width: 100%;
+}
+
+/* make the last button span both columns (e.g., Create) */
+.filter-actions-grid .btn-filter:last-child {
+    grid-column: 1 / -1;
+}
+
+/* Make the office select visually larger to match mockup */
+.filters-left .oficina-group .form-select {
+    min-height: 56px;
+    font-size: 1rem;
+    padding: 12px 14px;
+}
+
 .filter-actions {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     align-items: center;
+    justify-items: center;
+    /* place the actions in the middle column on wide screens */
+    grid-column: 2 / 3;
 }
 
 .btn-filter {
@@ -528,7 +583,7 @@ textarea.form-control:focus {
    MEDIA QUERIES PARA FILTROS
    ======================================== */
 
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
     .filters-container {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -906,3 +961,60 @@ textarea.form-control:focus {
 }
 
 
+/* --- Alinear Inputs (Izquierda) --- */
+
+/* Definimos la grilla para los inputs: 2 columnas iguales */
+.filters-left .filter-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50% y 50% */
+    gap: 20px;
+    width: 100%;
+}
+
+/* Eliminamos estilos viejos de columnas si existían */
+.filter-fields .col {
+    display: contents; /* Por seguridad, si queda algún div col */
+}
+
+/* --- Estructura General (Inputs vs Botones) --- */
+
+.filters-container {
+    display: grid;
+    /* Ajustamos el ancho: Los inputs ocupan el espacio libre, 
+       los botones tienen un ancho fijo de 280px */
+    grid-template-columns: 1fr 280px; 
+    gap: 30px;
+    align-items: start; /* Alineación superior */
+    margin-bottom: 10px;
+}
+
+/* --- Botones (Derecha) --- */
+
+.filter-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 Botones por fila */
+    gap: 10px;
+}
+
+/* El último botón (Crear) ocupa todo el ancho, tal como en el mockup */
+.filter-actions-grid .btn-filter:last-child {
+    grid-column: span 2;
+}
+
+/* --- Responsividad (Móvil) --- */
+
+@media (max-width: 992px) {
+    .filters-container {
+        grid-template-columns: 1fr; /* Una sola columna en tablets/móvil */
+    }
+    
+    .filters-left .filter-fields {
+        grid-template-columns: 1fr 1fr; /* Mantiene 2 columnas en tablet */
+    }
+}
+
+@media (max-width: 576px) {
+    .filters-left .filter-fields {
+        grid-template-columns: 1fr; /* 1 columna en celulares */
+    }
+}

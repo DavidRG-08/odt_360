@@ -92,7 +92,7 @@ class RadicacionEnviados(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     asunto = models.CharField(max_length=200)
     num_rad_llegada = models.CharField(max_length=20, blank=True, null=True)
-    num_rad_interno = models.CharField(max_length=20, blank=True, null=True)
+    num_rad_interno = models.ForeignKey('RadicacionRecibidos', on_delete=models.CASCADE, blank=True, null=True)
     anexos = models.IntegerField()
     enviado_por = models.ForeignKey(Responsable, on_delete=models.CASCADE, related_name='enviado_por')
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE)
