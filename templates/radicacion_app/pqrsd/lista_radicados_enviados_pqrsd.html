@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/filters-modern.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 {% endblock %}
 
@@ -23,55 +24,74 @@
             <i class="fas fa-filter"></i> Filtros de Búsqueda
           </div>
 
-          <div class="filters-container">
-            <div class="filter-group">
-              <label class="form-label" for="start_date_rad">
-                <i class="fas fa-calendar-alt"></i> Fecha Inicio
-              </label>
-              <input 
-                type="date" 
-                id="start_date_rad" 
-                name="start_date_rad" 
-                class="form-control"
-                value="{{ request.GET.start_date_rad }}"
-              >
+
+          <div class="filters-wrapper">
+            <!-- Fila de Filtros -->
+            <div class="filters-row">
+              <div class="filter-item">
+                <label class="filter-label" for="start_date_rad">
+                  <i class="fas fa-calendar-alt"></i> Fecha Inicio
+                </label>
+                <input 
+                  type="date" 
+                  id="start_date_rad" 
+                  name="start_date_rad" 
+                  class="form-control"
+                  value="{{ request.GET.start_date_rad }}"
+                >
+              </div>
+
+              <div class="filter-item">
+                <label class="filter-label" for="end_date_rad">
+                  <i class="fas fa-calendar-alt"></i> Fecha Fin
+                </label>
+                <input 
+                  type="date" 
+                  id="end_date_rad" 
+                  name="end_date_rad" 
+                  class="form-control"
+                  value="{{ request.GET.end_date_rad }}"
+                >
+              </div>
+
+              <div class="filter-item">
+                <label class="filter-label" for="radicado">
+                  <i class="fas fa-barcode"></i> No Radicado
+                </label>
+                <input 
+                  type="text" 
+                  id="radicado" 
+                  name="radicado" 
+                  class="form-control"
+                  value="{{ selected_radicado|default:'' }}" 
+                  placeholder="Radicado">
+              </div>
             </div>
 
-            <div class="filter-group">
-              <label class="form-label" for="end_date_rad">
-                <i class="fas fa-calendar-alt"></i> Fecha Fin
-              </label>
-              <input 
-                type="date" 
-                id="end_date_rad" 
-                name="end_date_rad" 
-                class="form-control"
-                value="{{ request.GET.end_date_rad }}"
-              >
-            </div>
 
-            <div class="filter-actions">
-              <button type="submit" class="btn btn-filter btn-success">
+
+            <!-- Fila de Botones de Acción -->
+            <div class="actions-row">
+              <button type="submit" class="btn btn-action btn-primary">
                 <i class="fas fa-search"></i> Buscar
               </button>
 
-              <button type="button" id="limpiarFiltros" class="btn btn-filter btn-secondary">
+              <button type="button" id="limpiarFiltros" class="btn btn-action btn-outline">
                 <i class="fas fa-redo"></i> Limpiar
               </button>
 
-              <a href="{% url 'radicacion_pqrsd' %}" class="btn btn-filter btn-secondary">
-                <i class="fas fa-arrow-left"></i> Volver
-              </a>
-
-              <a href="{% url 'crear_radicado_enviado_pqrsd' %}" class="btn btn-filter btn-success">
-                <i class="fas fa-plus-circle"></i> Agregar PQRSD
-              </a>
-            </div>
-
-              <a href="{% url 'reporte_radicados_pqrsd_enviados' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&unidad_negocio={{ selected_unidad_negocio }}"
-                class="btn btn-filter btn-success">
+              <a href="{% url 'reporte_radicados_pqrsd_enviados' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}" class="btn btn-action btn-success">
                 <i class="fas fa-file-excel"></i> Exportar
               </a>
+
+              <a href="{% url 'crear_radicado_enviado_pqrsd' %}" class="btn btn-action btn-success">
+                <i class="fas fa-plus"></i> Crear
+              </a>
+
+              <a href="{% url 'radicacion_pqrsd' %}" class="btn btn-action btn-outline">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+            </div>
           </div>
         </div>
       </form>
@@ -184,7 +204,7 @@
     document.getElementById('limpiarFiltros').onclick = function () {
       document.getElementById('start_date_rad').value = '';
       document.getElementById('end_date_rad').value = '';
-      document.getElementById('unidad_negocio').selectedIndex = 0;
+      document.getElementById('radicado').value = '';
       this.closest('form').submit();
     };
   });

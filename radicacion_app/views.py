@@ -139,7 +139,8 @@ def calcular_vencimientos_pqrsd(request):
     API que calcula automáticamente los vencimientos para PQRSD.
     
     GET params:
-        fecha_recibido: fecha en formato YYYY-MM-DD
+        fecha_radicacion: fecha en formato YYYY-MM-DD (fecha de radicación)
+        fecha_recibido: fecha en formato YYYY-MM-DD (fecha_recibido_usuario)
     """
     if request.method == 'GET':
         try:
@@ -147,11 +148,16 @@ def calcular_vencimientos_pqrsd(request):
             
             if not fecha_recibido:
                 return JsonResponse({
-                    'error': 'fecha_recibido es requerida'
+                    'error': 'fecha_radicacion y fecha_recibido son requeridas'
                 }, status=400)
             
-            # Calcular vencimientos
-            vencimiento_ley = calcular_fecha_vencimiento_ley(fecha_recibido, dias=15)
+            # Se usa como fecha de radicacion
+            fecha_radicacion = datetime.now().date()
+
+            # Vencimiento por ley: basado en fecha_radicacion (15 días corridos)
+            vencimiento_ley = calcular_fecha_vencimiento_ley(fecha_radicacion, dias=15)
+            
+            # Vencimiento interno: basado en fecha_recibido_usuario (7 días corridos)
             vencimiento_interno = calcular_fecha_vencimiento_interno(fecha_recibido, dias=7)
             
             return JsonResponse({
@@ -686,6 +692,10 @@ def view_radicados_recibidos_pqrsd(request):
     if unidad_negocio:
         rad_pqrsd = rad_pqrsd.filter(unidad_negocio=unidad_negocio)
 
+    radicado_id = request.GET.get('radicado')
+    if radicado_id:
+        rad_pqrsd = rad_pqrsd.filter(id__icontains=radicado_id)
+
 
     #rango de fechas
     start_date_rad = request.GET.get('start_date_rad')
@@ -713,6 +723,8 @@ def view_radicados_recibidos_pqrsd(request):
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
         'selected_unidad': unidad_negocio,
+        'selected_radicado': radicado_id,
+        'radicados': rad_pqrsd,
     })
 
 
@@ -775,7 +787,9 @@ def crear_radicados_enviados_pqrsd(request):
 def view_radicados_enviados_pqrsd(request):
     rad_pqrsd = RadicadosEnviadosPqrsd.objects.all().order_by('-id')
 
-
+    radicado_id = request.GET.get('radicado')
+    if radicado_id:
+        rad_pqrsd = rad_pqrsd.filter(id__icontains=radicado_id)
 
 
     #rango de fechas
@@ -803,6 +817,8 @@ def view_radicados_enviados_pqrsd(request):
         'page_obj_rad_pqrsd': page_obj_rad_pqrsd,
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
+        'selected_radicado': radicado_id,
+        'radicados': rad_pqrsd,
     })
 
 
