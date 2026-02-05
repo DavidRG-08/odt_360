@@ -110,6 +110,7 @@ class RadicacionEnviados(models.Model):
     fecha_maxima_respuesta = models.DateField(blank=True, null=True)
     fecha_respuesta = models.DateField(blank=True, null=True)
     recibido = models.CharField(max_length=30, blank=True, null=True)
+    num_radicado_interno_2025 = models.CharField(max_length=40, blank=True, null=True)
 
 
     def __str__(self):
