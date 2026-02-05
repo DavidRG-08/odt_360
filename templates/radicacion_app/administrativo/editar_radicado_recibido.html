@@ -149,16 +149,21 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label"><i class="fas fa-envelope"></i> {{ form.respuesta_rad_interno.label }}</label>
+                            {{ form.respuesta_rad_interno }}
+                            {% if form.respuesta_rad_interno.errors %}
+                                <div class="form-error">{{ form.respuesta_rad_interno.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label"><i class="fas fa-envelope"></i> {{ form.medio_respuesta.label }}</label>
                             {{ form.medio_respuesta }}
                             {% if form.medio_respuesta.errors %}
                                 <div class="form-error">{{ form.medio_respuesta.errors }}</div>
                             {% endif %}
                         </div>
-                         
-                    </div>
 
-                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-check"></i> {{ form.estado_respuesta.label }}</label>
                             {{ form.estado_respuesta }}
@@ -174,9 +179,15 @@
                                 <div class="form-error">{{ form.fecha_respuesta.errors }}</div>
                             {% endif %}
                         </div>
-
                     </div>
-
+                
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-comment"></i> {{ form.observaciones.label }}</label>
+                            {{ form.observaciones }}
+                            {% if form.observaciones.errors %}
+                                <div class="form-error">{{ form.observaciones.errors }}</div>
+                            {% endif %}
+                        </div>
 
                 </div>
 

@@ -95,21 +95,21 @@
             {{ form.asunto }}
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="{{ form.anexos.id_for_label }}">
-                <i class="fas fa-paperclip"></i> {{ form.anexos.label }}
-              </label>
-              {{ form.anexos }}
-            </div>
 
-            <div class="form-group">
-              <label class="form-label" for="{{ form.observaciones.id_for_label }}">
-                <i class="fas fa-comment"></i> {{ form.observaciones.label }}
-              </label>
-              {{ form.observaciones }}
-            </div>
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.anexos.id_for_label }}">
+              <i class="fas fa-paperclip"></i> {{ form.anexos.label }}
+            </label>
+            {{ form.anexos }}
           </div>
+
+          <div class="form-group form-row full">
+            <label class="form-label" for="{{ form.observaciones.id_for_label }}">
+              <i class="fas fa-comment"></i> {{ form.observaciones.label }}
+            </label>
+            {{ form.observaciones }}
+          </div>
+
         </div>
 
         <!-- ========== SECCIÓN 3: ASIGNACIÓN Y RESPUESTA ========== -->
