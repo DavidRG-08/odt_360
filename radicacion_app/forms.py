@@ -56,8 +56,7 @@ class CrearRadicadoRecibidosForm(forms.ModelForm):
 class UpdateRadicadosRecibidosForm(forms.ModelForm):
     class Meta:
         model = RadicacionRecibidos
-        exclude = ['radicador', 'fecha_radicacion', 'id',  
-                   'anexos', 'observaciones', 'respuesta_rad_interno']
+        exclude = ['radicador', 'fecha_radicacion', 'id', 'anexos']
         fields = '__all__'
 
         widgets = {
@@ -83,7 +82,7 @@ class UpdateRadicadosRecibidosForm(forms.ModelForm):
 class UpdateRadicadosEnviadosForm(forms.ModelForm):
     class Meta:
         model = RadicacionEnviados
-        exclude = ['id', 'fecha_radicacion', 'radicador', 'anexos', 'observaciones']
+        exclude = ['id', 'fecha_radicacion', 'radicador', 'anexos']
         fields = '__all__'
 
         widgets = {
