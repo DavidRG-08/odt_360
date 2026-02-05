@@ -63,6 +63,8 @@ urlpatterns = [
     path('reportes/radicados_internos/', views.generar_reporte_radicados_internos, name='reporte_radicados_internos'),
     path('reportes/radicados_pqrsd_recibidos/', views.generar_reporte_radicados_pqrsd_recibidos, name='reporte_radicados_pqrsd_recibidos'),
     path('reportes/radicados_pqrsd_enviados/', views.generar_reporte_radicados_pqrsd_enviados, name='reporte_radicados_pqrsd_enviados'),
+    path('reportes/dashboard_indicadores/', views.dashboard_indicadores, name='dashboard_indicadores'),
+    path('reportes/dashboard_pqrsd/', views.dashboard_pqrsd, name='dashboard_pqrsd'),
 
 
 ]

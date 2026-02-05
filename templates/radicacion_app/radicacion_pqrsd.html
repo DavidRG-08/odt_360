@@ -7,7 +7,9 @@
 
 <section class="text-center mt-5" aria-labelledby="radicacion-heading">
     <div class="card-title bg-white text-dark text-center">
-        <h2 id="radicacion-heading">PQRSD</h2>
+        <a href="{% url 'radicacion' %}" class="btn-volver" title="Volver">
+            <h2 id="radicacion-heading">PQRSD</h2>
+        </a>
     </div>
     
     <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
@@ -47,6 +49,16 @@
                     <i class="fas fa-table fa-5x" aria-hidden="true"></i>
                     <div class="card-body">
                         <h5 class="card-title">PQRSD Enviados</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'dashboard_pqrsd' %}" class="option-btn" aria-label="Dashboard PQRSD">
+                    <i class="fas fa-chart-bar fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Dashboard PQRSD</h5>
                     </div>
                 </a>
             </div>

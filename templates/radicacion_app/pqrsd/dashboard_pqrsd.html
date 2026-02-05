@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard pqrsd{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hv_operadores.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-main">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>📊 Dashboard de PQRSD</h1>
+        <p class="welcome-text">Bienvenido al panel de control de PQRSD</p>
+    </div>
+
+    <!-- Main Card with PowerBI -->
+    <div class="main-card">
+        <div class="card-header">
+            
+        </div>
+        <div class="card-body">
+            <div class="powerbi-container">
+                <iframe
+                    title="REPORTE DE PQRSD"
+                    src="https://app.powerbi.com/view?r=eyJrIjoiYTY3N2VkZWYtMmY5ZS00YTEwLWE0ZTktOTgwNzZmOTQ4Y2ZjIiwidCI6ImFmYWRlNjcyLTUwNjMtNGI5Yi1iYWFmLTg0NWMzZmZkZGIzMCJ9"
+                    frameborder="0"
+                    allowfullscreen="true">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Volver Flotante -->
+<a href="{% url 'radicacion_pqrsd' %}" class="btn-volver" title="Volver">
+    <i class="fas fa-arrow-left"></i>
+</a>
+
+{% endblock %}
+
