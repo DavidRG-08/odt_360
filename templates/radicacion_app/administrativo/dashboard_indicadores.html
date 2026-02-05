@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard radicaciones{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hv_operadores.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-main">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>📊 Dashboard de radicación</h1>
+        <p class="welcome-text">Bienvenido al panel de control de Radicación</p>
+    </div>
+
+    <!-- Main Card with PowerBI -->
+    <div class="main-card">
+        <div class="card-header">
+            
+        </div>
+        <div class="card-body">
+            <div class="powerbi-container">
+                <iframe
+                    title="REPORTE DE RADICACION"
+                    src="https://app.powerbi.com/view?r=eyJrIjoiZDU5NTdhNDktNGQ0Yy00MmE2LTgyNDMtMDQ2YWU5YjBjOWQzIiwidCI6ImFmYWRlNjcyLTUwNjMtNGI5Yi1iYWFmLTg0NWMzZmZkZGIzMCJ9"
+                    frameborder="0"
+                    allowfullscreen="true">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón Volver Flotante -->
+<a href="{% url 'radicados_administrativos' %}" class="btn-volver" title="Volver">
+    <i class="fas fa-arrow-left"></i>
+</a>
+
+{% endblock %}

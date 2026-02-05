@@ -20,13 +20,13 @@ def radicacion(request):
             'nombre': 'administración',
             'url': 'radicados_administrativos',
             'icono': 'fas fa-address-card',
-            'grupos': ['radicacion', 'radicacion_view']
+            'grupos': ['radicacion', 'radicacion_view', 'radicacion_manager']
         },
         {
             'nombre': 'PQRSD',
             'url': 'radicacion_pqrsd',
             'icono': 'fas fa-comments',
-            'grupos': ['radicacion_pqrsd','radicacion_pqrsd_view']
+            'grupos': ['radicacion_pqrsd','radicacion_pqrsd_view', 'radicacion_manager']
         }
     ]
     return render(request, 'radicacion_app/radicacion.html', {'modulos': MODULOS_RADICACION})
@@ -973,3 +973,14 @@ def generar_reporte_radicados_pqrsd_enviados(request):
     reporter = ReporterExcelPqrsdEnviados(queryset)
 
     return reporter.get(request)
+
+@login_required
+def dashboard_indicadores(request):
+    grupo_manager = request.user.groups.filter(name='radicacion_manager').exists()
+    return render(request, 'radicacion_app/administrativo/dashboard_indicadores.html', {'grupo_manager': grupo_manager})
+
+
+@login_required
+def dashboard_pqrsd(request):
+    grupo_manager = request.user.groups.filter(name='radicacion_manager').exists()
+    return render(request, 'radicacion_app/pqrsd/dashboard_pqrsd.html', {'grupo_manager': grupo_manager})

@@ -7,7 +7,9 @@
 
 <section class="text-center mt-5" aria-labelledby="radicacion-heading">
     <div class="card-title bg-white text-dark text-center">
-        <h2 id="radicacion-heading">Radicación</h2>
+        <a href="{% url 'radicacion' %}" class="btn-volver" title="Volver">
+            <h2 id="radicacion-heading">Radicación</h2>
+        </a>
     </div>
     
     <div class="row row-cols-1 row-cols-md-3 g-3 row justify-content-center">
@@ -47,6 +49,16 @@
                     <i class="fas fa-cogs fa-5x" aria-hidden="true"></i>
                     <div class="card-body">
                         <h5 class="card-title">Propiedades</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <a href="{% url 'dashboard_indicadores' %}" class="option-btn" aria-label="Dashboard Indicadores">
+                    <i class="fas fa-chart-line fa-5x" aria-hidden="true"></i>
+                    <div class="card-body">
+                        <h5 class="card-title">Dashboard Indicadores</h5>
                     </div>
                 </a>
             </div>
