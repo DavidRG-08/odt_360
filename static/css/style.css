@@ -259,6 +259,76 @@ input:focus {
     margin-top: 20px;
 }
 
+.site-footer {
+    width: 100%;
+    margin-top: auto;
+    border-top: 3px solid #4D818C;
+    background: #012E40;
+    color: #DCE7E9;
+}
+
+.site-footer__inner {
+    width: min(100%, 1400px);
+    min-height: 76px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+}
+
+.site-footer__brand {
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.site-footer__brand span {
+    color: #9FB6BF;
+}
+
+.site-footer__copyright {
+    margin: 0;
+    color: #C1D0D3;
+    font-size: 0.875rem;
+}
+
+.site-footer__nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+
+.site-footer__nav a {
+    color: #DCE7E9;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.site-footer__nav a:hover,
+.site-footer__nav a:focus-visible {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+    .site-footer__inner {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .site-footer__nav {
+        justify-content: center;
+        gap: 10px 16px;
+    }
+}
+
 .page-item {
     margin: 0 5px;
 }

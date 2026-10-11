@@ -1,15 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from .utils import calcular_fecha_maxima_respuesta, obtener_festivos_colombia, calcular_fecha_vencimiento_ley, calcular_fecha_vencimiento_interno
-from .models import Responsable
+from .models import Responsable, TrazabilidadCreacion, TrazabilidadModificacion
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
 from .reports import *
+from django.db import transaction
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 
 
 
@@ -104,6 +107,8 @@ def calcular_fecha_respuesta(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
+@login_required
+@permission_required('radicacion_app.view_responsable', raise_exception=True)
 def get_oficina_responsable(request):
     """
     API que retorna la oficina de un responsable.
@@ -154,11 +159,11 @@ def calcular_vencimientos_pqrsd(request):
             # Se usa como fecha de radicacion
             fecha_radicacion = datetime.now().date()
 
-            # Vencimiento por ley: basado en fecha_radicacion (15 días corridos)
-            vencimiento_ley = calcular_fecha_vencimiento_ley(fecha_radicacion, dias=15)
+            # Vencimiento por ley: basado en fecha_recibido (15 días corridos)
+            vencimiento_ley = calcular_fecha_vencimiento_ley(fecha_recibido, dias=15)
             
-            # Vencimiento interno: basado en fecha_recibido_usuario (7 días corridos)
-            vencimiento_interno = calcular_fecha_vencimiento_interno(fecha_recibido, dias=7)
+            # Vencimiento interno: basado en fecha_radicacion (7 días corridos)
+            vencimiento_interno = calcular_fecha_vencimiento_interno(fecha_radicacion, dias=7)
             
             return JsonResponse({
                 'vencimiento_por_ley': vencimiento_ley.strftime('%Y-%m-%d'),
@@ -364,7 +369,13 @@ def crear_radicados_recibidos(request):
            
             radicado.id = consecutivo_rec.generar_id_radicado()
             radicado.radicador = request.user
-            radicado.save()
+            
+            with transaction.atomic():
+                radicado.save()
+                TrazabilidadCreacion.objects.create(
+                    usuario = request.user,
+                    radicado = radicado,
+                )
 
             messages.success(request, 'Radicado creado exitosamente.')
             return redirect('lista_radicados_recibidos')
@@ -383,11 +394,24 @@ def crear_radicados_recibidos(request):
 def view_radicados_recibidos(request):
     radicados_recibidos = RadicacionRecibidos.objects.all().order_by('-id')
     oficinas = Oficina.objects.all()
+    entidades = Entidad.objects.all()
 
 
     radicado_id = request.GET.get('radicado')
     if radicado_id:
         radicados_recibidos = radicados_recibidos.filter(id__icontains=radicado_id)
+
+    num_rad_llegada = request.GET.get('num_rad_llegada', '').strip()
+    if num_rad_llegada:
+        radicados_recibidos = radicados_recibidos.filter(num_rad_llegada__icontains=num_rad_llegada)
+
+    entidad_id = request.GET.get('entidad')
+    if entidad_id:
+        radicados_recibidos = radicados_recibidos.filter(entidad_id=entidad_id)
+
+    asunto = request.GET.get('asunto', '').strip()
+    if asunto:
+        radicados_recibidos = radicados_recibidos.filter(asunto__icontains=asunto)
 
     # Filtrar por oficina
     oficina_id = request.GET.get('oficina')
@@ -421,9 +445,13 @@ def view_radicados_recibidos(request):
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
         'oficinas': oficinas,
+        'entidades': entidades,
+        'selected_entidad': entidad_id,
+        'selected_asunto': asunto,
         'selected_oficina': oficina_id,
         'radicados': radicados_recibidos,
         'selected_radicado': radicado_id,
+        'selected_num_rad_llegada': num_rad_llegada,
     })
 
 
@@ -433,8 +461,34 @@ def editar_radicado_recibido(request, radicado_id):
     instancia = get_object_or_404(RadicacionRecibidos, pk=radicado_id)
     if request.method == 'POST':
         form = UpdateRadicadosRecibidosForm(request.POST, instance=instancia)
+        valores_iniciales = {
+            nombre: getattr(instancia, instancia._meta.get_field(nombre).attname)
+            for nombre in form.fields
+        }
         if form.is_valid():
-            form.save()
+            nombres_campos = form.changed_data
+
+            with transaction.atomic():
+                radicado = form.save()
+
+                campos_modificados = {}
+                for nombre in nombres_campos:
+                    campo = radicado._meta.get_field(nombre)
+                    valor_anterior = valor_auditoria(valores_iniciales[nombre])
+                    valor_nuevo = valor_auditoria(getattr(radicado, campo.attname))
+
+                    if valor_anterior != valor_nuevo:
+                        campos_modificados[nombre] = {
+                            'anterior': valor_anterior,
+                            'nuevo': valor_nuevo,
+                        }
+
+                if campos_modificados:
+                    TrazabilidadModificacion.objects.create(
+                        usuario=request.user,
+                        radicado=radicado,
+                        campos_modificados=campos_modificados,
+                    )
             messages.success(request, 'Radicado actualizado exitosamente.')
             return redirect('lista_radicados_recibidos')
     
@@ -445,6 +499,7 @@ def editar_radicado_recibido(request, radicado_id):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicacionrecibidos', raise_exception=True)
 def obtener_detalle_rad_recibido(request, radicado_id):
     rad_recibido = RadicacionRecibidos.objects.get(id=radicado_id)
 
@@ -464,7 +519,13 @@ def crear_radicados_enviados(request):
 
             recibido.id = consecutivo_env.generar_id_radicado()
             recibido.radicador = request.user
-            recibido.save()
+
+            with transaction.atomic():
+                recibido.save()
+                TrazabilidadCreacion.objects.create(
+                    usuario = request.user,
+                    radicado = recibido,
+                )
 
             messages.success(request, 'Radicado enviado creado exitosamente.')
             return redirect('lista_radicados_enviados')
@@ -483,10 +544,23 @@ def crear_radicados_enviados(request):
 def view_radicados_enviados(request):
     radicados_enviados = RadicacionEnviados.objects.all().order_by('-id')
     oficinas = Oficina.objects.all()
+    entidades = Entidad.objects.all()
 
     radicado_id = request.GET.get('radicado')
     if radicado_id:
         radicados_enviados = radicados_enviados.filter(id__icontains=radicado_id)
+
+    num_rad_llegada = request.GET.get('num_rad_llegada', '').strip()
+    if num_rad_llegada:
+        radicados_enviados = radicados_enviados.filter(num_rad_llegada__icontains=num_rad_llegada)
+
+    entidad_id = request.GET.get('entidad')
+    if entidad_id:
+        radicados_enviados = radicados_enviados.filter(entidad_id=entidad_id)
+
+    asunto = request.GET.get('asunto', '').strip()
+    if asunto:
+        radicados_enviados = radicados_enviados.filter(asunto__icontains=asunto)
 
     # Filtrar por oficina
     oficina_id = request.GET.get('oficina')
@@ -520,9 +594,13 @@ def view_radicados_enviados(request):
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
         'oficinas': oficinas,
+        'entidades': entidades,
+        'selected_entidad': entidad_id,
+        'selected_asunto': asunto,
         'selected_oficina': oficina_id,
         'radicados': radicados_enviados,
         'selected_radicado': radicado_id,
+        'selected_num_rad_llegada': num_rad_llegada,
     })
 
 
@@ -533,8 +611,34 @@ def editar_radicado_enviado(request, radicado_id):
     instancia = get_object_or_404(RadicacionEnviados, pk=radicado_id)
     if request.method == 'POST':
         form = UpdateRadicadosEnviadosForm(request.POST, instance=instancia)
+        valores_iniciales = {
+            nombre: getattr(instancia, instancia._meta.get_field(nombre).attname)
+            for nombre in form.fields
+        }
         if form.is_valid():
-            form.save()
+            nombres_campos = form.changed_data
+
+            with transaction.atomic():
+                radicado = form.save()
+
+                campos_modificados = {}
+                for nombre in nombres_campos:
+                    campo = radicado._meta.get_field(nombre)
+                    valor_anterior = valor_auditoria(valores_iniciales[nombre])
+                    valor_nuevo = valor_auditoria(getattr(radicado, campo.attname))
+
+                    if valor_anterior != valor_nuevo:
+                        campos_modificados[nombre] = {
+                            'anterior': valor_anterior,
+                            'nuevo': valor_nuevo,
+                        }
+
+                if campos_modificados:
+                    TrazabilidadModificacion.objects.create(
+                        usuario=request.user,
+                        radicado=radicado,
+                        campos_modificados=campos_modificados,
+                    )
             messages.success(request, 'Radicado actualizado exitosamente.')
             return redirect('lista_radicados_enviados')
     
@@ -546,6 +650,7 @@ def editar_radicado_enviado(request, radicado_id):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicacionenviados', raise_exception=True)
 def obtener_detalle_rad_enviado(request, radicado_id):
     rad_enviado = RadicacionEnviados.objects.get(id=radicado_id)
 
@@ -566,7 +671,13 @@ def crear_radicados_internos(request):
            
             radicado.id = consecutivo_rec.generar_id_radicado()
             radicado.radicador = request.user
-            radicado.save()
+
+            with transaction.atomic():
+                radicado.save()
+                TrazabilidadCreacion.objects.create(
+                    usuario = request.user,
+                    radicado = radicado,
+                )
 
             messages.success(request, 'Radicado creado exitosamente.')
             return redirect('lista_radicados_internos')
@@ -585,10 +696,23 @@ def crear_radicados_internos(request):
 def view_radicados_internos(request):
     radicados_internos = RadicacionInternos.objects.all().order_by('-id')
     oficinas = Oficina.objects.all()
+    entidades = Entidad.objects.all()
 
     radicado_id = request.GET.get('radicado')
     if radicado_id:
         radicados_internos = radicados_internos.filter(id__icontains=radicado_id)
+
+    num_rad_llegada = request.GET.get('num_rad_llegada', '').strip()
+    if num_rad_llegada:
+        radicados_internos = radicados_internos.filter(num_rad_llegada__icontains=num_rad_llegada)
+
+    entidad_id = request.GET.get('entidad')
+    if entidad_id:
+        radicados_internos = radicados_internos.filter(entidad_id=entidad_id)
+
+    asunto = request.GET.get('asunto', '').strip()
+    if asunto:
+        radicados_internos = radicados_internos.filter(asunto__icontains=asunto)
 
     # Filtrar por oficina
     oficina_id = request.GET.get('oficina')
@@ -622,13 +746,18 @@ def view_radicados_internos(request):
         'start_date_rad': start_date_rad,
         'end_date_rad': end_date_rad,
         'oficinas': oficinas,
+        'entidades': entidades,
+        'selected_entidad': entidad_id,
+        'selected_asunto': asunto,
         'selected_oficina': oficina_id,
         'radicados': radicados_internos,
         'selected_radicado': radicado_id,
+        'selected_num_rad_llegada': num_rad_llegada,
     })
 
 
 @login_required
+@permission_required('radicacion_app.view_radicacioninternos', raise_exception=True)
 def obtener_detalle_rad_interno(request, radicado_id):
     rad_interno = RadicacionInternos.objects.get(id=radicado_id)
 
@@ -641,8 +770,35 @@ def editar_radicado_interno(request, radicado_id):
     instancia = get_object_or_404(RadicacionInternos, pk=radicado_id)
     if request.method == 'POST':
         form = UpdateRadicadosInternosForm(request.POST, instance=instancia)
+        valores_iniciales = {
+            nombre: getattr(instancia, instancia._meta.get_field(nombre).attname)
+            for nombre in form.fields
+        }
         if form.is_valid():
-            form.save()
+            nombres_campos = form.changed_data
+
+            with transaction.atomic():
+                radicado = form.save()
+
+                campos_modificados = {}
+                for nombre in nombres_campos:
+                    campo = radicado._meta.get_field(nombre)
+                    valor_anterior = valor_auditoria(valores_iniciales[nombre])
+                    valor_nuevo = valor_auditoria(getattr(radicado, campo.attname))
+
+                    if valor_anterior != valor_nuevo:
+                        campos_modificados[nombre] = {
+                            'anterior': valor_anterior,
+                            'nuevo': valor_nuevo,
+                        }
+
+                if campos_modificados:
+                    TrazabilidadModificacion.objects.create(
+                        usuario=request.user,
+                        radicado=radicado,
+                        campos_modificados=campos_modificados,
+                    )
+
             messages.success(request, 'Radicado actualizado exitosamente.')
             return redirect('lista_radicados_internos')
     
@@ -666,7 +822,13 @@ def crear_radicados_recibidos_pqrsd(request):
            
             radicado.id = consecutivo_rec.generar_id_radicado()
             radicado.radicador = request.user
-            radicado.save()
+
+            with transaction.atomic():
+                radicado.save()
+                TrazabilidadCreacion.objects.create(
+                    usuario = request.user,
+                    radicado = radicado,
+                )
 
             messages.success(request, 'Radicado creado exitosamente.')
             return redirect('lista_radicados_pqrsd')
@@ -729,6 +891,7 @@ def view_radicados_recibidos_pqrsd(request):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicadosrecibidospqrsd', raise_exception=True)
 def obtener_detalle_pqrsd_recibido(request, radicado_id):
     rad_pqrsd = RadicadosRecibidosPqrsd.objects.get(id=radicado_id)
 
@@ -741,10 +904,37 @@ def editar_pqrsd_recibido(request, radicado_id):
     instancia = get_object_or_404(RadicadosRecibidosPqrsd, pk=radicado_id)
     if request.method == 'POST':
         form = UpdatePqrsdRecibidosForm(request.POST, instance=instancia)
+        valores_iniciales = {
+            nombre: getattr(instancia, instancia._meta.get_field(nombre).attname)
+            for nombre in form.fields
+        }
         if form.is_valid():
-            form.save()
+            nombres_campos = form.changed_data
+
+            with transaction.atomic():
+                radicado = form.save()
+
+                campos_modificados = {}
+                for nombre in nombres_campos:
+                    campo = radicado._meta.get_field(nombre)
+                    valor_anterior = valor_auditoria(valores_iniciales[nombre])
+                    valor_nuevo = valor_auditoria(getattr(radicado, campo.attname))
+
+                    if valor_anterior != valor_nuevo:
+                        campos_modificados[nombre] = {
+                            'anterior': valor_anterior,
+                            'nuevo': valor_nuevo,
+                        }
+
+                if campos_modificados:
+                    TrazabilidadModificacion.objects.create(
+                        usuario=request.user,
+                        radicado=radicado,
+                        campos_modificados=campos_modificados,
+                    )
+            
             messages.success(request, 'Radicado actualizado exitosamente.')
-            return redirect('lista_radicados_pqrsd')
+            return redirect('lista_radicados_recibidos')
     
     else:
         form = UpdatePqrsdRecibidosForm(instance=instancia)
@@ -766,7 +956,12 @@ def crear_radicados_enviados_pqrsd(request):
            
             radicado.id = consecutivo_rec.generar_id_radicado()
             radicado.radicador = request.user
-            radicado.save()
+            with transaction.atomic():
+                radicado.save()
+                TrazabilidadCreacion.objects.create(
+                    usuario = request.user,
+                    radicado = radicado,
+                )
 
             messages.success(request, 'Radicado creado exitosamente.')
             return redirect('lista_radicados_enviados_pqrsd')
@@ -823,6 +1018,7 @@ def view_radicados_enviados_pqrsd(request):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicadosenviadospqrsd', raise_exception=True)
 def obtener_detalle_pqrsd_enviado(request, radicado_id):
     rad_pqrsd = RadicadosEnviadosPqrsd.objects.get(id=radicado_id)
 
@@ -830,15 +1026,103 @@ def obtener_detalle_pqrsd_enviado(request, radicado_id):
 
 
 
+def valor_auditoria(valor):
+    if valor is None or isinstance(valor, (str, int, float, bool)):
+        return valor
+
+    if hasattr(valor, 'isoformat'):
+        return valor.isoformat()
+
+    return str(valor)
+
+
+@login_required
+def ver_trazabilidad_radicado(request, tipo_radicado, radicado_id):
+    tipos_radicado = {
+        'recibido-pqrsd': {
+            'modelo': RadicadosRecibidosPqrsd,
+            'permiso': 'radicacion_app.view_radicadosrecibidospqrsd',
+            'listado': 'lista_radicados_pqrsd',
+            'nombre': 'Radicado recibido PQRSD',
+        },
+        'enviado': {
+            'modelo': RadicacionEnviados,
+            'permiso': 'radicacion_app.view_radicacionenviados',
+            'listado': 'lista_radicados_enviados',
+            'nombre': 'Radicado enviado',
+        },
+        'recibido': {
+            'modelo': RadicacionRecibidos,
+            'permiso': 'radicacion_app.view_radicacionrecibidos',
+            'listado': 'lista_radicados_recibidos',
+            'nombre': 'Radicado recibido',
+        },
+        'interno': {
+            'modelo': RadicacionInternos,
+            'permiso': 'radicacion_app.view_radicacioninternos',
+            'listado': 'lista_radicados_internos',
+            'nombre': 'Radicado interno',
+        },
+    }
+    configuracion = tipos_radicado.get(tipo_radicado)
+    if configuracion is None:
+        raise Http404
+    if not request.user.has_perm(configuracion['permiso']):
+        raise PermissionDenied
+
+    modelo = configuracion['modelo']
+    radicado = get_object_or_404(modelo, pk=radicado_id)
+    content_type = ContentType.objects.get_for_model(modelo)
+    filtros = {'content_type': content_type, 'object_id': str(radicado.pk)}
+
+    eventos = [
+        {
+            'accion': 'Creación',
+            'usuario': evento.usuario,
+            'fecha_hora': evento.fecha_hora,
+            'campos_modificados': None,
+        }
+        for evento in TrazabilidadCreacion.objects.filter(**filtros).select_related('usuario')
+    ]
+    eventos.extend(
+        {
+            'accion': 'Modificación',
+            'usuario': evento.usuario,
+            'fecha_hora': evento.fecha_hora,
+            'campos_modificados': evento.campos_modificados,
+        }
+        for evento in TrazabilidadModificacion.objects.filter(**filtros).select_related('usuario')
+    )
+    eventos.sort(key=lambda evento: evento['fecha_hora'], reverse=True)
+
+    return render(request, 'radicacion_app/trazabilidad_radicado.html', {
+        'radicado': radicado,
+        'tipo_radicado_nombre': configuracion['nombre'],
+        'eventos': eventos,
+        'url_listado': configuracion['listado'],
+    })
+
 
 # Reportes Excel
 
+def _filtro_opcional(request, nombre):
+    valor = request.GET.get(nombre)
+    if valor is None:
+        return None
+    valor = valor.strip()
+    return None if not valor or valor.lower() == 'none' else valor
+
+
 @login_required
+@permission_required('radicacion_app.view_radicacionrecibidos', raise_exception=True)
 def generar_reporte_radicados_recibidos(request):
     start_date = request.GET.get('start_date_rad')
     end_date = request.GET.get('end_date_rad')
-    oficina = request.GET.get('oficina')
-    radicado = request.GET.get('radicado')
+    oficina = _filtro_opcional(request, 'oficina')
+    radicado = _filtro_opcional(request, 'radicado')
+    num_rad_llegada = _filtro_opcional(request, 'num_rad_llegada')
+    entidad = _filtro_opcional(request, 'entidad')
+    asunto = _filtro_opcional(request, 'asunto')
 
 
     queryset = RadicacionRecibidos.objects.all()
@@ -857,8 +1141,17 @@ def generar_reporte_radicados_recibidos(request):
     if oficina:
         queryset = queryset.filter(oficina_id=oficina)
 
+    if entidad:
+        queryset = queryset.filter(entidad_id=entidad)
+
+    if asunto:
+        queryset = queryset.filter(asunto__icontains=asunto)
+
     if radicado:
-        queryset = queryset.filter(id=radicado)
+        queryset = queryset.filter(id__icontains=radicado)
+
+    if num_rad_llegada:
+        queryset = queryset.filter(num_rad_llegada__icontains=num_rad_llegada)
 
     reporter = ReporterExcelRadicadosRecibidos(queryset)
 
@@ -866,11 +1159,15 @@ def generar_reporte_radicados_recibidos(request):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicacionenviados', raise_exception=True)
 def generar_reporte_radicados_enviados(request):
     start_date = request.GET.get('start_date_rad')
     end_date = request.GET.get('end_date_rad')
-    oficina = request.GET.get('oficina')
-    radicado = request.GET.get('radicado')
+    oficina = _filtro_opcional(request, 'oficina')
+    radicado = _filtro_opcional(request, 'radicado')
+    num_rad_llegada = _filtro_opcional(request, 'num_rad_llegada')
+    entidad = _filtro_opcional(request, 'entidad')
+    asunto = _filtro_opcional(request, 'asunto')
 
     queryset = RadicacionEnviados.objects.all()
     if start_date and end_date:
@@ -888,8 +1185,17 @@ def generar_reporte_radicados_enviados(request):
     if oficina:
         queryset = queryset.filter(oficina_id=oficina)
 
+    if entidad:
+        queryset = queryset.filter(entidad_id=entidad)
+
+    if asunto:
+        queryset = queryset.filter(asunto__icontains=asunto)
+
     if radicado:
-        queryset = queryset.filter(id=radicado)
+        queryset = queryset.filter(id__icontains=radicado)
+
+    if num_rad_llegada:
+        queryset = queryset.filter(num_rad_llegada__icontains=num_rad_llegada)
 
     reporter = ReporterExcelRadicadosEnviados(queryset)
 
@@ -897,11 +1203,15 @@ def generar_reporte_radicados_enviados(request):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicacioninternos', raise_exception=True)
 def generar_reporte_radicados_internos(request):
     start_date = request.GET.get('start_date_rad')
     end_date = request.GET.get('end_date_rad')
-    oficina = request.GET.get('oficina')
-    radicado = request.GET.get('radicado')
+    oficina = _filtro_opcional(request, 'oficina')
+    radicado = _filtro_opcional(request, 'radicado')
+    num_rad_llegada = _filtro_opcional(request, 'num_rad_llegada')
+    entidad = _filtro_opcional(request, 'entidad')
+    asunto = _filtro_opcional(request, 'asunto')
 
     queryset = RadicacionInternos.objects.all()
     if start_date and end_date:
@@ -919,8 +1229,17 @@ def generar_reporte_radicados_internos(request):
     if oficina:
         queryset = queryset.filter(oficina_id=oficina)
 
+    if entidad:
+        queryset = queryset.filter(entidad_id=entidad)
+
+    if asunto:
+        queryset = queryset.filter(asunto__icontains=asunto)
+
     if radicado:
-        queryset = queryset.filter(id=radicado)
+        queryset = queryset.filter(id__icontains=radicado)
+
+    if num_rad_llegada:
+        queryset = queryset.filter(num_rad_llegada__icontains=num_rad_llegada)
 
     reporter = ReporterExcelRadicadosInternos(queryset)
 
@@ -929,6 +1248,7 @@ def generar_reporte_radicados_internos(request):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicadosrecibidospqrsd', raise_exception=True)
 def generar_reporte_radicados_pqrsd_recibidos(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -953,6 +1273,7 @@ def generar_reporte_radicados_pqrsd_recibidos(request):
 
 
 @login_required
+@permission_required('radicacion_app.view_radicadosenviadospqrsd', raise_exception=True)
 def generar_reporte_radicados_pqrsd_enviados(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')

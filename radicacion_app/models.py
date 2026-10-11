@@ -2,6 +2,9 @@ from django.db import models, transaction
 from django.contrib.auth.models import User
 from datetime import date
 from django.db.models import F
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 # Create your models here.
 class TipoDocumento(models.Model):
@@ -23,7 +26,7 @@ class Responsable(models.Model):
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.nombre} - {self.oficina.nombre}"
+        return f"{self.nombre}"
     
 
 class TipoComunicacion(models.Model):
@@ -91,7 +94,7 @@ class RadicacionEnviados(models.Model):
     tipo_comunicacion = models.CharField(max_length=10, choices=TYPE)
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     asunto = models.CharField(max_length=200)
-    num_rad_llegada = models.CharField(max_length=20, blank=True, null=True)
+    num_rad_llegada = models.CharField(max_length=50, blank=True, null=True)
     num_rad_interno = models.ForeignKey('RadicacionRecibidos', on_delete=models.CASCADE, blank=True, null=True)
     anexos = models.IntegerField()
     enviado_por = models.ForeignKey(Responsable, on_delete=models.CASCADE, related_name='enviado_por')
@@ -134,7 +137,7 @@ class RadicacionRecibidos(models.Model):
     
     tipo_comunicacion = models.CharField(max_length=10, choices=TYPE)
     tipo_documento = models.ForeignKey(TipoDocumento, on_delete=models.CASCADE)
-    num_rad_llegada = models.CharField(max_length=20, blank=True, null=True)
+    num_rad_llegada = models.CharField(max_length=50, blank=True, null=True)
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     asunto = models.CharField(max_length=200)
     anexos = models.IntegerField(default=0)
@@ -185,7 +188,7 @@ class RadicacionInternos(models.Model):
     
     tipo_comunicacion = models.CharField(max_length=10, choices=TYPE)
     tipo_documento = models.ForeignKey(TipoDocumento, on_delete=models.CASCADE)
-    num_rad_llegada = models.CharField(max_length=20, blank=True, null=True)
+    num_rad_llegada = models.CharField(max_length=50, blank=True, null=True)
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     asunto = models.CharField(max_length=200)
     anexos = models.IntegerField()
@@ -266,10 +269,10 @@ class RadicadosRecibidosPqrsd(models.Model):
         ('Buses', 'Buses'),
         ('Cable', 'Cable')
     ]
-    unidad_negocio = models.CharField(max_length=20, choices=UNIDAD)
+    unidad_negocio = models.CharField(max_length=20, choices=UNIDAD, default='Buses')
     fecha_recibido_usuario = models.DateField()
     fecha_asignacion_traslado = models.DateField()
-    radicado_recibido = models.CharField(max_length=40)
+    radicado_recibido = models.CharField(max_length=50)
     canal_recepcion = models.ForeignKey(CanalesRecepcion, on_delete=models.CASCADE)
     tipo_peticion = models.ForeignKey(TipoPeticion, on_delete=models.CASCADE)
     nombre_remitente = models.CharField(max_length=200)
@@ -277,8 +280,8 @@ class RadicadosRecibidosPqrsd(models.Model):
     direccion = models.CharField(max_length=200)
     email = models.EmailField()
     asunto = models.ForeignKey(Tipologia, on_delete=models.CASCADE)
-    fecha_evento = models.DateField()
-    hora_evento = models.TimeField()
+    fecha_evento = models.DateField(blank=True, null=True)
+    hora_evento = models.TimeField(blank=True, null=True)
     lugar_evento = models.CharField(max_length=200)
     serial_o_placa = models.CharField(max_length=20)
     ruta = models.ForeignKey(RutaVehiculo, on_delete=models.CASCADE)
@@ -316,3 +319,89 @@ class RadicadosEnviadosPqrsd(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.asunto}"
+
+# modelos de trazabilidad para registrar la creación y modificación de los radicados
+
+class TrazabilidadCreacion(models.Model):
+    ACCION_CREACION = 'CREACION'
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='trazabilidades_creacion',
+    )
+    accion = models.CharField(
+        max_length=20,
+        default=ACCION_CREACION,
+        editable=False,
+    )
+
+    # Referencia a cualquier modelo de radicado de esta aplicación.
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+    )
+    object_id = models.CharField(max_length=100)
+    radicado = GenericForeignKey('content_type', 'object_id')
+
+    fecha_hora = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Trazabilidad de creación'
+        verbose_name_plural = 'Trazabilidades de creación'
+        ordering = ['-fecha_hora']
+        indexes = [
+            models.Index(
+                fields=['content_type', 'object_id'],
+                name='rad_crea_ct_obj_idx',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.accion} - {self.object_id} - {self.fecha_hora}'
+
+
+class TrazabilidadModificacion(models.Model):
+    ACCION_MODIFICACION = 'MODIFICACION'
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='trazabilidades_modificacion',
+    )
+    accion = models.CharField(
+        max_length=20,
+        default=ACCION_MODIFICACION,
+        editable=False,
+    )
+
+    # Referencia a cualquier modelo de radicado de esta aplicación.
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+    )
+    object_id = models.CharField(max_length=100)
+    radicado = GenericForeignKey('content_type', 'object_id')
+
+    # Ejemplo: {"asunto": {"anterior": "A", "nuevo": "B"}}
+    campos_modificados = models.JSONField(default=dict)
+
+    fecha_hora = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Trazabilidad de modificación'
+        verbose_name_plural = 'Trazabilidades de modificación'
+        ordering = ['-fecha_hora']
+        indexes = [
+            models.Index(
+                fields=['content_type', 'object_id'],
+                name='rad_mod_ct_obj_idx',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.accion} - {self.object_id} - {self.fecha_hora}'

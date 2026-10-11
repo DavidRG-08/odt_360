@@ -8,8 +8,11 @@ from openpyxl.styles import Font, PatternFill, Alignment
 
 class ReporterExcelRadicadosRecibidos(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or RadicacionRecibidos.objects.all()
+        queryset = queryset if queryset is not None else RadicacionRecibidos.objects.all()
+        self.queryset = queryset.select_related(
+            'tipo_documento', 'entidad', 'responsable_por_responder', 'oficina',
+            'radicador', 'respuesta_rad_interno',
+        )
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros
@@ -95,8 +98,10 @@ class ReporterExcelRadicadosRecibidos(TemplateView):
 
 class ReporterExcelRadicadosEnviados(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or RadicacionEnviados.objects.all()
+        queryset = queryset if queryset is not None else RadicacionEnviados.objects.all()
+        self.queryset = queryset.select_related(
+            'tipo_documento', 'entidad', 'num_rad_interno', 'enviado_por', 'oficina', 'radicador',
+        )
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros
@@ -182,8 +187,11 @@ class ReporterExcelRadicadosEnviados(TemplateView):
 
 class ReporterExcelRadicadosInternos(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or RadicacionInternos.objects.all()
+        queryset = queryset if queryset is not None else RadicacionInternos.objects.all()
+        self.queryset = queryset.select_related(
+            'tipo_documento', 'entidad', 'responsable_por_responder', 'oficina',
+            'radicador', 'respuesta_rad_interno',
+        )
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros
@@ -268,8 +276,10 @@ class ReporterExcelRadicadosInternos(TemplateView):
 
 class ReporterExcelPqrsdRecibidos(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or RadicadosRecibidosPqrsd.objects.all()
+        queryset = queryset if queryset is not None else RadicadosRecibidosPqrsd.objects.all()
+        self.queryset = queryset.select_related(
+            'radicador', 'canal_recepcion', 'tipo_peticion', 'asunto', 'ruta', 'asignado_a',
+        )
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros
@@ -362,8 +372,8 @@ class ReporterExcelPqrsdRecibidos(TemplateView):
 
 class ReporterExcelPqrsdEnviados(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or RadicadosEnviadosPqrsd.objects.all()
+        queryset = queryset if queryset is not None else RadicadosEnviadosPqrsd.objects.all()
+        self.queryset = queryset.select_related('radicador', 'radicado_asociado__asunto')
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros

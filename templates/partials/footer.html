@@ -1,0 +1,18 @@
+<footer class="site-footer" role="contentinfo">
+	<div class="site-footer__inner">
+		<a class="site-footer__brand" href="{% url 'home' %}" aria-label="ODT 360, inicio">
+			ODT <span>360</span>
+		</a>
+
+		<p class="site-footer__copyright">
+			&copy; {% now "Y" %} La Rolita
+		</p>
+
+		<nav class="site-footer__nav" aria-label="Enlaces principales">
+			<a href="{% url 'home' %}">Inicio</a>
+			<a href="{% url 'operaciones' %}">Operaciones</a>
+			<a href="{% url 'mantenimiento' %}">Mantenimiento</a>
+			<a href="{% url 'radicacion' %}">Radicación</a>
+		</nav>
+	</div>
+</footer>

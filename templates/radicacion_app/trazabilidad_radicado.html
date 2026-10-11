@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Trazabilidad del radicado{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-form">
+  <div class="card shadow-lg">
+    <div class="card-header">
+      <h4><i class="fas fa-clock-rotate-left"></i> Trazabilidad del radicado</h4>
+    </div>
+    <div class="card-body">
+      <div class="form-section">
+        <div class="form-section-title">
+          <i class="fas fa-file-lines"></i> {{ tipo_radicado_nombre }}
+        </div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label class="detail-label"><i class="fas fa-barcode"></i> No. Radicado</label>
+            <div class="detail-value">{{ radicado.pk }}</div>
+          </div>
+          <div class="detail-item">
+            <label class="detail-label"><i class="fas fa-calendar"></i> Fecha de radicación</label>
+            <div class="detail-value">{{ radicado.fecha_radicacion|date:"d-m-Y" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">
+          <i class="fas fa-list-check"></i> Movimientos registrados
+        </div>
+        {% for evento in eventos %}
+        <div class="form-section">
+          <div class="form-section-title">
+            {% if evento.accion == 'Creación' %}
+              <i class="fas fa-circle-plus"></i>
+            {% else %}
+              <i class="fas fa-pen-to-square"></i>
+            {% endif %}
+            {{ evento.accion }}
+          </div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label class="detail-label"><i class="fas fa-user"></i> Usuario</label>
+              <div class="detail-value">{{ evento.usuario|default:"Usuario eliminado" }}</div>
+            </div>
+            <div class="detail-item">
+              <label class="detail-label"><i class="fas fa-calendar-clock"></i> Fecha y hora</label>
+              <div class="detail-value">{{ evento.fecha_hora|date:"d-m-Y H:i:s" }}</div>
+            </div>
+          </div>
+          {% if evento.campos_modificados %}
+          <div class="table-responsive">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Valor anterior</th>
+                  <th>Valor nuevo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for campo, valores in evento.campos_modificados.items %}
+                <tr>
+                  <td><strong>{{ campo|capfirst }}</strong></td>
+                  <td>{{ valores.anterior|default_if_none:"(vacío)" }}</td>
+                  <td>{{ valores.nuevo|default_if_none:"(vacío)" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endif %}
+        </div>
+        {% empty %}
+        <div class="alert alert-info">
+          <i class="fas fa-circle-info"></i> No hay movimientos de trazabilidad registrados para este radicado.
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-section">
+        <div class="action-buttons">
+          <a href="{% url url_listado %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al listado
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

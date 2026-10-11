@@ -11,6 +11,7 @@
             <h3>📋 Orden #{{ orden.id }} -- {{ orden.vehiculo }}</h3>
         </div>
 
+<div id="ordenActionMessage" class="alert d-none" role="status" aria-live="polite"></div>
 
 
 <div class="table-responsive" style="max-height: 680px; overflow-y: auto;">
@@ -27,13 +28,13 @@
             </thead>
             <tbody>
                 {% for inspeccion in inspecciones %}
-                    <tr class="text-center {% if inspeccion.estado.nombre == 'Finalizada' %}table-success{% endif %}">
+                    <tr class="text-center {% if inspeccion.estado.nombre == 'Finalizada' %}table-success{% elif inspeccion.estado.nombre == 'En proceso' %}table-warning{% endif %}">
                         <td class="fw-bold">{{ inspeccion.etapa.nombre }}</td>
                         <td>{{ inspeccion.item }}</td>
                         <td>
                             <span class="badge 
                                 {% if inspeccion.estado.nombre == 'Finalizada' %}bg-success
-                                {% elif inspeccion.estado.nombre == 'En Proceso' %}bg-warning text-dark
+                                {% elif inspeccion.estado.nombre == 'En proceso' %}bg-warning text-dark
                                 {% else %}bg-danger{% endif %}">
                                 {{ inspeccion.estado.nombre }}
                             </span>
@@ -43,7 +44,7 @@
                                 class="form-control observaciones" 
                                 rows="2"
                                 data-id="{{ inspeccion.id }}"
-                                {% if inspeccion.estado.nombre == "Finalizada" or es_admin_mtto %}readonly disabled{% endif %}>
+                                {% if inspeccion.estado.nombre == "Finalizada" or es_admin_mtto or orden.estado.nombre != 'En proceso' %}readonly disabled{% endif %}>
                                 {{ inspeccion.observaciones|default_if_none:"" }}
                             </textarea>
                         </td>
@@ -52,7 +53,7 @@
                                 <button 
                                     class="btn btn-sm btn-warning finalizarItem d-flex align-items-center gap-1 mx-auto"
                                     data-id="{{ inspeccion.id }}"
-                                    {% if inspeccion.estado.nombre == "Finalizada" %}disabled{% endif %}>
+                                    {% if inspeccion.estado.nombre == "Finalizada" or orden.estado.nombre != 'En proceso' %}disabled{% endif %}>
                                     ✅ Finalizar
                                 </button>
                             {% else %}
@@ -84,12 +85,25 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+function getCookie(name) {
+    const cookie = document.cookie.split(';').map(value => value.trim()).find(value => value.startsWith(name + '='));
+    return cookie ? decodeURIComponent(cookie.substring(name.length + 1)) : null;
+}
+
 $(document).ready(function () {
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+            }
+        }
+    });
 
     
     $(".observaciones").on("blur", function () {
         let inspeccion_id = $(this).data("id");
         let observaciones = $(this).val();
+        const message = $("#ordenActionMessage");
 
         $.ajax({
             url: "{% url 'actualizar_observaciones' %}",
@@ -97,7 +111,12 @@ $(document).ready(function () {
             contentType: "application/json",
             data: JSON.stringify({ inspeccion_id: inspeccion_id, observaciones: observaciones }),
             success: function (response) {
-                console.log("Observaciones guardadas");
+                message.removeClass("d-none alert-danger alert-success").addClass("alert-success").text("Observaciones guardadas.");
+            },
+            error: function (xhr) {
+                message.removeClass("d-none alert-success").addClass("alert-danger").text(
+                    xhr.responseJSON?.error || "No fue posible guardar las observaciones."
+                );
             }
         });
     });
@@ -106,12 +125,22 @@ $(document).ready(function () {
     $(".finalizarItem").click(function () {
         let item_id = $(this).data("id");
         let boton = $(this);
+        const message = $("#ordenActionMessage");
 
         $.post(`/finalizar_item/${item_id}/`, function (data) {
             $("#fechaFin_" + item_id).text(data.fecha_fin);
             boton.prop("disabled", true);
             // deshabilitar el textarea correspondiente
             $(`textarea.observaciones[data-id='${item_id}']`).prop("readonly", true).prop("disabled", true);
+            if (data.orden_finalizada) {
+                message.removeClass("d-none alert-danger").addClass("alert-success").text("Todos los ítems están completos. La orden quedó finalizada.");
+                $(".finalizarItem").prop("disabled", true);
+                $(".observaciones").prop("readonly", true).prop("disabled", true);
+            }
+        }).fail(function (xhr) {
+            message.removeClass("d-none alert-success").addClass("alert-danger").text(
+                xhr.responseJSON?.error || "No fue posible finalizar el ítem."
+            );
         });
     });
 

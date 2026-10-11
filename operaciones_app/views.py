@@ -12,6 +12,7 @@ from .reports import ReporterExcelRutas
 from django.core.exceptions import PermissionDenied
 from django.utils.timezone import now
 from django.utils.dateparse import parse_date
+from django.views.decorators.http import require_POST
 from utils import obtener_modulos_visibles
 
 # Vista para login de usuario
@@ -41,6 +42,8 @@ def logout_view(request):
     return redirect('login')
 
 # vista para crear usuarios
+@login_required
+@permission_required('auth.add_user', raise_exception=True)
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -273,21 +276,24 @@ def crear_solicitud(request):
     return render(request, 'operaciones_app/crear_solicitud.html', {'form': form})
 
 
+def _solicitudes_visibles(user):
+    solicitudes = SolicitudRuta.objects.all()
+    if not user.is_superuser and not user.groups.filter(name__in=['Operaciones', 'operaciones_view']).exists():
+        solicitudes = solicitudes.filter(usuario=user)
+    return solicitudes
+
+
 # Vista para consultar los registros creados por los operadores
 @login_required
 @permission_required('operaciones_app.view_solicitudruta', raise_exception=True)
 def lista_solicitudes(request):
-    registros = SolicitudRuta.objects.all().order_by('-fecha_solicitud')
+    registros = _solicitudes_visibles(request.user).order_by('-fecha_solicitud')
     estado_ruta = EstadoRuta.objects.all()
     
     estado_id = request.GET.get('estado')
     if estado_id:
         registros = registros.filter(estado__id=estado_id)
 
-    # filtrar segun el grupo de usuario
-    if not request.user.groups.filter(name='Operaciones').exists() and not request.user.groups.filter(name='operaciones_view').exists():
-        registros = registros.filter(usuario=request.user)
-         
     # Rango de fechas
     start_date_op = request.GET.get('start_date_op')
     end_date_op = request.GET.get('end_date_op')
@@ -328,7 +334,7 @@ def lista_solicitudes(request):
 @login_required
 @permission_required('operaciones_app.view_solicitudruta', raise_exception=True)
 def obtener_detalles_solicitud(request, solicitud_id):
-    solicitud = get_object_or_404(SolicitudRuta, id=solicitud_id)
+    solicitud = get_object_or_404(_solicitudes_visibles(request.user), id=solicitud_id)
     grupo_operaciones = request.user.groups.filter(name='Operaciones').exists()
     grupo_view_operaciones = request.user.groups.filter(name='operaciones_view').exists()
 
@@ -338,37 +344,44 @@ def obtener_detalles_solicitud(request, solicitud_id):
 # Vista para crear cancelacion de ruta
 @login_required
 @permission_required('operaciones_app.add_solicitudruta', raise_exception=True)
+@require_POST
 def cancelar_solicitud(request, solicitud_id):
-    solicitud = get_object_or_404(SolicitudRuta, id=solicitud_id)
+    puede_cancelar_global = request.user.is_superuser or request.user.groups.filter(
+        name__in=['Operaciones', 'Administrador']
+    ).exists()
+    solicitudes = SolicitudRuta.objects.all()
+    if not puede_cancelar_global:
+        solicitudes = solicitudes.filter(usuario=request.user)
+    solicitud = get_object_or_404(solicitudes, id=solicitud_id)
     nuevo_estado = EstadoRuta.objects.get(id=2)  # Estado "Cancelada"
 
-    if request.method == 'POST':
-        descripcion = request.POST.get("descripcion", "").strip()
+    descripcion = request.POST.get("descripcion", "").strip()
 
-        if not descripcion:
-            messages.error(request, "debe ingresar una descripcion para la cancelacion")
-            return redirect("detalle_solicitud", solicitud_id= solicitud_id)
+    if not descripcion:
+        messages.error(request, "debe ingresar una descripcion para la cancelacion")
+        return redirect("detalle_solicitud", solicitud_id= solicitud_id)
         
-        # Cambia estado de la solicitud
-        solicitud.estado = nuevo_estado
-        solicitud.save()
+    # Cambia estado de la solicitud
+    solicitud.estado = nuevo_estado
+    solicitud.save()
 
-        # Guarda en la tabla de cancelaciones
-        CancelacionRuta.objects.create(
-            fecha_cancelacion = now(),
-            operador = request.user.username,
-            descripcion = descripcion,
-            solicitud = solicitud
-        )
+    # Guarda en la tabla de cancelaciones
+    CancelacionRuta.objects.create(
+        fecha_cancelacion = now(),
+        operador = request.user.username,
+        descripcion = descripcion,
+        solicitud = solicitud
+    )
 
-        messages.success(request, "la ruta ha sido cancelada exitosamente")
+    messages.success(request, "la ruta ha sido cancelada exitosamente")
 
 
 
-        return redirect('lista_solicitudes') # Redirige al listado de solicitudes
+    return redirect('lista_solicitudes') # Redirige al listado de solicitudes
 
 
 @login_required
+@permission_required('operaciones_app.view_solicitudruta', raise_exception=True)
 def generate_report_rutas(request):
     # Obtener los filtros de fecha
     start_date_op = request.GET.get('start_date_op')
@@ -376,7 +389,10 @@ def generate_report_rutas(request):
     estado_id = request.GET.get('estado')
     
     # Consulta para filtrar los registros
-    queryset = SolicitudRuta.objects.all()
+    queryset = _solicitudes_visibles(request.user)
+
+    if not request.user.groups.filter(name__in=['Operaciones', 'operaciones_view']).exists():
+        queryset = queryset.filter(usuario=request.user)
 
     if start_date_op and end_date_op:
         queryset = queryset.filter(

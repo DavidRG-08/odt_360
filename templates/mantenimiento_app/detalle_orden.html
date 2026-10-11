@@ -10,10 +10,17 @@
             <h2 class="text-center mb-4">
                 <i class="fas fa-file-alt"></i> Orden #{{ orden.id }}
             </h2>
+
+            {% if orden_en_proceso %}
+                <div class="alert alert-warning" role="status">
+                    Ya tienes la orden <a href="{% url 'detalle_orden' orden_en_proceso.id %}">#{{ orden_en_proceso.id }}</a> en proceso. Debes finalizarla antes de iniciar otra.
+                </div>
+            {% endif %}
+            <div id="ordenActionMessage" class="alert alert-danger" role="alert" aria-live="polite" hidden></div>
             
             <!-- Botón para iniciar orden -->
             <div class="text-center my-3">
-                <button id="btnIniciarOrden" class="btn btn-success" {% if orden.fecha_inicio or es_admin_mtto %}disabled{% endif %}>
+                <button id="btnIniciarOrden" class="btn btn-success" {% if orden.fecha_inicio or not puede_trabajar_orden or orden_en_proceso or orden.estado.nombre == 'Finalizada' %}disabled{% endif %}>
                     🚀 Iniciar Orden
                 </button>
                 <p id="fechaInicio" class="mt-2">{{ orden.fecha_inicio|default:"No iniciada" }}</p>
@@ -27,11 +34,11 @@
                             <i class="fas fa-ticket"></i> {{ etapa.etapa.nombre }}
                         </div>
                         <div class="col-md-4">
-                            {% if etapa.estado.id == 3 %}
+                            {% if etapa.estado.nombre == 'Finalizada' %}
                                 <span class="badge bg-success">
                                     <i class="fas fa-check-circle"></i> {{ etapa.estado.nombre }}
                                 </span>
-                            {% elif etapa.estado.id == 2 %}
+                            {% elif etapa.estado.nombre == 'En proceso' %}
                                 <span class="badge bg-primary">
                                     <i class="fas fa-spinner"></i> {{ etapa.estado.nombre }}
                                 </span>
@@ -49,27 +56,27 @@
                         <div class="col-md-4 text-end">
                             {% if etapa.etapa.nombre == 'Mecanica' %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
-                                    <i class="fas fa-lock"></i> Iniciar inspección
+                                        {% if not orden.fecha_inicio or orden.estado.nombre != 'En proceso' or orden_en_proceso or es_admin_mtto or etapa.estado.nombre == 'Finalizada' %}disabled{% endif %}>
+                                    {% if orden.fecha_inicio and orden.estado.nombre == 'En proceso' and not orden_en_proceso and not es_admin_mtto and etapa.estado.nombre != 'Finalizada' %}<i class="fas fa-play"></i>{% else %}<i class="fas fa-lock"></i>{% endif %} Iniciar inspección
                                 </button>
 
                             {% elif etapa.etapa.nombre == 'Carroceria Externa' %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                    {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
-                                    <i class="fas fa-lock"></i> Iniciar inspección
+                                    {% if not orden.fecha_inicio or orden.estado.nombre != 'En proceso' or orden_en_proceso or es_admin_mtto or etapa.estado.nombre == 'Finalizada' %}disabled{% endif %}>
+                                    {% if orden.fecha_inicio and orden.estado.nombre == 'En proceso' and not orden_en_proceso and not es_admin_mtto and etapa.estado.nombre != 'Finalizada' %}<i class="fas fa-play"></i>{% else %}<i class="fas fa-lock"></i>{% endif %} Iniciar inspección
                                 </button>
                                 
 
                             {% elif etapa.etapa.nombre == 'Carroceria Interna' %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                    {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
-                                    <i class="fas fa-lock"></i> Iniciar inspección
+                                    {% if not orden.fecha_inicio or orden.estado.nombre != 'En proceso' or orden_en_proceso or es_admin_mtto or etapa.estado.nombre == 'Finalizada' %}disabled{% endif %}>
+                                    {% if orden.fecha_inicio and orden.estado.nombre == 'En proceso' and not orden_en_proceso and not es_admin_mtto and etapa.estado.nombre != 'Finalizada' %}<i class="fas fa-play"></i>{% else %}<i class="fas fa-lock"></i>{% endif %} Iniciar inspección
                                 </button>
                                 
                             {% else %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary iniciar-inspeccion" data-etapa="{{ etapa.etapa.nombre }}"
-                                        {% if not orden.fecha_inicio or es_admin_mtto and etapa.estado.id == 1 %}disabled{% endif %}>
-                                        <i class="fas fa-lock"></i> Iniciar inspección
+                                    {% if not orden.fecha_inicio or orden.estado.nombre != 'En proceso' or orden_en_proceso or es_admin_mtto or etapa.estado.nombre == 'Finalizada' %}disabled{% endif %}>
+                                    {% if orden.fecha_inicio and orden.estado.nombre == 'En proceso' and not orden_en_proceso and not es_admin_mtto and etapa.estado.nombre != 'Finalizada' %}<i class="fas fa-play"></i>{% else %}<i class="fas fa-lock"></i>{% endif %} Iniciar inspección
                                 </button>
                                 
                             {% endif %}
@@ -96,20 +103,35 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+function getCookie(name) {
+    const cookie = document.cookie.split(';').map(value => value.trim()).find(value => value.startsWith(name + '='));
+    return cookie ? decodeURIComponent(cookie.substring(name.length + 1)) : null;
+}
+
 $(document).ready(function () {
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+            }
+        }
+    });
 
 
 
     // Iniciar orden
     $("#btnIniciarOrden").click(function () {
+        const message = $("#ordenActionMessage");
+        message.prop("hidden", true).text("");
         $.post("{% url 'iniciar_orden' orden.id %}", function (data) {
             if (data.success) {
                 $("#fechaInicio").text(data.fecha_inicio);
                 $("#btnIniciarOrden").prop("disabled", true);
                 location.reload();
-            } else {
-                alert(data.error);
             }
+        }).fail(function (xhr) {
+            message.text(xhr.responseJSON?.error || "No fue posible iniciar la orden. Actualiza la página e inténtalo de nuevo.");
+            message.prop("hidden", false);
         });
     });
 
@@ -155,6 +177,10 @@ $(document).ready(function () {
                 window.location.href = "{% url 'trabaja_orden_ele' orden.id %}";
             }
         }
+    }).fail(function (xhr) {
+        const message = $("#ordenActionMessage");
+        message.text(xhr.responseJSON?.error || "No fue posible iniciar la inspección.");
+        message.prop("hidden", false);
     });
 });
 

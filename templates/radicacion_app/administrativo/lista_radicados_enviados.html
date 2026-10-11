@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{% static 'css/radicacion.css' %}">
 <link rel="stylesheet" href="{% static 'css/filters-modern.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
 {% endblock %}
 
 {% block content %}
@@ -53,6 +54,33 @@
               </div>
 
               <div class="filter-item">
+                <label class="filter-label" for="entidad">
+                  <i class="fas fa-building"></i> Entidad
+                </label>
+                <select name="entidad" id="entidad" class="form-select">
+                  <option value="">Todas las entidades</option>
+                  {% for entidad in entidades %}
+                    <option value="{{ entidad.id }}" {% if entidad.id|stringformat:"s" == selected_entidad %}selected{% endif %}>
+                      {{ entidad.nombre }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="filter-item">
+                <label class="filter-label" for="asunto">
+                  <i class="fas fa-envelope"></i> Asunto
+                </label>
+                <input
+                  type="search"
+                  id="asunto"
+                  name="asunto"
+                  class="form-control"
+                  value="{{ selected_asunto }}"
+                  placeholder="Palabra clave del asunto">
+              </div>
+
+              <div class="filter-item">
                 <label class="filter-label" for="oficina">
                   <i class="fas fa-building"></i> Oficina
                 </label>
@@ -78,6 +106,19 @@
                   value="{{ selected_radicado|default:'' }}" 
                   placeholder="Radicado">
               </div>
+
+              <div class="filter-item">
+                <label class="filter-label" for="num_rad_llegada">
+                  <i class="fas fa-barcode"></i> No. Radicado llegada
+                </label>
+                <input
+                  type="search"
+                  id="num_rad_llegada"
+                  name="num_rad_llegada"
+                  class="form-control"
+                  value="{{ selected_num_rad_llegada }}"
+                  placeholder="Radicado de llegada">
+              </div>
             </div>
 
             <!-- Fila de Botones de Acción -->
@@ -90,7 +131,7 @@
                 <i class="fas fa-redo"></i> Limpiar
               </button>
 
-              <a href="{% url 'reporte_radicados_enviados' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&oficina={{ selected_oficina }}&radicado={{ selected_radicado }}" class="btn btn-action btn-success">
+              <a href="{% url 'reporte_radicados_enviados' %}?start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&entidad={{ selected_entidad }}&asunto={{ selected_asunto }}&oficina={{ selected_oficina }}&radicado={{ selected_radicado }}&num_rad_llegada={{ selected_num_rad_llegada }}" class="btn btn-action btn-success">
                 <i class="fas fa-file-excel"></i> Exportar
               </a>
 
@@ -135,6 +176,10 @@
                     class="btn-action btn-view">
                     <i class="fas fa-eye"></i>
                   </a>
+                  <a href="{% url 'trazabilidad_radicado' 'enviado' enviado.id %}"
+                    class="btn-action btn-view" title="Ver trazabilidad" aria-label="Ver trazabilidad de {{ enviado.id }}">
+                    <i class="fas fa-clock-rotate-left"></i>
+                  </a>
                 </td>
                 <td>{{ enviado.fecha_radicacion|date:"d-m-Y" }}</td>
                 <td><strong>{{ enviado.id }}</strong></td>
@@ -172,14 +217,14 @@
           {% if page_obj_enviados.has_previous %}
           <li class="page-item">
             <a class="page-link"
-              href="?page=1{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page=1&start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&entidad={{ request.GET.entidad }}&asunto={{ request.GET.asunto }}&oficina={{ request.GET.oficina }}&radicado={{ request.GET.radicado }}&num_rad_llegada={{ request.GET.num_rad_llegada }}"
               aria-label="Primera página">
               <i class="fas fa-angle-double-left"></i>
             </a>
           </li>
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_enviados.previous_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page={{ page_obj_enviados.previous_page_number }}&start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&entidad={{ request.GET.entidad }}&asunto={{ request.GET.asunto }}&oficina={{ request.GET.oficina }}&radicado={{ request.GET.radicado }}&num_rad_llegada={{ request.GET.num_rad_llegada }}"
               aria-label="Anterior">
               <i class="fas fa-angle-left"></i>
             </a>
@@ -192,7 +237,7 @@
             {% elif num > page_obj_enviados.number|add:-3 and num < page_obj_enviados.number|add:3 %}
             <li class="page-item">
               <a class="page-link"
-                href="?page={{ num }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}">{{ num }}</a>
+                href="?page={{ num }}&start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&entidad={{ request.GET.entidad }}&asunto={{ request.GET.asunto }}&oficina={{ request.GET.oficina }}&radicado={{ request.GET.radicado }}&num_rad_llegada={{ request.GET.num_rad_llegada }}">{{ num }}</a>
             </li>
             {% endif %}
           {% endfor %}
@@ -200,14 +245,14 @@
           {% if page_obj_enviados.has_next %}
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_enviados.next_page_number }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page={{ page_obj_enviados.next_page_number }}&start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&entidad={{ request.GET.entidad }}&asunto={{ request.GET.asunto }}&oficina={{ request.GET.oficina }}&radicado={{ request.GET.radicado }}&num_rad_llegada={{ request.GET.num_rad_llegada }}"
               aria-label="Siguiente">
               <i class="fas fa-angle-right"></i>
             </a>
           </li>
           <li class="page-item">
             <a class="page-link"
-              href="?page={{ page_obj_enviados.paginator.num_pages }}{% if request.GET.start_date_rad %}&start_date_rad={{ request.GET.start_date_rad }}{% endif %}{% if request.GET.end_date_rad %}&end_date_rad={{ request.GET.end_date_rad }}{% endif %}{% if request.GET.oficina %}&oficina={{ request.GET.oficina }}{% endif %}"
+              href="?page={{ page_obj_enviados.paginator.num_pages }}&start_date_rad={{ request.GET.start_date_rad }}&end_date_rad={{ request.GET.end_date_rad }}&entidad={{ request.GET.entidad }}&asunto={{ request.GET.asunto }}&oficina={{ request.GET.oficina }}&radicado={{ request.GET.radicado }}&num_rad_llegada={{ request.GET.num_rad_llegada }}"
               aria-label="Última página">
               <i class="fas fa-angle-double-right"></i>
             </a>
@@ -224,15 +269,21 @@
 
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
 <script>
   $(document).ready(function () {
+    $('#entidad').select2({ width: '100%' });
+
     // Limpiar filtros
     document.getElementById('limpiarFiltros').onclick = function () {
       document.getElementById('start_date_rad').value = '';
       document.getElementById('end_date_rad').value = '';
+      document.getElementById('entidad').selectedIndex = 0;
+      document.getElementById('asunto').value = '';
       document.getElementById('oficina').selectedIndex = 0;
       document.getElementById('radicado').value = '';
+      document.getElementById('num_rad_llegada').value = '';
       this.closest('form').submit();
     };
   });

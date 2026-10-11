@@ -36,9 +36,11 @@ cuentan con la vista para ver todas las solicitudes y filtrarlas por un rango de
 5. Configuracion del proyecto en el servidor web 
 6. Instalacion de la base de datos (PostgreSQL) 
 7. Creacion de la base de datos 
-8. crear el archivo con las variables de entorno 
+8. crear el archivo con las variables de entorno (`SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS` y `DB_NAME`, `DB_USER`, `DB_PWD`, `DB_HOST`, `DB_PORT`)
 9. crear la conexion entre el proyecto y la BD
 10. Realizar la migracion de las tablas 
 11. Ejecucion del script SQL con los datos a cargar para el funcionamiento de la app
 12. Correr el proyecto
 13. Pruebas de conexion
+
+En producción, configura `DEBUG=False`, define `ALLOWED_HOSTS` con los dominios reales separados por comas y sirve el sitio exclusivamente por HTTPS. Las cookies de sesión y CSRF se marcan como seguras automáticamente cuando `DEBUG=False`.

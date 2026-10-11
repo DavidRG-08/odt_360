@@ -39,13 +39,13 @@
                     </select>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-primary w-100" aria-label="Aplicar filtros" title="Aplicar filtros">
                         <i class="fas fa-filter"></i>
                     </button>
-                    <button type="button" id="limpiarFiltros" class="btn btn-primary w-100 ms-2">
+                    <button type="button" id="limpiarFiltros" class="btn btn-primary w-100 ms-2" aria-label="Limpiar filtros" title="Limpiar filtros">
                         <i class="fa-solid fa-filter-circle-xmark"></i>
                     </button>
-                    <a href="{% url 'mantenimiento' %}" class="btn btn-primary w-100 ms-2">
+                    <a href="{% url 'mantenimiento' %}" class="btn btn-primary w-100 ms-2" aria-label="Volver al módulo de mantenimiento" title="Volver">
                         <i class="fas fa-arrow-left"></i>
                     </a>
                 </div>
@@ -77,7 +77,7 @@
                 </thead>
                 <tbody>
                     {% for orden in page_obj_ord %}
-                    <tr class="text-center">
+                    <tr class="text-center {% if orden.estado.nombre == 'En proceso' %}table-warning{% endif %}">
                         <td>
                             <a href="{% url 'modificar_orden' orden.id %}" class="text-decoration-none fw-bold">
                                 {{ orden.id }}
@@ -87,9 +87,9 @@
                         <td>{{ orden.fecha_creacion_orden }}</td>
                         <td>{{ orden.vehiculo }}</td>
                         <td>
-                            {% if orden.estado.id == 3 %}
+                            {% if orden.estado.nombre == 'Finalizada' %}
                                 <span class="badge bg-success" title="Finalizada"><i class="fas fa-check-circle"></i> Finalizada</span>
-                            {% elif orden.estado.id == 2 %}
+                            {% elif orden.estado.nombre == 'En proceso' %}
                                 <span class="badge bg-primary" title="En Proceso"><i class="fas fa-spinner fa-spin"></i> En Proceso</span>
                             {% else %}
                                 <span class="badge bg-danger" title="Abierta"><i class="fas fa-times-circle"></i> Abierta</span>
@@ -103,7 +103,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted">No se encontraron órdenes.</td>
+                        <td colspan="6" class="text-center text-muted">No se encontraron órdenes.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -119,14 +119,14 @@
             {% if page_obj_ord.has_previous %}
             <li class="page-item">
                 <a class="page-link"
-                    href="?page=1{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                    href="?page=1{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if selected_estado %}&estado={{ selected_estado }}{% endif %}"
                     aria-label="First">
                     <i class="fas fa-angle-double-left"></i>
                 </a>
             </li>
             <li class="page-item">
                 <a class="page-link"
-                    href="?page={{ page_obj_ord.previous_page_number }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                    href="?page={{ page_obj_ord.previous_page_number }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if selected_estado %}&estado={{ selected_estado }}{% endif %}"
                     aria-label="Previous">
                     <i class="fas fa-angle-left"></i>
                 </a>
@@ -138,21 +138,21 @@
                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                 {% elif num > page_obj_ord.number|add:-3 and num < page_obj_ord.number|add:3 %} <li class="page-item"><a
                     class="page-link"
-                    href="?page={{ num }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}">{{ num }}</a></li>
+                    href="?page={{ num }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if selected_estado %}&estado={{ selected_estado }}{% endif %}">{{ num }}</a></li>
                 {% endif %}
             {% endfor %}
 
             {% if page_obj_ord.has_next %}
                 <li class="page-item">
                     <a class="page-link"
-                        href="?page={{ page_obj_ord.next_page_number }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                        href="?page={{ page_obj_ord.next_page_number }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if selected_estado %}&estado={{ selected_estado }}{% endif %}"
                         aria-label="Next">
                         <i class="fas fa-angle-right"></i>
                     </a>
                 </li>
                 <li class="page-item">
                     <a class="page-link"
-                        href="?page={{ page_obj_ord.paginator.num_pages }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                        href="?page={{ page_obj_ord.paginator.num_pages }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if selected_estado %}&estado={{ selected_estado }}{% endif %}"
                         aria-label="Last">
                         <i class="fas fa-angle-double-right"></i>
                     </a>

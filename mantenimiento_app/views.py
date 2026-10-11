@@ -3,12 +3,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import Group  # para filtrar por grupo en permisos
+from django.db import transaction
 from django.core.paginator import Paginator
 from django.contrib import messages
 from datetime import datetime
 from django.utils.timezone import now
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 from .models import *
 from .forms import *
 from .reports import ReporterExcelOrdenesAlistamiento
@@ -18,6 +20,56 @@ from io import TextIOWrapper
 from utils import obtener_modulos_visibles
 
 
+
+
+def _ordenes_visibles(user):
+    ordenes = OrdenAlistamiento.objects.all()
+    if not user.is_superuser and not user.groups.filter(name__in=['Mtto_admin', 'Mtto_view']).exists():
+        ordenes = ordenes.filter(user=user)
+    return ordenes
+
+
+def _orden_para_edicion(user, orden_id):
+    ordenes = OrdenAlistamiento.objects.all()
+    if not user.is_superuser and not user.groups.filter(name='Mtto_admin').exists():
+        ordenes = ordenes.filter(user=user)
+    return get_object_or_404(ordenes, id=orden_id)
+
+
+def _detalle_para_edicion(user, detalle_id):
+    detalles = DetalleInspeccion.objects.select_related('orden')
+    if not user.is_superuser and not user.groups.filter(name='Mtto_admin').exists():
+        detalles = detalles.filter(orden__user=user)
+    return get_object_or_404(detalles, id=detalle_id)
+
+
+def _otra_orden_en_proceso(orden):
+    estado_proceso = get_object_or_404(Estado, nombre='En proceso')
+    return OrdenAlistamiento.objects.filter(
+        user_id=orden.user_id,
+        estado=estado_proceso,
+        fecha_fin__isnull=True,
+    ).exclude(pk=orden.pk)
+
+
+def _error_si_orden_no_activa(orden):
+    estado_proceso = get_object_or_404(Estado, nombre='En proceso')
+    if orden.estado_id != estado_proceso.pk or not orden.fecha_inicio or orden.fecha_fin:
+        return JsonResponse({
+            'success': False,
+            'error': 'La orden no está en proceso. Iníciala antes de trabajar sus etapas.',
+            'code': 'order_not_active',
+        }, status=409)
+
+    otra_orden = _otra_orden_en_proceso(orden).first()
+    if otra_orden:
+        return JsonResponse({
+            'success': False,
+            'error': f'El técnico ya tiene la orden #{otra_orden.pk} en proceso.',
+            'code': 'another_order_in_progress',
+        }, status=409)
+
+    return None
 
 
 # Modulo Mantenimiento
@@ -77,6 +129,7 @@ def crear_orden(request):
 
 # Crear orden masiva
 @login_required
+@permission_required('mantenimiento_app.add_ordenalistamiento', raise_exception=True)
 def cargar_csv(request):
     form = CsvUploadForm()
 
@@ -194,24 +247,42 @@ def agregar_ot(request, pk):
 @login_required
 @permission_required('mantenimiento_app.view_ordenalistamiento', raise_exception=True)
 def visualizar_orden(request, id):
-    orden = get_object_or_404(OrdenAlistamiento, id=id)
+    orden = get_object_or_404(_ordenes_visibles(request.user), id=id)
     return render(request, "mantenimiento_app/visualizar_orden.html", {"orden": orden})
 
 
 @login_required
 @permission_required('mantenimiento_app.view_ordenalistamiento', raise_exception=True)
+@ensure_csrf_cookie
 def detalle_orden(request, orden_id):
-    etapas = EtapaInspeccion.objects.filter(orden_id=orden_id)
+    orden = get_object_or_404(_ordenes_visibles(request.user), id=orden_id)
+    etapas = EtapaInspeccion.objects.filter(orden=orden)
     if not etapas.exists():
         messages.error(request, "No hay etapas de inspeccion para esta orden!")
-
-
-    orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
+    puede_trabajar_orden = (
+        request.user.has_perm('mantenimiento_app.change_ordenalistamiento')
+        and not es_admin_mtto
+    )
+    orden_en_proceso = None
+    if puede_trabajar_orden:
+        orden_en_proceso = OrdenAlistamiento.objects.filter(
+            user=request.user,
+            estado__nombre='En proceso',
+            fecha_inicio__isnull=False,
+            fecha_fin__isnull=True,
+        ).exclude(pk=orden.pk).first()
 
-    return render(request, "mantenimiento_app/detalle_orden.html", {"etapas": etapas, "orden": orden, "es_admin_mtto": es_admin_mtto})
+    return render(request, "mantenimiento_app/detalle_orden.html", {
+        "etapas": etapas,
+        "orden": orden,
+        "es_admin_mtto": es_admin_mtto,
+        "puede_trabajar_orden": puede_trabajar_orden,
+        "orden_en_proceso": orden_en_proceso,
+    })
 
 @login_required
+@permission_required('mantenimiento_app.view_ordenalistamiento', raise_exception=True)
 def generar_reporte_ordenes(request):
     # Obtiene los filtros de fecha
     start_date = request.GET.get('start_date')
@@ -219,7 +290,8 @@ def generar_reporte_ordenes(request):
     estado_id = request.GET.get('estado')
 
     # Consulta para filtrar las ordenes
-    queryset = OrdenAlistamiento.objects.all()
+    queryset = _ordenes_visibles(request.user)
+
     if start_date and end_date:
         queryset = queryset.filter(
             fecha_creacion_orden__gte=start_date, 
@@ -235,31 +307,36 @@ def generar_reporte_ordenes(request):
 
 
 
-@csrf_exempt
+@require_POST
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
 def iniciar_orden(request, orden_id):
-    """ Marca el inicio de la orden con la fecha y hora actual """
-    if request.method == "POST":
-        orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
-        estado_proceso = Estado.objects.get(nombre="En proceso")
-        tecnico = orden.user
+    """Inicia una orden, serializando los inicios para el técnico asignado."""
+    with transaction.atomic():
+        orden = _orden_para_edicion(request.user, orden_id)
+        User.objects.select_for_update().get(pk=orden.user_id)
+        orden = OrdenAlistamiento.objects.select_for_update().get(pk=orden.pk)
+        estado_proceso = get_object_or_404(Estado, nombre='En proceso')
+        estado_finalizada = get_object_or_404(Estado, nombre='Finalizada')
 
-        # Valida si el tecnico tiene una orden abierta excepto la actual
-        otra_orden = OrdenAlistamiento.objects.filter(
-            user = tecnico,
-            estado__nombre = "En proceso"
-        ).exclude(id=orden_id).exists()
+        if orden.fecha_fin or orden.estado_id == estado_finalizada.pk:
+            return JsonResponse({
+                "success": False,
+                "error": "La orden ya está finalizada y no se puede iniciar de nuevo.",
+                "code": "order_already_finished",
+            }, status=409)
 
+        otra_orden = _otra_orden_en_proceso(orden).first()
         if otra_orden:
             return JsonResponse({
                 "success": False,
-                "error": "Ya se encuentra una orden en proceso, debe finalizar antes de comenzar con una nueva orden"
-            })
+                "error": f"El técnico ya tiene la orden #{otra_orden.pk} en proceso. Finalízala antes de iniciar otra.",
+                "code": "another_order_in_progress",
+            }, status=409)
 
         if not orden.fecha_inicio:
             orden.fecha_inicio = now()
-            orden.estado = estado_proceso 
-            orden.save()
+        orden.estado = estado_proceso
+        orden.save(update_fields=['fecha_inicio', 'estado', 'tiempo_alistamiento'])
 
         return JsonResponse({
             "success": True,
@@ -267,93 +344,124 @@ def iniciar_orden(request, orden_id):
         })
     
 
-@csrf_exempt
+@require_POST
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@transaction.atomic
 def iniciar_inspeccion_etapa(request, orden_id, etapa_nombre):
     """Inicia la inspección de la etapa especificada"""
-    if request.method == "POST":
-        orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
-        etapa_obj = get_object_or_404(Etapa, nombre=etapa_nombre)
-        estado_proceso = get_object_or_404(Estado, nombre="En proceso")
-        
-        etapa_inspeccion = get_object_or_404(
-            EtapaInspeccion, 
-            orden=orden, 
-            etapa=etapa_obj
-        )
-        
-        if not etapa_inspeccion.fecha_inicio:
-            etapa_inspeccion.fecha_inicio = now()
-            etapa_inspeccion.estado = estado_proceso
-            etapa_inspeccion.save()
-        
+    orden = _orden_para_edicion(request.user, orden_id)
+    User.objects.select_for_update().get(pk=orden.user_id)
+    orden = OrdenAlistamiento.objects.select_for_update().get(pk=orden.pk)
+    error = _error_si_orden_no_activa(orden)
+    if error:
+        return error
+
+    etapa_obj = get_object_or_404(Etapa, nombre=etapa_nombre)
+    etapa_inspeccion = get_object_or_404(EtapaInspeccion, orden=orden, etapa=etapa_obj)
+    estado_finalizada = get_object_or_404(Estado, nombre='Finalizada')
+    if etapa_inspeccion.estado_id == estado_finalizada.pk:
         return JsonResponse({
-            "success": True,
-            "fecha_inicio": etapa_inspeccion.fecha_inicio.strftime("%Y-%m-%d %H:%M:%S"),
-            "etapa": etapa_nombre
-        })
-    return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+            'success': False,
+            'error': 'La etapa ya está finalizada.',
+            'code': 'stage_already_finished',
+        }, status=409)
+
+    if not etapa_inspeccion.fecha_inicio:
+        etapa_inspeccion.fecha_inicio = now()
+        etapa_inspeccion.estado = get_object_or_404(Estado, nombre='En proceso')
+        etapa_inspeccion.save()
+
+    return JsonResponse({
+        "success": True,
+        "fecha_inicio": etapa_inspeccion.fecha_inicio.strftime("%Y-%m-%d %H:%M:%S"),
+        "etapa": etapa_nombre
+    })
 
 
-@csrf_exempt
+@require_POST
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@transaction.atomic
 def actualizar_observaciones(request):
     """ Actualiza las observaciones de una inspección """
-    if request.method == "POST":
-        data = json.loads(request.body)
-        inspeccion = get_object_or_404(DetalleInspeccion, id=data["inspeccion_id"])
-        inspeccion.observaciones = data["observaciones"]
-        inspeccion.save()
-        return JsonResponse({"success": True})
+    data = json.loads(request.body)
+    inspeccion = _detalle_para_edicion(request.user, data["inspeccion_id"])
+    User.objects.select_for_update().get(pk=inspeccion.orden.user_id)
+    orden = OrdenAlistamiento.objects.select_for_update().get(pk=inspeccion.orden_id)
+    error = _error_si_orden_no_activa(orden)
+    if error:
+        return error
+
+    inspeccion.observaciones = data["observaciones"]
+    inspeccion.save(update_fields=['observaciones'])
+    return JsonResponse({"success": True})
 
 
-@csrf_exempt
+@require_POST
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@transaction.atomic
 def finalizar_item(request, item_id):
     """ Marca la finalización del item con la fecha y hora actual """
-    if request.method == "POST":
-        item = get_object_or_404(DetalleInspeccion, id=item_id)
-        estado_finalizado = Estado.objects.get(nombre="Finalizada")
+    item = _detalle_para_edicion(request.user, item_id)
+    User.objects.select_for_update().get(pk=item.orden.user_id)
+    orden = OrdenAlistamiento.objects.select_for_update().get(pk=item.orden_id)
+    item = DetalleInspeccion.objects.select_for_update().get(pk=item.pk)
+    error = _error_si_orden_no_activa(orden)
+    if error:
+        return error
 
-        if not item.fecha_fin:
-            item.fecha_fin = now()
-            item.estado = estado_finalizado
-            item.save()
+    estado_finalizada = get_object_or_404(Estado, nombre='Finalizada')
+    if not item.fecha_fin:
+        item.fecha_fin = now()
+        item.estado = estado_finalizada
+        item.save()
 
-        # Verificar si todos los items de la orden están finalizados
-        items_etapa = DetalleInspeccion.objects.filter(orden_id=item.orden_id, etapa=item.etapa)
-        if all(i.estado.nombre == "finalizada" for i in items_etapa):
-            etapa = EtapaInspeccion.objects.get(
-                orden_id = item.orden_id, etapa_id = item.etapa
-            )
-            etapa.estado = estado_finalizado
-            etapa.save()
+    items_pendientes_etapa = DetalleInspeccion.objects.filter(
+        orden=orden,
+        etapa=item.etapa,
+    ).exclude(estado=estado_finalizada)
+    if not items_pendientes_etapa.exists():
+        etapa = get_object_or_404(EtapaInspeccion, orden=orden, etapa=item.etapa)
+        etapa.estado = estado_finalizada
+        if not etapa.fecha_fin:
+            etapa.fecha_fin = now()
+        etapa.save()
 
+    items_pendientes_orden = DetalleInspeccion.objects.filter(orden=orden).exclude(
+        estado=estado_finalizada,
+    )
+    orden_finalizada = not items_pendientes_orden.exists()
+    if orden_finalizada:
+        orden.estado = estado_finalizada
+        if not orden.fecha_fin:
+            orden.fecha_fin = now()
+        orden.save()
 
-        return JsonResponse({
-            "fecha_fin": item.fecha_fin.strftime("%Y-%m-%d %H:%M:%S"),
-            "estado": item.estado.nombre
-        })
+    return JsonResponse({
+        "fecha_fin": item.fecha_fin.strftime("%Y-%m-%d %H:%M:%S"),
+        "estado": item.estado.nombre,
+        "orden_finalizada": orden_finalizada,
+    })
 
 
 # detalle orden mecanica
 @login_required
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@ensure_csrf_cookie
 def trabajar_orden_mecanica(request, orden_id):
-    inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 1)
-    orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
+    orden = _orden_para_edicion(request.user, orden_id)
+    inspecciones = DetalleInspeccion.objects.filter(orden=orden, etapa=1)
 
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
-    
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
 
 
 # detalle orden externa
 @login_required
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@ensure_csrf_cookie
 def trabajar_orden_externa(request, orden_id):
-    inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 2)
-    orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
+    orden = _orden_para_edicion(request.user, orden_id)
+    inspecciones = DetalleInspeccion.objects.filter(orden=orden, etapa=2)
 
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
@@ -362,9 +470,10 @@ def trabajar_orden_externa(request, orden_id):
 # detalle orden interna
 @login_required
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@ensure_csrf_cookie
 def trabajar_orden_interna(request, orden_id):
-    inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 3)
-    orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
+    orden = _orden_para_edicion(request.user, orden_id)
+    inspecciones = DetalleInspeccion.objects.filter(orden=orden, etapa=3)
 
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})
@@ -373,9 +482,10 @@ def trabajar_orden_interna(request, orden_id):
 # detalle orden electrica
 @login_required
 @permission_required('mantenimiento_app.change_ordenalistamiento', raise_exception=True)
+@ensure_csrf_cookie
 def trabajar_orden_electrica(request, orden_id):
-    inspecciones = DetalleInspeccion.objects.filter(orden_id= orden_id, etapa= 4)
-    orden = get_object_or_404(OrdenAlistamiento, id=orden_id)
+    orden = _orden_para_edicion(request.user, orden_id)
+    inspecciones = DetalleInspeccion.objects.filter(orden=orden, etapa=4)
 
     es_admin_mtto = request.user.groups.filter(name='Mtto_admin').exists()
     return render(request, "mantenimiento_app/trabaja_orden.html", {"inspecciones": inspecciones, "orden": orden, "es_admin_mtto": es_admin_mtto})

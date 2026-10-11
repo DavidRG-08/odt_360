@@ -6,8 +6,8 @@ from openpyxl.styles import Font, PatternFill, Alignment
 
 class ReporterExcelOrdenesAlistamiento(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or OrdenAlistamiento.objects.all()
+        queryset = queryset if queryset is not None else OrdenAlistamiento.objects.all()
+        self.queryset = queryset.select_related('estado', 'user', 'vehiculo')
     
     def get(self, request, *args, **kwargs):
         # Aqui utilizamos el queryset filtrado en lugar de obtener todos los registros

@@ -25,6 +25,8 @@ urlpatterns = [
     path('radicados_internos/detalle/<str:radicado_id>/', views.obtener_detalle_rad_interno, name='detalle_radicado_interno'),
     path('radicados_internos/editar/<str:radicado_id>/', views.editar_radicado_interno, name='editar_radicado_interno'),
 
+    path('trazabilidad/<slug:tipo_radicado>/<str:radicado_id>/', views.ver_trazabilidad_radicado, name='trazabilidad_radicado'),
+
     # PQRSD
     path('crear_radicado_pqrsd/', views.crear_radicados_recibidos_pqrsd, name='crear_radicado_pqrsd'),
     path('lista_radicados_pqrsd/', views.view_radicados_recibidos_pqrsd, name='lista_radicados_pqrsd'),

@@ -308,12 +308,7 @@ class CrearRadicadoPqrsdForm(forms.ModelForm):
 class UpdatePqrsdRecibidosForm(forms.ModelForm):
     class Meta:
         model = RadicadosRecibidosPqrsd
-        fields = [
-            'fecha_cierre',
-            'culpabilidad',
-            'operador',
-            'observaciones'
-        ]
+        exclude = ['id', 'fecha_radicacion', 'radicador', 'tipo_radicado']
 
         widgets = {
             'fecha_cierre': forms.DateInput(attrs={

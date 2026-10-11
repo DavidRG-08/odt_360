@@ -3,13 +3,12 @@ from django.http.response import HttpResponse
 from .models import SolicitudRuta
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
-from django.contrib.auth.models import User
 from django.utils import timezone
 
 class ReporterExcelRutas(TemplateView):
     def __init__(self, queryset = None):
-        # Utiliza el queryset pasado en el constructor o todos los registros si no se pasa
-        self.queryset = queryset or SolicitudRuta.objects.all()
+        queryset = queryset if queryset is not None else SolicitudRuta.objects.all()
+        self.queryset = queryset.select_related('usuario', 'turno', 'localidad', 'ruta', 'estado')
         
     
     def get(self, request, *args, **kwargs):
@@ -48,11 +47,7 @@ class ReporterExcelRutas(TemplateView):
 
         for ruta in rutas_reg:
             
-            try:
-                user = User.objects.get(username=ruta.operador)
-                nombre = f"{user.first_name} {user.last_name}"
-            except User.DoesNotExist:
-                nombre = "Desconocido"
+            nombre = f"{ruta.usuario.first_name} {ruta.usuario.last_name}"
 
             #Convertir fechas de UTC -> Anerica/Bogota
             fecha_solicitud = timezone.localtime(ruta.fecha_solicitud)
