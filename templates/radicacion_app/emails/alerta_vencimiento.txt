@@ -1,0 +1,8 @@
+{% if proximo %}El radicado {{ radicado.id }} vence dentro de los próximos 3 días.{% else %}El radicado {{ radicado.id }} está vencido.{% endif %}
+
+Asunto: {{ radicado.asunto }}
+Fecha máxima de respuesta: {{ fecha_limite|date:"d/m/Y" }}
+Responsable: {{ responsable.nombre }}
+Oficina: {{ radicado.oficina.nombre }}
+
+Consulta el radicado: {{ detalle_url }}

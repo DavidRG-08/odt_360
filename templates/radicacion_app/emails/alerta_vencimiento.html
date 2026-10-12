@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+  <body style="margin:0;background:#f2f5f6;color:#17343b;font-family:Arial,sans-serif;">
+    <main style="max-width:600px;margin:24px auto;padding:24px;background:#fff;border-top:4px solid {% if proximo %}#d39e00{% else %}#b02a37{% endif %};">
+      <p style="margin:0 0 8px;color:#527079;font-size:13px;">ODT 360 · Radicación</p>
+      <h1 style="margin:0 0 20px;font-size:22px;">
+        {% if proximo %}Radicado próximo a vencer{% else %}Radicado vencido{% endif %}
+      </h1>
+      <p>Hola {{ responsable.nombre }},</p>
+      <p>
+        {% if proximo %}
+          El plazo de respuesta del radicado <strong>{{ radicado.id }}</strong> vence dentro de los próximos 3 días.
+        {% else %}
+          El plazo de respuesta del radicado <strong>{{ radicado.id }}</strong> ya venció.
+        {% endif %}
+      </p>
+      <p><strong>Asunto:</strong> {{ radicado.asunto }}<br>
+        <strong>Fecha máxima:</strong> {{ fecha_limite|date:"d/m/Y" }}<br>
+        <strong>Oficina:</strong> {{ radicado.oficina.nombre }}</p>
+      <p style="margin:24px 0;">
+        <a href="{{ detalle_url }}" style="display:inline-block;padding:11px 16px;background:#025e73;color:#fff;text-decoration:none;">Ver radicado</a>
+      </p>
+      <p style="margin:0;color:#627980;font-size:12px;">Mensaje automático de ODT 360.</p>
+    </main>
+  </body>
+</html>

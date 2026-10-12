@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from datetime import date
 from django.db.models import F
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
@@ -24,6 +25,8 @@ class Oficina(models.Model):
 class Responsable(models.Model):
     nombre = models.CharField(max_length=100)
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE)
+    email = models.EmailField(blank=True, default='')
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.nombre}"
@@ -169,6 +172,61 @@ class RadicacionRecibidos(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.asunto}"
+
+
+class AlertaRadicado(models.Model):
+    class Tipo(models.TextChoices):
+        PROXIMO_VENCIMIENTO = 'proximo_vencimiento', 'Próximo a vencer'
+        VENCIDO = 'vencido', 'Vencido'
+
+    class Estado(models.TextChoices):
+        PENDIENTE = 'pendiente', 'Pendiente'
+        PROCESANDO = 'procesando', 'Procesando'
+        ENVIADA = 'enviada', 'Enviada'
+        FALLIDA = 'fallida', 'Fallida'
+        CANCELADA = 'cancelada', 'Cancelada'
+
+    radicado = models.ForeignKey(
+        RadicacionRecibidos,
+        on_delete=models.CASCADE,
+        related_name='alertas_vencimiento',
+    )
+    responsable = models.ForeignKey(
+        Responsable,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='alertas_vencimiento',
+    )
+    tipo = models.CharField(max_length=24, choices=Tipo.choices)
+    fecha_limite = models.DateField()
+    destinatario_email = models.EmailField()
+    estado = models.CharField(
+        max_length=12,
+        choices=Estado.choices,
+        default=Estado.PENDIENTE,
+    )
+    intentos = models.PositiveSmallIntegerField(default=0)
+    creada_en = models.DateTimeField(default=timezone.now)
+    siguiente_intento_en = models.DateTimeField(default=timezone.now)
+    procesando_desde = models.DateTimeField(blank=True, null=True)
+    enviada_en = models.DateTimeField(blank=True, null=True)
+    ultimo_error = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['creada_en']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['radicado', 'tipo', 'fecha_limite', 'destinatario_email'],
+                name='rad_alerta_dedup_uq',
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=['estado', 'siguiente_intento_en'],
+                name='rad_alerta_pendiente_idx',
+            ),
+        ]
 
 
 class RadicacionInternos(models.Model):

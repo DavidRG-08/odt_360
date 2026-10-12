@@ -1,9 +1,37 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 from .models import *
 from django import forms
 
 
-class CrearRadicadoRecibidosForm(forms.ModelForm):
+class ResponsablesActivosMixin:
+    responsable_fields = ('responsable_por_responder', 'enviado_por')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name in self.responsable_fields:
+            if field_name not in self.fields:
+                continue
+
+            queryset = Responsable.objects.filter(activo=True)
+            current_id = getattr(self.instance, f'{field_name}_id', None)
+            current_is_inactive = current_id and not queryset.filter(pk=current_id).exists()
+
+            if current_is_inactive:
+                queryset = Responsable.objects.filter(Q(activo=True) | Q(pk=current_id))
+                self.fields[field_name].label_from_instance = self._label_responsable
+
+            self.fields[field_name].queryset = queryset.order_by('nombre')
+
+    @staticmethod
+    def _label_responsable(responsable):
+        if responsable.activo:
+            return str(responsable)
+        return f'{responsable} (inactivo; asignado actualmente)'
+
+
+class CrearRadicadoRecibidosForm(ResponsablesActivosMixin, forms.ModelForm):
     class Meta:
         model = RadicacionRecibidos
         exclude = ['radicador', 'fecha_radicacion', 'id']
@@ -53,7 +81,7 @@ class CrearRadicadoRecibidosForm(forms.ModelForm):
         return cleaned_data
     
 
-class UpdateRadicadosRecibidosForm(forms.ModelForm):
+class UpdateRadicadosRecibidosForm(ResponsablesActivosMixin, forms.ModelForm):
     class Meta:
         model = RadicacionRecibidos
         exclude = ['radicador', 'fecha_radicacion', 'id', 'anexos']
@@ -79,7 +107,7 @@ class UpdateRadicadosRecibidosForm(forms.ModelForm):
 
 
 
-class UpdateRadicadosEnviadosForm(forms.ModelForm):
+class UpdateRadicadosEnviadosForm(ResponsablesActivosMixin, forms.ModelForm):
     class Meta:
         model = RadicacionEnviados
         exclude = ['id', 'fecha_radicacion', 'radicador', 'anexos']
@@ -104,7 +132,7 @@ class UpdateRadicadosEnviadosForm(forms.ModelForm):
         }
 
 
-class UpdateRadicadosInternosForm(forms.ModelForm):
+class UpdateRadicadosInternosForm(ResponsablesActivosMixin, forms.ModelForm):
     class Meta:
         model = RadicacionInternos
         exclude = ['radicador', 'fecha_radicacion', 'id', 'tiempo_respuesta', 'fecha_maxima_respuesta', 
@@ -133,7 +161,7 @@ class UpdateRadicadosInternosForm(forms.ModelForm):
 
 
 
-class CrearRadicadoEnviadosForm(forms.ModelForm):
+class CrearRadicadoEnviadosForm(ResponsablesActivosMixin, forms.ModelForm):
     class Meta:
         model = RadicacionEnviados
         exclude = ['radicador', 'fecha_radicacion', 'id']
@@ -182,7 +210,7 @@ class CrearRadicadoEnviadosForm(forms.ModelForm):
         return cleaned_data
 
 
-class CrearRadicadoInternosForm(forms.ModelForm):
+class CrearRadicadoInternosForm(ResponsablesActivosMixin, forms.ModelForm):
     class Meta:
         model = RadicacionInternos
         exclude = ['radicador', 'fecha_radicacion', 'id']
@@ -247,6 +275,8 @@ class CrearEntidadForm(forms.ModelForm):
 
 
 class CrearResponsableForm(forms.ModelForm):
+    email = forms.EmailField(required=True, label='Correo electrónico')
+
     class Meta:
         model = Responsable
         fields = '__all__'

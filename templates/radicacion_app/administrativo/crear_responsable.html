@@ -43,6 +43,17 @@
                 <span class="required">*</span>
             </label>
             {{ form.oficina }}
+            <label class="form-label mt-3" for="{{ form.email.id_for_label }}">
+              <i class="fas fa-envelope"></i> Correo para alertas
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="form-error">
+                {% for error in form.email.errors %}
+                  <i class="fas fa-exclamation-circle"></i> {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
           </div>
         </div>
 

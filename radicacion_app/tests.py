@@ -1,10 +1,19 @@
 # radicacion_app/tests.py
+from datetime import timedelta
+from io import StringIO
+from unittest.mock import patch
+
+from django.core import mail
+from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase
-from django.db import transaction
+from django.db import close_old_connections, transaction
 from django.contrib.auth.models import Permission, User
 from django.urls import reverse
+from django.utils import timezone
+from django.test import override_settings
 from concurrent.futures import ThreadPoolExecutor
 from .models import (
+    AlertaRadicado,
     Area,
     CanalesRecepcion,
     Entidad,
@@ -24,12 +33,21 @@ from .models import (
     TrazabilidadCreacion,
     TrazabilidadModificacion,
 )
+from .forms import CrearResponsableForm
 from .reports import (
     ReporterExcelRadicadosEnviados,
     ReporterExcelRadicadosInternos,
     ReporterExcelRadicadosRecibidos,
     ReporterExcelPqrsdEnviados,
     ReporterExcelPqrsdRecibidos,
+)
+from .forms import (
+    CrearRadicadoEnviadosForm,
+    CrearRadicadoInternosForm,
+    CrearRadicadoRecibidosForm,
+    UpdateRadicadosEnviadosForm,
+    UpdateRadicadosInternosForm,
+    UpdateRadicadosRecibidosForm,
 )
 
 
@@ -94,6 +112,111 @@ class FiltrosListadosRadicadosTest(TestCase):
             [radicado.pk for radicado in response.context['page_obj_recibidos']],
             ['REC-001'],
         )
+
+
+class ResponsableActivoSelectionTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='responsables', password='test-password')
+        self.office = Oficina.objects.create(nombre='Oficina de prueba')
+        self.active = Responsable.objects.create(
+            nombre='Responsable activo',
+            oficina=self.office,
+            email='activo@example.com',
+        )
+        self.inactive = Responsable.objects.create(
+            nombre='Responsable inactivo',
+            oficina=self.office,
+            email='inactivo@example.com',
+            activo=False,
+        )
+        self.document_type = TipoDocumento.objects.create(tipo='Carta')
+        self.entity = Entidad.objects.create(nombre='Entidad de prueba')
+
+    def test_create_forms_only_offer_active_responsables(self):
+        form_fields = (
+            (CrearRadicadoRecibidosForm, 'responsable_por_responder'),
+            (CrearRadicadoInternosForm, 'responsable_por_responder'),
+            (CrearRadicadoEnviadosForm, 'enviado_por'),
+        )
+
+        for form_class, field_name in form_fields:
+            with self.subTest(form=form_class.__name__):
+                queryset = form_class().fields[field_name].queryset
+                self.assertEqual(list(queryset.values_list('pk', flat=True)), [self.active.pk])
+
+    def test_update_forms_keep_current_inactive_responsable_but_hide_other_inactive_ones(self):
+        received = RadicacionRecibidos.objects.create(
+            id='ACT-REC-001',
+            medio_ingreso='Fisico',
+            tipo_comunicacion='Externo',
+            tipo_documento=self.document_type,
+            entidad=self.entity,
+            asunto='Recibido de prueba',
+            responsable_por_responder=self.inactive,
+            oficina=self.office,
+            requiere_respuesta='SI',
+            radicador=self.user,
+        )
+        internal = RadicacionInternos.objects.create(
+            id='ACT-INT-001',
+            medio_ingreso='Fisico',
+            tipo_comunicacion='Interno',
+            tipo_documento=self.document_type,
+            entidad=self.entity,
+            asunto='Interno de prueba',
+            anexos=0,
+            responsable_por_responder=self.inactive,
+            oficina=self.office,
+            requiere_respuesta='SI',
+            radicador=self.user,
+        )
+        sent = RadicacionEnviados.objects.create(
+            id='ACT-ENV-001',
+            medio_envio='Fisico',
+            tipo_documento=self.document_type,
+            tipo_comunicacion='Interno',
+            entidad=self.entity,
+            asunto='Enviado de prueba',
+            anexos=0,
+            enviado_por=self.inactive,
+            oficina=self.office,
+            radicador=self.user,
+            requiere_respuesta='NO',
+        )
+        form_instances = (
+            (UpdateRadicadosRecibidosForm(instance=received), 'responsable_por_responder'),
+            (UpdateRadicadosInternosForm(instance=internal), 'responsable_por_responder'),
+            (UpdateRadicadosEnviadosForm(instance=sent), 'enviado_por'),
+        )
+
+        for form, field_name in form_instances:
+            with self.subTest(form=form.__class__.__name__):
+                field = form.fields[field_name]
+                choices = list(field.queryset.values_list('pk', flat=True))
+                self.assertCountEqual(choices, [self.active.pk, self.inactive.pk])
+                self.assertEqual(field.label_from_instance(self.inactive), 'Responsable inactivo (inactivo; asignado actualmente)')
+
+
+class FiltrosEnviadosInternosRadicadosTest(TestCase):
+    def setUp(self):
+        self.usuario = User.objects.create_user(username='filtros-secundarios', password='test-password')
+        permisos = Permission.objects.filter(codename__in=[
+            'view_radicacionrecibidos',
+            'view_radicacionenviados',
+            'view_radicacioninternos',
+        ])
+        self.usuario.user_permissions.add(*permisos)
+        self.client.force_login(self.usuario)
+
+        self.oficina = Oficina.objects.create(nombre='Oficina Principal')
+        self.otra_oficina = Oficina.objects.create(nombre='Oficina Alterna')
+        self.responsable = Responsable.objects.create(
+            nombre='Responsable',
+            oficina=self.oficina,
+        )
+        self.tipo_documento = TipoDocumento.objects.create(tipo='Carta')
+        self.entidad = Entidad.objects.create(nombre='Entidad de prueba')
+        self.otra_entidad = Entidad.objects.create(nombre='Otra entidad')
 
     def test_filtra_enviados_por_entidad_oficina_y_palabra_del_asunto(self):
         RadicacionEnviados.objects.create(
@@ -182,11 +305,160 @@ class FiltrosListadosRadicadosTest(TestCase):
         )
 
 
+class DeteccionAlertasVencimientoTest(TestCase):
+    def setUp(self):
+        self.usuario = User.objects.create_user(username='alertas', password='test-password')
+        self.oficina = Oficina.objects.create(nombre='Oficina Alertas')
+        self.responsable = Responsable.objects.create(
+            nombre='Responsable Alertas',
+            oficina=self.oficina,
+            email='responsable@example.com',
+        )
+        tipo_documento = TipoDocumento.objects.create(tipo='Carta')
+        entidad = Entidad.objects.create(nombre='Entidad alertas')
+        self.fecha_hoy = timezone.localdate()
+
+        RadicacionRecibidos.objects.create(
+            id='ALR-PRONTO', medio_ingreso='Fisico', tipo_comunicacion='Externo',
+            tipo_documento=tipo_documento, entidad=entidad, asunto='Vence pronto',
+            responsable_por_responder=self.responsable, oficina=self.oficina,
+            requiere_respuesta='SI', fecha_maxima_respuesta=self.fecha_hoy + timedelta(days=3),
+            radicador=self.usuario,
+        )
+        RadicacionRecibidos.objects.create(
+            id='ALR-VENCIDO', medio_ingreso='Fisico', tipo_comunicacion='Externo',
+            tipo_documento=tipo_documento, entidad=entidad, asunto='Ya venció',
+            responsable_por_responder=self.responsable, oficina=self.oficina,
+            requiere_respuesta='SI', fecha_maxima_respuesta=self.fecha_hoy - timedelta(days=1),
+            radicador=self.usuario,
+        )
+        RadicacionRecibidos.objects.create(
+            id='ALR-RESPONDIDO', medio_ingreso='Fisico', tipo_comunicacion='Externo',
+            tipo_documento=tipo_documento, entidad=entidad, asunto='Ya contestado',
+            responsable_por_responder=self.responsable, oficina=self.oficina,
+            requiere_respuesta='SI', fecha_maxima_respuesta=self.fecha_hoy - timedelta(days=1),
+            fecha_respuesta=self.fecha_hoy, estado_respuesta='Con Respuesta',
+            radicador=self.usuario,
+        )
+
+    def test_detection_creates_due_and_overdue_alerts_once(self):
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT radicacion_app_generar_alertas_vencimiento()')
+            first_insert_count = cursor.fetchone()[0]
+            cursor.execute('SELECT radicacion_app_generar_alertas_vencimiento()')
+            second_insert_count = cursor.fetchone()[0]
+
+        self.assertEqual(first_insert_count, 2)
+        self.assertEqual(second_insert_count, 0)
+        self.assertEqual(AlertaRadicado.objects.count(), 2)
+        self.assertEqual(
+            set(AlertaRadicado.objects.values_list('radicado_id', 'tipo')),
+            {
+                ('ALR-PRONTO', AlertaRadicado.Tipo.PROXIMO_VENCIMIENTO),
+                ('ALR-VENCIDO', AlertaRadicado.Tipo.VENCIDO),
+            },
+        )
+
+
+class ResponsableEmailRequiredTest(TestCase):
+    def test_new_responsible_requires_valid_email(self):
+        form = CrearResponsableForm(data={
+            'nombre': 'Responsable nuevo',
+            'oficina': 1,
+            'email': '',
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+
+
+class EntregaAlertasVencimientoTest(TestCase):
+    def setUp(self):
+        self.usuario = User.objects.create_user(username='correo-alerta', password='test-password')
+        self.oficina = Oficina.objects.create(nombre='Oficina Alertas')
+        self.responsable = Responsable.objects.create(
+            nombre='Responsable Alertas',
+            oficina=self.oficina,
+            email='responsable@example.com',
+        )
+        self.radicado = RadicacionRecibidos.objects.create(
+            id='ALR-CORREO',
+            medio_ingreso='Fisico',
+            tipo_comunicacion='Externo',
+            tipo_documento=TipoDocumento.objects.create(tipo='Carta'),
+            entidad=Entidad.objects.create(nombre='Entidad correo'),
+            asunto='Solicitud de información',
+            responsable_por_responder=self.responsable,
+            oficina=self.oficina,
+            requiere_respuesta='SI',
+            fecha_maxima_respuesta=timezone.localdate() + timedelta(days=3),
+            radicador=self.usuario,
+        )
+        self.alerta = AlertaRadicado.objects.create(
+            radicado=self.radicado,
+            responsable=self.responsable,
+            tipo=AlertaRadicado.Tipo.PROXIMO_VENCIMIENTO,
+            fecha_limite=self.radicado.fecha_maxima_respuesta,
+            destinatario_email=self.responsable.email,
+        )
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        DEFAULT_FROM_EMAIL='notificaciones@example.com',
+        RADICACION_PUBLIC_BASE_URL='https://odt.example.com',
+    )
+    def test_sends_email_and_marks_alert_sent(self):
+        call_command('enviar_alertas_radicados', stdout=StringIO())
+
+        self.alerta.refresh_from_db()
+        self.assertEqual(self.alerta.estado, AlertaRadicado.Estado.ENVIADA)
+        self.assertEqual(self.alerta.intentos, 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['responsable@example.com'])
+        self.assertIn('ALR-CORREO', mail.outbox[0].subject)
+        self.assertIn('https://odt.example.com/radicados_recibidos/detalle/ALR-CORREO/', mail.outbox[0].alternatives[0][0])
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        DEFAULT_FROM_EMAIL='notificaciones@example.com',
+        RADICACION_PUBLIC_BASE_URL='https://odt.example.com',
+    )
+    def test_cancels_alert_if_radicado_is_answered_before_delivery(self):
+        self.radicado.fecha_respuesta = timezone.localdate()
+        self.radicado.estado_respuesta = 'Con Respuesta'
+        self.radicado.save(update_fields=['fecha_respuesta', 'estado_respuesta'])
+
+        call_command('enviar_alertas_radicados', stdout=StringIO())
+
+        self.alerta.refresh_from_db()
+        self.assertEqual(self.alerta.estado, AlertaRadicado.Estado.CANCELADA)
+        self.assertEqual(mail.outbox, [])
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        DEFAULT_FROM_EMAIL='notificaciones@example.com',
+        RADICACION_PUBLIC_BASE_URL='https://odt.example.com',
+    )
+    @patch('radicacion_app.management.commands.enviar_alertas_radicados.EmailMultiAlternatives.send', side_effect=OSError('SMTP no disponible'))
+    def test_email_failure_is_retried_and_error_is_recorded(self, send_email):
+        call_command('enviar_alertas_radicados', stdout=StringIO())
+
+        self.alerta.refresh_from_db()
+        self.assertEqual(self.alerta.estado, AlertaRadicado.Estado.PENDIENTE)
+        self.assertEqual(self.alerta.intentos, 1)
+        self.assertIn('SMTP no disponible', self.alerta.ultimo_error)
+        self.assertGreater(self.alerta.siguiente_intento_en, timezone.now())
+
+
 class ConsecutivoSeguroTest(TransactionTestCase):
     """Test para verificar que los consecutivos sean únicos incluso con usuarios simultáneos"""
     
     def setUp(self):
-        tipo = TipoComunicacion.objects.create(tipo="Comunicaciones recibidas")
+        # TipoComunicacion.id es IntegerField(primary_key=True) sin autoincremento:
+        # hay que asignarlo explícitamente.
+        tipo = TipoComunicacion.objects.create(id=1, tipo="Comunicaciones recibidas")
 
         self.parametro = ParametrosRadicacion.objects.create(
             prefijo='ODT',
@@ -200,8 +472,13 @@ class ConsecutivoSeguroTest(TransactionTestCase):
         ids_generados = []
         
         def generar_id():
-            id_generado = self.parametro.generar_id_radicado()
-            ids_generados.append(id_generado)
+            try:
+                id_generado = self.parametro.generar_id_radicado()
+                ids_generados.append(id_generado)
+            finally:
+                # Cada hilo abre su propia conexión; hay que cerrarla para
+                # que PostgreSQL permita eliminar la BD de pruebas al final.
+                close_old_connections()
         
         # Ejecutar 10 threads simultáneamente
         with ThreadPoolExecutor(max_workers=10) as executor:
